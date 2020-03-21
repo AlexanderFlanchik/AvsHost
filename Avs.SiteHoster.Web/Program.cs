@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace AvsHost.Web
+namespace Avs.SiteHoster.Web
 {
     public class Program
     {

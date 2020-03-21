@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AvsHost.Web
+namespace Avs.SiteHoster.Web
 {
     public class Startup
     {
@@ -32,7 +32,7 @@ namespace AvsHost.Web
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Avs Host is running!!!");
+                    await context.Response.WriteAsync("AVS Hosting service is running!");
                 });
             });
         }
