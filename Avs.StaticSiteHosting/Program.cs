@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Avs.StaticSiteHosting
 {
@@ -15,14 +12,21 @@ namespace Avs.StaticSiteHosting
         public async static Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            InitStorage();
+            var staticSiteOptions = (IOptions<StaticSiteOptions>)host.Services.GetService(typeof(IOptions<StaticSiteOptions>));
+            if (staticSiteOptions == null || 
+                staticSiteOptions.Value == null || 
+                string.IsNullOrEmpty(staticSiteOptions.Value.ContentPath))
+            {
+                throw new Exception("Invalid application configuration. Static site options were not found or configured.");
+            }
+
+            InitStorage(staticSiteOptions.Value.ContentPath);
 
             await host.RunAsync();
         }
 
-        private static void InitStorage()
+        private static void InitStorage(string contentPath)
         {
-            var contentPath = Path.Combine("Content");
             if (!Directory.Exists(contentPath))
             {
                 Directory.CreateDirectory(contentPath);
