@@ -22,6 +22,14 @@ namespace Avs.StaticSiteHosting
 
             InitStorage(staticSiteOptions.Value.ContentPath);
 
+            var mongoEntityRepository = (MongoEntityRepository)host.Services.GetService(typeof(MongoEntityRepository));
+            if (mongoEntityRepository == null)
+            {
+                throw new Exception("Mongo DB data layer was not found.");
+            }
+
+            await DbInitialization.InitDbAsync(mongoEntityRepository);
+
             await host.RunAsync();
         }
 

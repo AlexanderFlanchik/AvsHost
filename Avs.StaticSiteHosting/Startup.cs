@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Middlewares;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
 namespace Avs.StaticSiteHosting
@@ -26,6 +28,9 @@ namespace Avs.StaticSiteHosting
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<StaticSiteOptions>(Configuration.GetSection("StaticSiteOptions"));
+            services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbConnection"));
+            services.AddSingleton<MongoEntityRepository>();
+
             services.AddControllers();
         }
 
@@ -38,16 +43,15 @@ namespace Avs.StaticSiteHosting
             }
 
             app.UseRouting();
+            
+            var dirInfo = new DirectoryInfo("ClientApp");
+            app.UseFileServer(new FileServerOptions { FileProvider = new PhysicalFileProvider(dirInfo.FullName) });
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
-                endpoints.MapControllers();
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("AVS static site hosting service is running!!");
-                });
-            });
+                endpoints.MapControllers();                
+            });            
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Avs.StaticSiteHosting.Middlewares
     {
         public StaticSiteMiddleware(RequestDelegate next) {}
 
-        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions)
+        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, MongoEntityRepository mongoRepository)
         {           
             var routeValues = context.GetRouteData().Values;
             if ((string)routeValues.FirstOrDefault().Value == "favicon.ico")
