@@ -5,7 +5,6 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Middlewares
@@ -18,9 +17,9 @@ namespace Avs.StaticSiteHosting.Middlewares
         public StaticSiteMiddleware(RequestDelegate next) {}
 
         public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, MongoEntityRepository mongoRepository)
-        {           
+        {
             var routeValues = context.GetRouteData().Values;
-            if ((string)routeValues.FirstOrDefault().Value == "favicon.ico")
+            if (await HandleDashboardContent(context))
             {
                 return;
             }
@@ -31,7 +30,7 @@ namespace Avs.StaticSiteHosting.Middlewares
             var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
             if (!Directory.Exists(siteContentPath))
             {
-                throw new FileNotFoundException($"Cannot find content for {siteName}.");
+                return;
             }
 
             //TODO: should be taken from DB
@@ -42,6 +41,24 @@ namespace Avs.StaticSiteHosting.Middlewares
             await context.Response.SendFileAsync(fi);
             
             Console.WriteLine($"Content sent: {fileName}");
+        }
+
+        private async ValueTask<bool> HandleDashboardContent(HttpContext context)
+        {
+            var distPath = Path.Combine(new DirectoryInfo("ClientApp").FullName, "dist");
+            var reqPath = context.Request.Path;
+            
+            var filePath = Path.Combine(distPath, reqPath);
+            var fileProvider = new PhysicalFileProvider(distPath);
+
+            var fi = fileProvider.GetFileInfo(filePath);
+            if (fi.Exists)
+            {
+                await context.Response.SendFileAsync(fi);
+                return true;
+            }
+            
+            return false;
         }
     }
 

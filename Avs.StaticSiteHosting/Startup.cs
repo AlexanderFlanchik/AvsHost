@@ -43,15 +43,13 @@ namespace Avs.StaticSiteHosting
             }
 
             app.UseRouting();
-            
-            var dirInfo = new DirectoryInfo("ClientApp");
-            app.UseFileServer(new FileServerOptions { FileProvider = new PhysicalFileProvider(dirInfo.FullName) });
 
+            app.UseDashboard();            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
-                endpoints.MapControllers();                
-            });            
+                endpoints.MapControllers();       
+            });
         }
     }
 }
