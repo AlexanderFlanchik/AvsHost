@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Avs.StaticSiteHosting.Services;
 
 namespace Avs.StaticSiteHosting
 {
@@ -28,7 +29,9 @@ namespace Avs.StaticSiteHosting
                 throw new Exception("Mongo DB data layer was not found.");
             }
 
-            await DbInitialization.InitDbAsync(mongoEntityRepository);
+            var passwordHasher = (PasswordHasher)host.Services.GetService(typeof(PasswordHasher));
+
+            await DbInitialization.InitDbAsync(mongoEntityRepository, passwordHasher);
 
             await host.RunAsync();
         }

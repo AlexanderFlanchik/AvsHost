@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Middlewares;
+using Avs.StaticSiteHosting.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Avs.StaticSiteHosting
 {
@@ -29,7 +25,22 @@ namespace Avs.StaticSiteHosting
         {
             services.Configure<StaticSiteOptions>(Configuration.GetSection("StaticSiteOptions"));
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbConnection"));
+            services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
+            
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options => {
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = AuthSettings.ValidIssuer,
+                        ValidateAudience = true,
+                        ValidAudience = AuthSettings.ValidAudience,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = AuthSettings.SecurityKey()
+                    };
+                });
 
             services.AddControllers();
         }
@@ -43,8 +54,12 @@ namespace Avs.StaticSiteHosting
             }
 
             app.UseRouting();
+            app.UseDashboard();
+            
+            // Auth is only required for dashboard Web API
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseDashboard();            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");

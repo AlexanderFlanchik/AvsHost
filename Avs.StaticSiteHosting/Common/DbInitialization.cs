@@ -3,12 +3,13 @@ using System;
 using System.Linq;
 using MongoDB.Driver;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Services;
 
 namespace Avs.StaticSiteHosting
 {
     public static class DbInitialization
     {
-        public static async Task InitDbAsync(MongoEntityRepository mongoRepository)
+        public static async Task InitDbAsync(MongoEntityRepository mongoRepository, PasswordHasher passwordHasher)
         {
             // 1. Check roles
             var rolesCollection = mongoRepository.GetEntityCollection<Role>("Roles");
@@ -34,13 +35,13 @@ namespace Avs.StaticSiteHosting
             if (!users.Any())
             {
                 var adminRole = (await rolesCollection.FindAsync(r => r.Name == "Administrator")).First();
-                var admin = new User() 
-                { 
+                var admin = new User()
+                {
                     Name = "Admin",
                     Email = "Admin@staticsitehosting.com",
-                    Roles = new [] { adminRole },
+                    Roles = new[] { adminRole },
                     Status = UserStatus.Active,
-                    Password = "@Admin111"
+                    Password = passwordHasher.HashPassword("@Admin111")
                 };
 
                 await usersCollection.InsertOneAsync(admin);
