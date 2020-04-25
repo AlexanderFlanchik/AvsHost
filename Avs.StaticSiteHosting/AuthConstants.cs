@@ -1,4 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Text;
 
 namespace Avs.StaticSiteHosting
@@ -14,5 +15,7 @@ namespace Avs.StaticSiteHosting
         {
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Secret@ForDashboard!123"));
         }
+
+        public readonly static TimeSpan TokenLifetime = TimeSpan.FromMinutes(60);
     }
 }
