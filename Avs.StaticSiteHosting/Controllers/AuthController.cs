@@ -30,12 +30,12 @@ namespace Avs.StaticSiteHosting.Controllers
             var login = tokenRequest.Login;
             var password = tokenRequest.Password;
 
-            var user = (await _users.FindAsync(u => u.Email == login).ConfigureAwait(false)).FirstOrDefault() ??
-                    (await _users.FindAsync(u => u.Name == login).ConfigureAwait(false)).FirstOrDefault();
+            var user = (await _users.FindAsync(u => u.Email == login || u.Name == login).ConfigureAwait(false))
+                .FirstOrDefault();
             
             if (user == null)
             {
-                return BadRequest($"No user with login '{login}' found");
+                return BadRequest($"No user with login '{login}' has been found.");
             }
 
             var userPasswHashed = user.Password;
@@ -43,7 +43,7 @@ namespace Avs.StaticSiteHosting.Controllers
             {
                 return BadRequest("Invalid password entered.");
             }
-
+           
             var currentTimestamp = DateTime.UtcNow;
             var tokenLifeTime = AuthSettings.TokenLifetime;
             var signingCredentials = new SigningCredentials(AuthSettings.SecurityKey(), SecurityAlgorithms.HmacSha256);
@@ -63,7 +63,8 @@ namespace Avs.StaticSiteHosting.Controllers
             
             return Ok(new { 
                 token = encodedToken,
-                expires_at = expiresAt
+                expires_at = expiresAt,
+                is_active = user.Status == UserStatus.Active
             });
         }
     }
