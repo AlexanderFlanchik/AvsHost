@@ -35,6 +35,11 @@ namespace Avs.StaticSiteHosting.Middlewares
 
             //TODO: should be taken from DB
             var fileName = (string)sitePath;
+            if (string.IsNullOrEmpty(fileName))
+            {
+                return;
+            }
+
             var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
             var fi = fileProvider.GetFileInfo(fileName);
 

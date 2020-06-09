@@ -25,6 +25,7 @@ namespace Avs.StaticSiteHosting
         {
             services.Configure<StaticSiteOptions>(Configuration.GetSection("StaticSiteOptions"));
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbConnection"));
+            
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
             
