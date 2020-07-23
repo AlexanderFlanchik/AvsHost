@@ -1,10 +1,10 @@
-﻿using Avs.StaticSiteHosting.Models.Identity;
+﻿using Avs.StaticSiteHosting.DTOs;
+using Avs.StaticSiteHosting.Models.Identity;
 using Avs.StaticSiteHosting.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -25,9 +25,13 @@ namespace Avs.StaticSiteHosting.Controllers
 
         [HttpPost]
         [Route("token")]
-        public async Task<IActionResult> Token([Required]string login, [Required]string password, [FromServices] PasswordHasher pwdHasher)
+        public async Task<IActionResult> GetAccessToken(LoginRequestModel loginModel, [FromServices] PasswordHasher pwdHasher)
         {
-            var user = (await _users.FindAsync(u => u.Email == login || u.Name == login).ConfigureAwait(false))
+            var login = loginModel.Login;
+            var password = loginModel.Password;
+
+            var user = (await _users.FindAsync(u => u.Email == login || u.Name == login)
+                    .ConfigureAwait(false))
                     .FirstOrDefault();            
 
             if (user == null)
@@ -63,7 +67,8 @@ namespace Avs.StaticSiteHosting.Controllers
             
             return Ok(new { 
                 token = encodedToken,
-                expires_at = expiresAt
+                expires_at = expiresAt,
+                userInfo = new { user.Name, user.Email }
             });
         }                
     }

@@ -9,17 +9,18 @@ Vue.use(VueRouter);
 Vue.config.productionTip = false;
 
 const authService = new AuthService();
+Vue.prototype.$authService = authService;
 
 const routes = [
     { path: '/', component: Dashboard },
-    { path: '/login', component: Login }
+    { path: '/login', component: Login, props: true }
 ];
 
 const router = new VueRouter({ routes });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
     if (to.path != '/login' && !authService.isAuthenticated()) {
-        next({ path: '/login' });
+        next({ path: '/login', query: { returnUrl : to.fullPath } });
     } else {
         next();
     }
