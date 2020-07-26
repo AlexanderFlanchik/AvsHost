@@ -1,46 +1,65 @@
 <template>
     <div class="centered">
-        
-        <form>
-            <div>
-            <h1>Welcome to Static Site Hosting!</h1>
-            <div>To access dashboard, please log in.</div>
-                <table>
-                    <tr>
-                        <td>Login: </td>
-                        <td><input type="text" v-model="userLogin" /></td>
-                    </tr>
+        <div id="form-holder">
+            <form id="login-form">
+                <div>
+                    <h1>Welcome to Static Site Hosting!</h1>
+                    <div class="error-bar" v-if="errors.length">
+                        <ul>
+                            <li v-for="error in errors">
+                                {{error}}
+                            </li>
+                        </ul>
+                    </div>
+                    <div>To access dashboard, please log in.</div>                    
+                    <div>
+                        <table>
+                            <tr>
+                                <td>Login: </td>
+                                <td><input type="text" v-model="userLogin" /></td>
+                            </tr>
 
-                    <tr>
-                        <td>Password: </td>
-                        <td><input type="password" v-model="password" /></td>
-                    </tr>
-                </table>
+                            <tr>
+                                <td>Password: </td>
+                                <td><input type="password" v-model="password" /></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="button-bar">
+                    <button v-on:click="login">Login</button>
+                    <button>Register..</button>
+                </div>
+            </form>
         </div>
-        <div>
-            <button v-on:click="login">Login</button>
-            <button>Register..</button>
-        </div>
-        </form>
     </div>  
 </template>
 
 <script>
     export default {
-        userLogin: '',
-        password: '',
+        data: function () {
+            return {
+                userLogin: '',
+                password: '',
+                errors: [],
+            };
+        },
         methods: {
             login: async function (e) {
-                // TODO: apply form validation
                 e.preventDefault();
+                while (this.errors.length) {
+                    this.errors.pop();
+                }
 
                 if (!this.userLogin) {
-                    alert('Enter user login!');
-                    return;
+                    this.errors.push('Enter user login!');                    
                 }
 
                 if (!this.password) {
-                    alert('Enter a password!');
+                    this.errors.push('Enter a password!');
+                }
+
+                if (this.errors.length) {                    
                     return;
                 }
 
@@ -49,7 +68,7 @@
                     console.log('Login succeeded.');
                     this.$router.push(this.$route.query.returnUrl || '/');
                 } else {
-                    alert('Unable to login.');
+                    this.errors.push('Unable to login: invalid login or password, or service is not available.');
                 }                           
             },
             register : async function() {
@@ -67,5 +86,14 @@
         background-color: burlywood;
         padding: 10px;
         justify-content: center;
+    }
+    .error-bar {
+        margin-top: 1px;
+        margin-bottom: 1px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        background-color: lightpink;
+        color: crimson;
+        font-weight: bold;
     }
 </style>
