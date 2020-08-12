@@ -86,6 +86,64 @@ var AuthService = /** @class */ (function () {
             });
         });
     };
+    AuthService.prototype.register = function (email, userName, password) {
+        return __awaiter(this, void 0, void 0, function () {
+            var response, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, axios_1.default.post('/auth/register', {
+                                email: email,
+                                userName: userName,
+                                password: password
+                            })];
+                    case 1:
+                        response = _a.sent();
+                        return [2 /*return*/, response.status === 200];
+                    case 2:
+                        e_2 = _a.sent();
+                        console.log(e_2);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
+    AuthService.prototype.validateUserData = function (userName, email) {
+        return __awaiter(this, void 0, void 0, function () {
+            var url, response, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        url = '/auth/validateUserData';
+                        if (!userName && !email) {
+                            return [2 /*return*/, false];
+                        }
+                        if (userName) {
+                            url += "?userName=" + userName;
+                            if (email) {
+                                url += "&email=" + email;
+                            }
+                        }
+                        else {
+                            url += "?email=" + email;
+                        }
+                        return [4 /*yield*/, axios_1.default.get(url)];
+                    case 1:
+                        response = _a.sent();
+                        console.log(response);
+                        return [2 /*return*/, response.data];
+                    case 2:
+                        e_3 = _a.sent();
+                        console.log(e_3);
+                        return [3 /*break*/, 3];
+                    case 3: return [2 /*return*/, false];
+                }
+            });
+        });
+    };
     return AuthService;
 }());
 exports.default = AuthService;

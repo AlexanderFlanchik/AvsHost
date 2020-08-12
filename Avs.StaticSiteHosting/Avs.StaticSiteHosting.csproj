@@ -35,10 +35,14 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="ClientApp\src\components\Register.vue" />
+    <None Remove="ClientApp\src\components\Registered.vue" />
     <None Remove="ClientApp\src\services\AuthService.ts" />
   </ItemGroup>
   
   <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\components\Register.vue" />
+    <TypeScriptCompile Include="ClientApp\src\components\Registered.vue" />
     <TypeScriptCompile Include="ClientApp\src\services\AuthService.ts" />
   </ItemGroup>
 

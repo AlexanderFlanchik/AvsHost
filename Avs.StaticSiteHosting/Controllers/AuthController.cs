@@ -14,7 +14,7 @@ namespace Avs.StaticSiteHosting.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public sealed class AuthController : ControllerBase
+    public sealed class AuthController : Controller
     {
         private readonly IMongoCollection<User> _users;
 
@@ -71,5 +71,13 @@ namespace Avs.StaticSiteHosting.Controllers
                 userInfo = new { user.Name, user.Email }
             });
         }                
+
+        [HttpGet]
+        [Route("validateUserData")]
+        public async Task<IActionResult> ValidateUserData(string userName, string email) 
+            => Json(!(await _users.FindAsync(u => u.Email == email || u.Name == userName)
+                   .ConfigureAwait(false))
+                   .Any());
+        
     }
 }

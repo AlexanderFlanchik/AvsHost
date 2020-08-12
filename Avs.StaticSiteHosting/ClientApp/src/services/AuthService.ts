@@ -5,7 +5,7 @@ export default class AuthService {
     constructor() { }
     tokenKey = 'auth_token';
 
-    isAuthenticated() {
+    public isAuthenticated() {
         let tokenJson = localStorage.getItem(this.tokenKey);
         if (!tokenJson) {
             return false;
@@ -24,7 +24,7 @@ export default class AuthService {
         return true;
     }
 
-    async tryGetAccessToken(userLogin: String, password: String) : Promise<boolean> {
+    public async tryGetAccessToken(userLogin: String, password: String) : Promise<boolean> {
         try {
             let response = await axios.post('/auth/token', {
                 login: userLogin,
@@ -40,6 +40,48 @@ export default class AuthService {
             }
         } catch (e) {
             console.log(e);        
+        }
+
+        return false;
+    }   
+
+    public async register(email: String, userName: String, password: String): Promise<boolean> {
+        try {
+            let response = await axios.post('/auth/register', {
+                email,
+                userName,
+                password
+            });
+
+            return response.status === 200;
+        } catch (e) {
+            console.log(e);
+        }
+
+        return false;
+    }
+
+    public async validateUserData(userName: String, email: String): Promise<boolean> {
+        try {
+            let url = '/auth/validateUserData';
+            if (!userName && !email) {
+                return false;
+            }
+
+            if (userName) {
+                url += `?userName=${userName}`;
+                if (email) {
+                    url += `&email=${email}`;
+                }
+            } else {
+                url += `?email=${email}`;
+            }
+            
+            let response = await axios.get(url);
+            console.log(response);
+            return response.data;
+        } catch (e) {
+            console.log(e);
         }
 
         return false;

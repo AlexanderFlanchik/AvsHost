@@ -3,3 +3,9 @@
 ################################################################################
 
 /.vs
+/Avs.StaticSiteHosting/.vs/Avs.StaticSiteHosting
+/Avs.StaticSiteHosting/bin/Debug/netcoreapp3.1
+/Avs.StaticSiteHosting/ClientApp/dist
+/Avs.StaticSiteHosting/ClientApp/node_modules
+/Avs.StaticSiteHosting/Content/Test
+/Avs.StaticSiteHosting/obj

@@ -28,7 +28,7 @@
                 </div>
                 <div class="button-bar">
                     <button v-on:click="login">Login</button>
-                    <button>Register..</button>
+                    <button v-on:click="register">Register..</button>
                 </div>
             </form>
         </div>
@@ -71,8 +71,9 @@
                     this.errors.push('Unable to login: invalid login or password, or service is not available.');
                 }                           
             },
-            register : async function() {
-
+            register: function (e) {
+                e.preventDefault();
+                this.$router.push('/register');
             }
         }
 }
