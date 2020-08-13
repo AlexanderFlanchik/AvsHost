@@ -106,6 +106,7 @@ namespace Avs.StaticSiteHosting.Controllers
             if (userRole == null)
             {
                 userRole = new Role { Name = DEFAULT_USER_ROLE };
+                await _roles.InsertOneAsync(userRole).ConfigureAwait(false);
             }
 
             newUser.Roles = new[] { userRole };
