@@ -153,7 +153,7 @@
             },
 
             resetForm: function () {
-                let touchedProps = [this.userNameTouched, this.emailTouched, this.passwordTouched];
+                let touchedProps = [this.userNameTouched, this.emailTouched, this.passwordTouched, this.confirmPasswordTouched];
                 for (let i = 0; i < touchedProps.length; i++) {
                     touchedProps[i] = false;
                 }

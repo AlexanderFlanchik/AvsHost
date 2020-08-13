@@ -16,11 +16,14 @@ namespace Avs.StaticSiteHosting.Controllers
     [Route("[controller]")]
     public sealed class AuthController : Controller
     {
+        private const string DEFAULT_USER_ROLE = "DefaultUser";
         private readonly IMongoCollection<User> _users;
+        private readonly IMongoCollection<Role> _roles;
 
         public AuthController(MongoEntityRepository entityRepository)
         {
             _users = entityRepository.GetEntityCollection<User>("Users");
+            _roles = entityRepository.GetEntityCollection<Role>("Roles");
         }
 
         [HttpPost]
@@ -79,5 +82,44 @@ namespace Avs.StaticSiteHosting.Controllers
                    .ConfigureAwait(false))
                    .Any());
         
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register(RegisterRequestModel registerRequest, [FromServices] PasswordHasher passwordHasher)
+        {
+            var alreadyExistedUser = (await _users.FindAsync(u => 
+                    u.Name == registerRequest.UserName || 
+                    u.Email == registerRequest.Email).ConfigureAwait(false)
+                ).Any();
+
+            if (alreadyExistedUser)
+            {
+                return Conflict("User already exists.");
+            }
+
+            var newUser = new User { Email = registerRequest.Email, Name = registerRequest.UserName };
+            newUser.Password = passwordHasher.HashPassword(registerRequest.Password);
+            newUser.Status = UserStatus.Active;
+
+            var userRole = (await _roles.FindAsync(r => r.Name == DEFAULT_USER_ROLE).ConfigureAwait(false))
+                    .FirstOrDefault();
+
+            if (userRole == null)
+            {
+                userRole = new Role { Name = DEFAULT_USER_ROLE };
+            }
+
+            newUser.Roles = new[] { userRole };
+            try
+            {
+                await _users.InsertOneAsync(newUser).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return Problem($"Cannot create a new user.{ex.Message}.");
+            }
+
+            return Ok();
+        }
     }
 }

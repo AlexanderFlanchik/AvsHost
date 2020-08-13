@@ -1,8 +1,10 @@
 ﻿<template>
-    <h1>Success</h1>
-    <div>
-        You have successfully registered in the system. <br/>
-        Please <router-link to="login">log in</router-link> using your login and password. 
+    <div class="centered">
+        <h1>Success</h1>
+        <div>
+            You have successfully registered in the system. <br />
+            Please <router-link to="login">log in</router-link> using your login and password.
+        </div>
     </div>
 </template>
 <script>
@@ -19,5 +21,13 @@
     }
 </script>
 <style>
-
+    .centered {
+        margin-left: 25%;
+        margin-right: 25%;
+        margin-top: 10%;
+        margin-bottom: 10%;
+        background-color: burlywood;
+        padding: 10px;
+        justify-content: center;
+    }
 </style>

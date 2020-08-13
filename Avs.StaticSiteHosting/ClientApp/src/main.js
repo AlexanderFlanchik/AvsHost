@@ -25,6 +25,7 @@ const router = new VueRouter({ routes });
 router.beforeEach((to, _from, next) => {
     if (to.path != '/login' &&
         to.path != '/register' &&
+        to.path != '/registered' &&
         !authService.isAuthenticated()) {
             next({ path: '/login', query: { returnUrl : to.fullPath } });
     } else {
