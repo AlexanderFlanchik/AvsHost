@@ -1,45 +1,45 @@
-﻿<template>
-     <div class="centered">
-         <h1>Register New Account</h1>
-         <div>
-             <table>
-                 <tr>
-                     <td>Your name:</td>
-                     <td>
-                        <input type="text" v-model="userName" @change="onUserNameChanged" @blur="fieldBlur('userName')" />
-                        <span v-if="isUsernameInvalid" class="validation-error">This user name is already registered.</span>
-                        <span v-if="isUsernameEmpty" class="validation-error">User name is required.</span>
-                     </td>
-                 </tr>
-                 <tr>
-                     <td>Password:</td>
-                     <td>
-                        <input type="password" v-model="password"  @blur="fieldBlur('password')" />
-                        <span v-if="isPasswordEmpty" class="validation-error">Password is required.</span>
-                     </td>
-                 </tr>
-                 <tr>
-                     <td>Confirm password:</td>
-                     <td>
-                         <input type="password" v-model="confirmPassword"  @blur="fieldBlur('confirmPassword')"/>
-                         <span v-if="arePasswordsDifferent" class="validation-error">Passwords must coincide.</span>
-                     </td>                     
-                 </tr>
-                 <tr>
-                     <td>Email:</td>
-                     <td>
-                         <input type="email" v-model="email"  @blur="fieldBlur('email')"  />
-                         <span v-if="isEmailInvalid" class="validation-error">This email is already registered.</span>
-                         <span v-if="isEmailEmpty" class="validation-error">Email is required.</span>
-                     </td>
-                 </tr>
-             </table>
-         </div>
-         <div>
-             <button v-on:click="register" :disabled="isFormInvalid">Register..</button>
-             <button v-on:click="login">Login..</button>
-         </div>
-     </div>
+﻿<template>   
+   <div class="centered">
+      <h1>Register New Account</h1>
+      <div>
+         <table>
+           <tr>
+              <td>Your name:</td>
+              <td>
+                 <input type="text" v-model="userName" @change="onUserNameChanged" @blur="fieldBlur('userName')" />
+                 <span v-if="isUsernameInvalid" class="validation-error">This user name is already registered.</span>
+                 <span v-if="isUsernameEmpty" class="validation-error">User name is required.</span>
+              </td>
+           </tr>
+           <tr>
+               <td>Password:</td>
+               <td>
+                  <input type="password" v-model="password" @blur="fieldBlur('password')" />
+                  <span v-if="isPasswordEmpty" class="validation-error">Password is required.</span>
+               </td>
+           </tr>
+           <tr>
+               <td>Confirm password:</td>
+               <td>
+                  <input type="password" v-model="confirmPassword" @blur="fieldBlur('confirmPassword')" />
+                 <span v-if="arePasswordsDifferent" class="validation-error">Passwords must coincide.</span>
+               </td>
+            </tr>
+            <tr>
+                <td>Email:</td>
+                <td>
+                    <input type="email" v-model="email" @blur="fieldBlur('email')" />
+                    <span v-if="isEmailInvalid" class="validation-error">This email is already registered.</span>
+                    <span v-if="isEmailEmpty" class="validation-error">Email is required.</span>
+                </td>
+             </tr>
+         </table>
+      </div>
+      <div>
+        <button v-on:click="register" :disabled="isFormInvalid">Register..</button>
+        <button v-on:click="login">Login..</button>
+      </div>
+   </div>    
 </template>
 <script>
     export default {
@@ -166,32 +166,4 @@
     }
 </script>
 <style scoped>
-    .form-title {
-        font-weight: bold;
-        color: navy;
-    }
-
-    .centered {
-        margin-left: 25%;
-        margin-right: 25%;
-        margin-top: 10%;
-        margin-bottom: 10%;
-        background-color: burlywood;
-        padding: 10px;
-        justify-content: center;
-    }
-    .error-bar {
-        margin-top: 1px;
-        margin-bottom: 1px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        background-color: lightpink;
-        color: crimson;
-        font-weight: bold;
-    }
-
-    .validation-error {
-        color: red;
-        font-weight: bold;
-    }
 </style>

@@ -36,5 +36,5 @@ router.beforeEach((to, _from, next) => {
 new Vue({
     el: '#app',
     router,
-    render: h => h(App),
+    render: h => h(App),    
 });

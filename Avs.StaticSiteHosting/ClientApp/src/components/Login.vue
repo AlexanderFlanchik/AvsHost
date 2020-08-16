@@ -79,15 +79,6 @@
 }
 </script>
 <style scoped>
-    .centered {
-        margin-left: 25%;
-        margin-right: 25%;
-        margin-top: 10%;
-        margin-bottom: 10%;
-        background-color: burlywood;
-        padding: 10px;
-        justify-content: center;
-    }
     .error-bar {
         margin-top: 1px;
         margin-bottom: 1px;
