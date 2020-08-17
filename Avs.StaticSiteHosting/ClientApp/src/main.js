@@ -6,6 +6,8 @@ import Login from './components/Login.vue';
 import AuthService from './services/AuthService';
 import Register from './components/Register.vue';
 import Registered from './components/Registered.vue';
+import MyProfile from './components/MyProfile.vue';
+import Help from './components/Help.vue';
 
 Vue.use(VueRouter);
 Vue.config.productionTip = false;
@@ -17,7 +19,9 @@ const routes = [
     { path: '/', component: Dashboard },
     { path: '/login', component: Login, props: true },
     { path: '/register', component: Register },
-    { path: '/registered', component: Registered }
+    { path: '/registered', component: Registered },
+    { path: '/profile', component: MyProfile },
+    { path: '/help', component: Help }
 ];
 
 const router = new VueRouter({ routes });

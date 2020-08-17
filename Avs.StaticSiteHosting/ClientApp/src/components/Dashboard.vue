@@ -4,16 +4,20 @@
          <img src="../../../ClientApp/public/dashboard.png" /> Dashboard
       </div>
       <UserInfo />
+      <NavigationMenu />
   </div>
 </template>
 
 <script>
     import UserInfo from '@/components/UserInfo.vue';
+    import NavigationMenu from '@/components/NavigationMenu.vue';
+
     export default {
         props: {
         },
         components: {
-            UserInfo
+            UserInfo,
+            NavigationMenu
         }
     }
 </script>
