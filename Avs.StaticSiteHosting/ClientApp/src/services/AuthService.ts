@@ -24,6 +24,25 @@ export default class AuthService {
         return true;
     }
 
+    public getUserInfo() {
+        let tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return null;
+        }
+
+        let userInfo = JSON.parse(tokenData)['userInfo'];
+        return userInfo;
+    }
+
+    public signOut() {
+        let tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return;
+        }
+
+        localStorage.removeItem(this.tokenKey);
+    }
+
     public async tryGetAccessToken(userLogin: String, password: String) : Promise<boolean> {
         try {
             let response = await axios.post('/auth/token', {
@@ -34,7 +53,9 @@ export default class AuthService {
             if (response && response.data && response.data.token) {
                 let token = response.data.token;
                 let expires_at = response.data.expiresAt;
-                localStorage.setItem(this.tokenKey, JSON.stringify({ token, expires_at }));
+                let userInfo = response.data.userInfo;
+
+                localStorage.setItem(this.tokenKey, JSON.stringify({ token, expires_at, userInfo }));
 
                 return true;
             }

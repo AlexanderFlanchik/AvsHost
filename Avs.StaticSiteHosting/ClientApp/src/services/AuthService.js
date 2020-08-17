@@ -57,9 +57,24 @@ var AuthService = /** @class */ (function () {
         // token is valid
         return true;
     };
+    AuthService.prototype.getUserInfo = function () {
+        var tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return null;
+        }
+        var userInfo = JSON.parse(tokenData)['userInfo'];
+        return userInfo;
+    };
+    AuthService.prototype.signOut = function () {
+        var tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return;
+        }
+        localStorage.removeItem(this.tokenKey);
+    };
     AuthService.prototype.tryGetAccessToken = function (userLogin, password) {
         return __awaiter(this, void 0, void 0, function () {
-            var response, token, expires_at, e_1;
+            var response, token, expires_at, userInfo, e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -73,7 +88,8 @@ var AuthService = /** @class */ (function () {
                         if (response && response.data && response.data.token) {
                             token = response.data.token;
                             expires_at = response.data.expiresAt;
-                            localStorage.setItem(this.tokenKey, JSON.stringify({ token: token, expires_at: expires_at }));
+                            userInfo = response.data.userInfo;
+                            localStorage.setItem(this.tokenKey, JSON.stringify({ token: token, expires_at: expires_at, userInfo: userInfo }));
                             return [2 /*return*/, true];
                         }
                         return [3 /*break*/, 3];
