@@ -1,4 +1,7 @@
 import Vue from 'vue';
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
 import VueRouter from 'vue-router';
 import App from './App.vue';
 import Dashboard from './components/Dashboard.vue';
@@ -9,6 +12,7 @@ import Registered from './components/Registered.vue';
 import MyProfile from './components/MyProfile.vue';
 import Help from './components/Help.vue';
 
+Vue.use(BootstrapVue);
 Vue.use(VueRouter);
 Vue.config.productionTip = false;
 

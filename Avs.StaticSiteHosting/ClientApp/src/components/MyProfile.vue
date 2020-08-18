@@ -1,7 +1,8 @@
 ﻿<template>
-    <div class="my-profile-content">
-        <div class="my-profile-title">
-            <img src="../../public/profile.png" /> Profile
+    <div class="content-block-container">
+        <div class="general-page-title">
+            <img src="../../public/profile.png" /> &nbsp;
+            <span>Profile</span>
         </div>
         <UserInfo />
         <NavigationMenu />
@@ -19,16 +20,4 @@
     }
 </script>
 <style>
-    .my-profile-content {
-        padding-top: 15px;
-        padding-left: 25px;
-        padding-right: 25px;
-    }
-
-    .my-profile-title {
-        font-size: 46pt;
-        font-family: Garamond;
-        color: white;
-        font-weight: bold;
-    }
-</style>
+ </style>

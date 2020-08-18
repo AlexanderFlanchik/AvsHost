@@ -42,4 +42,8 @@
         color: white;
         text-decoration: none;
     }
+
+    .sign-out-link:hover {
+        color: white;
+    }
 </style>

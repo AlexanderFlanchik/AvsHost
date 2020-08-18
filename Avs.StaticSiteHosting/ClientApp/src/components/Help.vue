@@ -1,7 +1,8 @@
 ﻿<template>
-    <div class="help-content">
-        <div class="help-title">
-            <img src="../../public/help.png"/> Help
+    <div class="content-block-container">
+        <div class="general-page-title">
+            <img src="../../public/help.png"/> &nbsp; 
+            <span>Help</span>
         </div>
         <UserInfo />
         <NavigationMenu />
@@ -19,16 +20,4 @@
     }
 </script>
 <style>
-    .help-content {
-        padding-top: 15px;
-        padding-left: 25px;
-        padding-right: 25px;
-    }
-
-    .help-title {
-        font-size: 46pt;
-        font-family: Garamond;
-        color: white;
-        font-weight: bold;
-    }
 </style>

@@ -27,8 +27,8 @@
                     </div>
                 </div>
                 <div class="button-bar">
-                    <button v-on:click="login">Login</button>
-                    <button v-on:click="register">Register..</button>
+                    <button v-on:click="login" class="btn btn-primary">Login</button> &nbsp;
+                    <button v-on:click="register" class="btn btn-primary">Register..</button>
                 </div>
             </form>
         </div>
@@ -87,5 +87,8 @@
         background-color: lightpink;
         color: crimson;
         font-weight: bold;
+    }
+    .button-bar {
+        margin-top: 5px;
     }
 </style>

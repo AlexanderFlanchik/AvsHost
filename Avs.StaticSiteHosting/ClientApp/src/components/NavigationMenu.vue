@@ -40,11 +40,20 @@
         float: left;
     }
 
-    .navigation-menu-item-link {
-        text-decoration: none;
-        display: block;
-        color: white;
-        text-align: center;
-        padding: 16px;
-    }
+        .navigation-menu-item:hover {
+            background-color: #060343;
+        }
+
+        .navigation-menu-item-link {
+            text-decoration: none;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 16px;
+        }
+
+        .navigation-menu-item-link:hover {
+            color: yellow !important;
+            text-decoration: none;
+        }
 </style>

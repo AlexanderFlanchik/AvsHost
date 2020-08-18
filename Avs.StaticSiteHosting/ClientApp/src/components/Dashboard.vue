@@ -1,10 +1,14 @@
 <template>
-  <div class="dashboard-content">
-      <div class="dashboard-title">
-         <img src="../../../ClientApp/public/dashboard.png" /> Dashboard
+  <div class="content-block-container">
+      <div class="general-page-title">
+         <img src="../../../ClientApp/public/dashboard.png" /> &nbsp;
+         <span>Dashboard</span>
       </div>
       <UserInfo />
       <NavigationMenu />
+      <div class="site-list-container">
+
+      </div>
   </div>
 </template>
 
@@ -39,16 +43,4 @@ a {
   color: #42b983;
 }
 
-.dashboard-content {
-    padding-top: 15px;
-    padding-left: 25px;
-    padding-right: 25px;
-}
-
-.dashboard-title {
-    font-size: 46pt;
-    font-family: Garamond;
-    color: white;
-    font-weight: bold;
-}
 </style>

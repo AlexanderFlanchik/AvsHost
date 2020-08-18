@@ -26,3 +26,22 @@
     color: red;
     font-weight: bold;
 }
+
+.general-page-title {
+    font-size: 34pt;
+    font-family: Garamond;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+    .general-page-title span {
+        padding-left: 5px;
+    }
+
+    .content-block-container {
+        padding-top: 15px;
+        padding-left: 25px;
+        padding-right: 25px;
+    }
