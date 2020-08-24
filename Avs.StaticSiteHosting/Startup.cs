@@ -1,5 +1,6 @@
 using Avs.StaticSiteHosting.Middlewares;
 using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Services.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +29,10 @@ namespace Avs.StaticSiteHosting
             
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
-            
+
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserService, UserService>();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
                     options.TokenValidationParameters = new TokenValidationParameters()

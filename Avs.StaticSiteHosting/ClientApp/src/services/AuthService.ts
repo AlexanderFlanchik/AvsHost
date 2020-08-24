@@ -11,10 +11,11 @@ export default class AuthService {
             return false;
         }
 
-        let now = moment().toDate();
         let token = JSON.parse(tokenJson);
-
-        if (now > token.expires_at) {
+        let utcNow = new Date(moment().utc().format());
+        var expDate = new Date(token.expires_at);
+        
+        if (utcNow > expDate) {
             localStorage.removeItem(this.tokenKey);
             console.log('Auth token expired.');
             return false;
@@ -22,6 +23,15 @@ export default class AuthService {
 
         // token is valid
         return true;
+    }
+
+    public getToken(): string {
+        let tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return null;
+        }
+
+        return JSON.parse(tokenData)['token'];
     }
 
     public getUserInfo() {
@@ -52,7 +62,7 @@ export default class AuthService {
 
             if (response && response.data && response.data.token) {
                 let token = response.data.token;
-                let expires_at = response.data.expiresAt;
+                let expires_at = response.data.expires_at;
                 let userInfo = response.data.userInfo;
 
                 localStorage.setItem(this.tokenKey, JSON.stringify({ token, expires_at, userInfo }));

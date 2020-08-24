@@ -11,6 +11,7 @@ namespace Avs.StaticSiteHosting.Models
         public string Description { get; set; }
         public User CreatedBy { get; set; }
         public bool IsActive { get; set; }
+        public DateTime? LaunchedOn { get; set; }
         public IDictionary<string, string> Mappings { get; set; }
     }
 }

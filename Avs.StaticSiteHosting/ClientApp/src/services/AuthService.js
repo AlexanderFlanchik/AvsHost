@@ -47,15 +47,23 @@ var AuthService = /** @class */ (function () {
         if (!tokenJson) {
             return false;
         }
-        var now = moment().toDate();
         var token = JSON.parse(tokenJson);
-        if (now > token.expires_at) {
+        var utcNow = new Date(moment().utc().format());
+        var expDate = new Date(token.expires_at);
+        if (utcNow > expDate) {
             localStorage.removeItem(this.tokenKey);
             console.log('Auth token expired.');
             return false;
         }
         // token is valid
         return true;
+    };
+    AuthService.prototype.getToken = function () {
+        var tokenData = localStorage.getItem(this.tokenKey);
+        if (!tokenData) {
+            return null;
+        }
+        return JSON.parse(tokenData)['token'];
     };
     AuthService.prototype.getUserInfo = function () {
         var tokenData = localStorage.getItem(this.tokenKey);
@@ -87,7 +95,7 @@ var AuthService = /** @class */ (function () {
                         response = _a.sent();
                         if (response && response.data && response.data.token) {
                             token = response.data.token;
-                            expires_at = response.data.expiresAt;
+                            expires_at = response.data.expires_at;
                             userInfo = response.data.userInfo;
                             localStorage.setItem(this.tokenKey, JSON.stringify({ token: token, expires_at: expires_at, userInfo: userInfo }));
                             return [2 /*return*/, true];

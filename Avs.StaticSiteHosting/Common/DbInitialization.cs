@@ -12,14 +12,14 @@ namespace Avs.StaticSiteHosting
         public static async Task InitDbAsync(MongoEntityRepository mongoRepository, PasswordHasher passwordHasher)
         {
             // 1. Check roles
-            var rolesCollection = mongoRepository.GetEntityCollection<Role>("Roles");
+            var rolesCollection = mongoRepository.GetEntityCollection<Role>(GeneralConstants.ROLES_COLLECTION);
             var roles = (await rolesCollection.FindAsync(r => true))
                 .ToList();
             
             if (!roles.Any())
             {
-                var userRole = new Role { Name = "User" };
-                var adminRole = new Role { Name = "Administrator" };
+                var userRole = new Role { Name = GeneralConstants.DEFAULT_USER_ROLE };
+                var adminRole = new Role { Name = GeneralConstants.ADMIN_ROLE };
                 await rolesCollection.InsertManyAsync(new[] { userRole, adminRole });
                 Console.WriteLine("Base roles have been created.");
             }
@@ -29,12 +29,12 @@ namespace Avs.StaticSiteHosting
             }
 
             // 2. Check admin user
-            var usersCollection = mongoRepository.GetEntityCollection<User>("Users");
+            var usersCollection = mongoRepository.GetEntityCollection<User>(GeneralConstants.USERS_COLLECTION);
             var users = (await usersCollection.FindAsync(u => true)).ToList();
 
             if (!users.Any())
             {
-                var adminRole = (await rolesCollection.FindAsync(r => r.Name == "Administrator")).First();
+                var adminRole = (await rolesCollection.FindAsync(r => r.Name == GeneralConstants.ADMIN_ROLE)).First();
                 var admin = new User()
                 {
                     Name = "Admin",

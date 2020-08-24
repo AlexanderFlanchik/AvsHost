@@ -1,4 +1,4 @@
-# troll-app
+# AVS Hosting Static Sites Dashboard
 
 ## Project setup
 ```

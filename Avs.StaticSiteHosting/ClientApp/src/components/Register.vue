@@ -28,16 +28,16 @@
             <tr>
                 <td>Email:</td>
                 <td>
-                    <input type="email" v-model="email" @blur="fieldBlur('email')" />
+                    <input type="email" v-model="email" @change="onEmailChanged" @blur="fieldBlur('email')" />
                     <span v-if="isEmailInvalid" class="validation-error">This email is already registered.</span>
                     <span v-if="isEmailEmpty" class="validation-error">Email is required.</span>
                 </td>
              </tr>
          </table>
       </div>
-      <div>
-        <button v-on:click="register" :disabled="isFormInvalid">Register..</button>
-        <button v-on:click="login">Login..</button>
+      <div class="button-bar">
+        <button v-on:click="register" :disabled="isFormInvalid" class="btn btn-primary">Register..</button> &nbsp;
+        <button v-on:click="login" class="btn btn-primary">Login..</button>
       </div>
    </div>    
 </template>
@@ -152,6 +152,17 @@
                 }                
             },
 
+            onEmailChanged: async function () {
+                this.remoteValidation.email.inProcess = true;
+                try {
+                    let validationResponse = await this.$authService.validateUserData(null, this.email);
+                    this.remoteValidation.email.success = validationResponse;
+                    console.log(this.remoteValidation.email.success);
+                } finally {
+                    this.remoteValidation.email.inProcess = false;
+                }
+            },
+
             resetForm: function () {
                 let touchedProps = [this.userNameTouched, this.emailTouched, this.passwordTouched, this.confirmPasswordTouched];
                 for (let i = 0; i < touchedProps.length; i++) {
@@ -166,4 +177,7 @@
     }
 </script>
 <style scoped>
+    .button-bar {
+        margin-top: 5px;
+    }
 </style>

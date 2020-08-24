@@ -11,6 +11,7 @@ import Register from './components/Register.vue';
 import Registered from './components/Registered.vue';
 import MyProfile from './components/MyProfile.vue';
 import Help from './components/Help.vue';
+import ApiClient from './services/ApiClient';
 
 Vue.use(BootstrapVue);
 Vue.use(VueRouter);
@@ -18,6 +19,7 @@ Vue.config.productionTip = false;
 
 const authService = new AuthService();
 Vue.prototype.$authService = authService;
+Vue.prototype.$apiClient = new ApiClient(authService);
 
 const routes = [
     { path: '/', component: Dashboard },

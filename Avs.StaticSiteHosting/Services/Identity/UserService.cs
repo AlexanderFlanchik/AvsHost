@@ -1,0 +1,39 @@
+﻿using Avs.StaticSiteHosting.Models.Identity;
+using MongoDB.Driver;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Avs.StaticSiteHosting.Services.Identity
+{
+    public class UserService : IUserService
+    {
+        private readonly IMongoCollection<User> _users;
+
+        public UserService(MongoEntityRepository entityRepository)
+        {
+            _users = entityRepository.GetEntityCollection<User>(GeneralConstants.USERS_COLLECTION);
+        }
+
+        public async Task<bool> CheckUserExistsAsync(string userName, string email)
+        {
+            return (await _users.FindAsync(u => u.Email == email || u.Name == userName).ConfigureAwait(false))
+                   .Any();            
+        }
+
+        public async Task CreateUserAsync(User user)
+        {
+            await _users.InsertOneAsync(user).ConfigureAwait(false);
+        }
+
+        public async Task<User> GetUserByIdAsync(string userId)
+        {
+            return (await _users.FindAsync(u => u.Id == userId).ConfigureAwait(false)).FirstOrDefault();
+        }
+
+        public async Task<User> GetUserByLoginAsync(string login)
+        {
+            return (await _users.FindAsync(u => u.Email == login || u.Name == login).ConfigureAwait(false))
+                .FirstOrDefault();
+        }
+    }
+}
