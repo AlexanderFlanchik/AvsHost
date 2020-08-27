@@ -22,10 +22,10 @@
                           </b-pagination>
                       </div>
                       <div class="column-right">
-                          <a href="javascript:void(0)">Add a new site..</a>
+                          <router-link to="/sites/create">Add a new site...</router-link>
                       </div>
                   </div>
-                  <a href="javascript:void(0)" v-if="totalFound === 0">Add a new site..</a>
+                  <router-link to="/sites/create">Add a new site...</router-link>
               </div>
           </div>
 
@@ -86,8 +86,16 @@
                 page: 1,
                 pageSize: 10,
                 totalFound: 0,
+                sortOrder: 'Asc',
+                sortField: '',
                 loadSiteData: async function () {
-                    this.$apiClient.getAsync(`api/sites?page=${this.page}&pageSize=${this.pageSize}`).then((response) => {
+                    let apiUrl = `api/sites?page=${this.page}&pageSize=${this.pageSize}`;
+
+                    if (this.sortField) {
+                        apiUrl += `&sortOrder=${this.sortOrder}&sortField=${this.sortField}`;
+                    }
+
+                    this.$apiClient.getAsync(apiUrl).then((response) => {
                         console.log(response);
                         let siteRows = response.data.map(s => new Site(s));
                         this.sites = siteRows;
@@ -106,7 +114,7 @@
             pageChanged: function () {
                 console.log('page changed: ' + this.page);
                 this.loadSiteData();
-            }
+            }           
         },
         components: {
             UserInfo,

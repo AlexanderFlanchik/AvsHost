@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
+import { BootstrapVue } from 'bootstrap-vue';
 import VueRouter from 'vue-router';
 import App from './App.vue';
 import Dashboard from './components/Dashboard.vue';
@@ -10,6 +10,7 @@ import AuthService from './services/AuthService';
 import Register from './components/Register.vue';
 import Registered from './components/Registered.vue';
 import MyProfile from './components/MyProfile.vue';
+import CreateOrUpdateSite from './components/CreateOrUpdateSite.vue';
 import Help from './components/Help.vue';
 import ApiClient from './services/ApiClient';
 
@@ -27,7 +28,9 @@ const routes = [
     { path: '/register', component: Register },
     { path: '/registered', component: Registered },
     { path: '/profile', component: MyProfile },
-    { path: '/help', component: Help }
+    { path: '/help', component: Help },
+    { path: '/sites/create', component: CreateOrUpdateSite },
+    { path: '/sites/update', component: CreateOrUpdateSite }
 ];
 
 const router = new VueRouter({ routes });
