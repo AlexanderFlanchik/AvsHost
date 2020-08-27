@@ -1,37 +1,54 @@
 <template>
   <div class="content-block-container">
-      <div class="general-page-title">
+     <div class="general-page-title">
          <img src="../../../ClientApp/public/dashboard.png" /> &nbsp;
          <span>Dashboard</span>
       </div>
       <UserInfo />
       <NavigationMenu />
       <div class="dashboard-container">
-          <div class="site-list-container">
-              <div class="before-table-content">
-                  <div class="before-table-content-left">
-                      <strong>Your sites</strong>
-                  </div>
-                  <div class="before-table-content-right">
-                      <a href="javascript:void(0)">Add a new site..</a>
-                  </div>
+          <div class="two-columns-content">
+              <div class="column-left">
+                  Your sites:&nbsp;<strong>{{totalFound}}</strong>
               </div>
+              <div class="column-right">
+                  <div class="two-columns-content" v-if="totalFound > 0">
+                      <div class="column-left">
+                          <b-pagination v-model="page"
+                                        :total-rows="totalFound"
+                                        :per-page="pageSize"
+                                        size="sm"
+                                        @input="pageChanged">
+                          </b-pagination>
+                      </div>
+                      <div class="column-right">
+                          <a href="javascript:void(0)">Add a new site..</a>
+                      </div>
+                  </div>
+                  <a href="javascript:void(0)" v-if="totalFound === 0">Add a new site..</a>
+              </div>
+          </div>
+
+          <table class="table table-striped columns-holder" v-if="totalFound > 0">
+              <thead>
+                  <tr>
+                      <th class="w-300">Name</th>
+                      <th class="w-300">Description</th>
+                      <th class="w-300">Launched On</th>
+                      <th class="w-150">Is Active</th>
+                      <th>Actions</th>
+                  </tr>
+              </thead>
+          </table>
+
+          <div class="site-list-container" v-if="totalFound > 0">
               <table class="table table-striped">
-                  <thead>
-                      <tr>
-                          <th>Name</th>
-                          <th>Description</th>
-                          <th>Launched On</th>
-                          <th>Is Active</th>
-                          <th>&nbsp;</th>
-                      </tr>
-                  </thead>
                   <tbody>
-                      <tr v-for="site in sites">
-                          <td>{{site.name}}</td>
-                          <td>{{site.description}}</td>
-                          <td>{{site.launchedOn}}</td>
-                          <td>
+                      <tr v-for="site in sites" :key="site" class="site-row">
+                          <td class="w-300">{{site.name}}</td>
+                          <td class="w-300">{{site.description}}</td>
+                          <td class="w-300">{{site.launchedOn}}</td>
+                          <td class="w-150">
                               <input type="checkbox" v-model="site.isActive" disabled="disabled" />
                           </td>
                           <td>
@@ -42,10 +59,10 @@
                       </tr>
                   </tbody>
               </table>
-              <div class="after-table-content">
-
-              </div>
           </div>
+          <div class="no-sites-message" v-if="totalFound === 0">
+              No sites found.
+          </div>          
       </div>
   </div>
 </template>
@@ -64,20 +81,32 @@
 
     export default {
         data: function () {
-            return {
+            return {                
                 sites: [],
-                totalFound: 0
+                page: 1,
+                pageSize: 10,
+                totalFound: 0,
+                loadSiteData: async function () {
+                    this.$apiClient.getAsync(`api/sites?page=${this.page}&pageSize=${this.pageSize}`).then((response) => {
+                        console.log(response);
+                        let siteRows = response.data.map(s => new Site(s));
+                        this.sites = siteRows;
+                        this.totalFound = Number(response.headers["total-rows-amount"]);
+                        console.log('Rows total: ' + this.totalFound);
+                    });
+                }
             }
         },
         props: {
         },
         mounted: function () {
-            this.$apiClient.getAsync('api/sites').then((response) => {
-                console.log(response);
-                let siteRows = response.data.map(s => new Site(s));
-                this.sites = siteRows;
-                this.totalFound = siteRows.length;
-            });
+            this.loadSiteData();
+        },
+        methods: {
+            pageChanged: function () {
+                console.log('page changed: ' + this.page);
+                this.loadSiteData();
+            }
         },
         components: {
             UserInfo,
@@ -102,23 +131,68 @@ li {
 a {
   color: #42b983;
 }
-
-    .dashboard-container{
+    .dashboard-container {
         background-color: azure;
-
     }
 
-    .before-table-content {
+    .two-columns-content {
         padding: 5px;
     }
 
-    .before-table-content-left{
+    .column-left {
         width: 20%;
         float: left;
     }
-    .before-table-content-right {
+
+    .column-right {
         width: 80%;
         float: left;
         text-align: right;
     }
+
+    .w-300 {
+        width: 300px;
+    }
+
+    .w-350 {
+        width: 350px;
+    }
+
+    .w-150 {
+        width: 150px;
+    }
+
+    .site-row:hover {
+        background-color: lightskyblue;
+    }
+
+    .columns-holder {
+        margin-bottom: 0 !important;
+    }
+
+    .site-list-container {
+        height: calc(100vh - 280px);
+        overflow-y: auto;
+    }
+
+    .site-list-footer {
+        position: absolute;
+        height: 50px;
+        background-color: azure;
+        bottom: 25px;
+        z-index: 9999;
+        margin-top: 5px;
+        padding-bottom: 5px;
+        width: calc(100% - 50px);
+    }
+
+    .no-sites-message {
+        width: 100%;
+        min-height: 200px;
+        text-align: center;
+        color: navy;
+        font-size: 32pt;
+        font-weight: bold;
+        font-family: Garamond;
+    }  
 </style>

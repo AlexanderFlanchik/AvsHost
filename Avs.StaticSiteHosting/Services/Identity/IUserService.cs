@@ -9,5 +9,6 @@ namespace Avs.StaticSiteHosting.Services.Identity
         Task<User> GetUserByLoginAsync(string login);
         Task<bool> CheckUserExistsAsync(string userName, string email);
         Task CreateUserAsync(User user);
+        bool IsAdmin(User user);
     }
 }

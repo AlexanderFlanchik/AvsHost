@@ -16,7 +16,7 @@ namespace Avs.StaticSiteHosting.Services.Identity
 
         public async Task<Role> GetRoleByNameAsync(string roleName)
         {
-            return (await _roles.FindAsync(r => r.Name == GeneralConstants.DEFAULT_USER_ROLE).ConfigureAwait(false))
+            return (await _roles.FindAsync(r => r.Name == roleName).ConfigureAwait(false))
                     .FirstOrDefault();
         }
     }

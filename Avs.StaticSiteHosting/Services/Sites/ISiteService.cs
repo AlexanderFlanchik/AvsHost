@@ -1,4 +1,5 @@
-﻿using Avs.StaticSiteHosting.Models;
+﻿using Avs.StaticSiteHosting.DTOs;
+using Avs.StaticSiteHosting.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,7 @@ namespace Avs.StaticSiteHosting.Services
 {
     public interface ISiteService
     {
-        Task<IEnumerable<Site>> GetSitesByOwnerId(string ownerId);
+        Task<IEnumerable<Site>> GetSitesAsync(SitesQuery query);
+        Task<int> GetSitesAmountAsync(string ownerId = null);
     }
 }

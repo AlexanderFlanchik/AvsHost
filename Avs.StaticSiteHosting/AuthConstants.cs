@@ -4,11 +4,9 @@ using System.Text;
 
 namespace Avs.StaticSiteHosting
 {
-    /// <summary>
-    /// TODO: remove this, its only for demo.
-    /// </summary>
     public class AuthSettings
     {
+        public const string UserIdClaim = "user-id";
         public const string ValidIssuer = "StaticSiteHostingDashboardApi";
         public const string ValidAudience = "StaticSiteHostingDashboardSpa";
         public static SymmetricSecurityKey SecurityKey()

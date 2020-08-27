@@ -9,6 +9,7 @@ using Avs.StaticSiteHosting.DTOs;
 using Avs.StaticSiteHosting.Models.Identity;
 using Avs.StaticSiteHosting.Services;
 using Avs.StaticSiteHosting.Services.Identity;
+using System.Collections.Generic;
 
 namespace Avs.StaticSiteHosting.Controllers
 {
@@ -18,23 +19,21 @@ namespace Avs.StaticSiteHosting.Controllers
     {
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
-        
+        private Func<string, IActionResult> badRequestResponse = (errorMessage) => new BadRequestObjectResult(new { error = errorMessage });
+
         public AuthController(IUserService userService, IRoleService roleService)
         {
-            _userService = userService;
-            _roleService = roleService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService)); 
         }
 
         [HttpPost]
         [Route("token")]
         public async Task<IActionResult> GetAccessToken(LoginRequestModel loginModel, [FromServices] PasswordHasher pwdHasher)
         {
-            var login = loginModel.Login;
-            var password = loginModel.Password;
-
+            string login = loginModel.Login, password = loginModel.Password;
             var user = await _userService.GetUserByLoginAsync(login);
-            Func<string, IActionResult> badRequestResponse = (errorMessage) => BadRequest(new { error = errorMessage });
-
+            
             if (user == null)
             {
                 return badRequestResponse($"No user with login '{login}' has been found.");
@@ -55,9 +54,13 @@ namespace Avs.StaticSiteHosting.Controllers
             var signingCredentials = new SigningCredentials(AuthSettings.SecurityKey(), SecurityAlgorithms.HmacSha256);
             var expiresAt = currentTimestamp.Add(tokenLifeTime);
 
+            var claims = new List<Claim>();
+            claims.Add(new Claim(AuthSettings.UserIdClaim, user.Id));
+            claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name));
+            
             var jwtToken = new JwtSecurityToken(issuer: AuthSettings.ValidIssuer, 
                     audience: AuthSettings.ValidAudience, 
-                    claims: user.Roles.Select(r => new Claim(ClaimsIdentity.DefaultRoleClaimType, r.Name)).ToArray(),
+                    claims: claims.Union(user.Roles.Select(r => new Claim(ClaimsIdentity.DefaultRoleClaimType, r.Name)).ToArray()),
                     notBefore: currentTimestamp, 
                     expires: expiresAt, 
                     signingCredentials: signingCredentials
@@ -69,7 +72,7 @@ namespace Avs.StaticSiteHosting.Controllers
             return Ok(new { 
                 token = encodedToken,
                 expires_at = expiresAt,
-                userInfo = new { user.Name, user.Email }
+                userInfo = new { user.Name, user.Email, isAdmin = _userService.IsAdmin(user) }
             });
         }                
 
@@ -111,7 +114,7 @@ namespace Avs.StaticSiteHosting.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                return Problem($"Cannot create a new user.{ex.Message}.");
+                return Problem($"Cannot create a new user due to server error.");
             }
 
             return Ok();

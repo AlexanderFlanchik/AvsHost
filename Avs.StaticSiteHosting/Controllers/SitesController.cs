@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Common;
 using Avs.StaticSiteHosting.DTOs;
+using Avs.StaticSiteHosting.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace Avs.StaticSiteHosting.Controllers
 {
@@ -14,33 +17,54 @@ namespace Avs.StaticSiteHosting.Controllers
     [Authorize]
     public class SitesController : ControllerBase
     {
-        public IActionResult Get()
-        {            
-            return Ok(
-                new[] { 
-                    new SiteModel { 
-                        Id = "1",
-                        Name = "Site 1",
-                        Description = "Test site #1",
-                        LaunchedOn = DateTime.UtcNow.AddDays(-1),
-                        IsActive = true
-                    },
-                    new SiteModel {
-                        Id = "2",
-                        Name = "Site 2",
-                        Description = "Test site #2",
-                        LaunchedOn = DateTime.UtcNow.AddDays(-2),
-                        IsActive = true
-                    },
-                    new SiteModel {
-                        Id = "3",
-                        Name = "Site 3",
-                        Description = "Test site #3",
-                        LaunchedOn = DateTime.UtcNow.AddDays(-3),
-                        IsActive = false
-                    }
+        private readonly ISiteService _siteService;
+
+        public SitesController(ISiteService siteService)
+        {
+            _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
+        }
+
+        public async Task<ActionResult<IEnumerable<SiteModel>>> GetSites(int page, int pageSize, string sortOrder, string sortField)
+        {           
+            var query = new SitesQuery()
+            {
+                Page = page,
+                PageSize = pageSize,
+                SortOrder = !string.IsNullOrEmpty(sortOrder) ? Enum.Parse<SortOrder>(sortOrder) : SortOrder.None,
+                SortField = sortField
+            };
+
+            var claims = User.Claims;
+            var roles = claims.Where(r => r.Type == ClaimsIdentity.DefaultRoleClaimType).ToArray();
+            var isAdmin = roles.Any(r => r.Value == GeneralConstants.ADMIN_ROLE);
+
+            int totalFound;
+            if (!isAdmin)
+            {
+                var userId = claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest("Invalid user.");
                 }
-            );
+
+                query.OwnerId = userId;
+                totalFound = await _siteService.GetSitesAmountAsync(query.OwnerId);
+            }
+            else
+            {
+                totalFound = await _siteService.GetSitesAmountAsync();
+            }
+                        
+            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalFound.ToString()));
+
+            return Ok((await _siteService.GetSitesAsync(query))
+                .Select(s => new SiteModel() { 
+                    Id = s.Id,
+                    Name = s.Name,
+                    Description = s.Description,
+                    LaunchedOn = s.LaunchedOn,
+                    IsActive = s.IsActive
+                }).ToArray());
         }
     }
 }

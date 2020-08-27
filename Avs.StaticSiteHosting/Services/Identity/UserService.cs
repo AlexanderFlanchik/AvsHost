@@ -35,5 +35,10 @@ namespace Avs.StaticSiteHosting.Services.Identity
             return (await _users.FindAsync(u => u.Email == login || u.Name == login).ConfigureAwait(false))
                 .FirstOrDefault();
         }
+
+        public bool IsAdmin(User user)
+        {
+            return user.Roles.Any(r => r.Name == GeneralConstants.ADMIN_ROLE);
+        }
     }
 }
