@@ -72,6 +72,9 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="no-mappings-message" v-if="resourceMappings.length === 0">
+                    No resource mappings yet.
+                </div>
             </div>
             <div class="site-form-holder-right">
                 <span class="form-title">Upload files</span>
@@ -227,6 +230,13 @@
 
     .error-validation-message {
         color: red;
+        font-weight: bold;
+    }
+
+    .no-mappings-message {
+        text-align: center;
+        padding-top: 10px;
+        color: navy;
         font-weight: bold;
     }
 </style>
