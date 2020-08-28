@@ -10,13 +10,13 @@
                     <tr>
                         <td>Site name:</td>
                         <td>
-                            <input type="text" class="site-name-editor" maxlength="30" v-model="siteName" />
+                            <b-form-input type="text" class="site-name-editor" maxlength="30" v-model="siteName"></b-form-input>
                         </td>
                     </tr>
                     <tr>
                         <td class="vertical-tex-align">Description:</td>
                         <td>
-                            <textarea v-model="description" class="site-name-editor" rows="3" />
+                            <b-form-textarea v-model="description" class="site-name-editor" rows="3"></b-form-textarea>
                         </td>
                     </tr>
                     <tr>
@@ -32,14 +32,14 @@
                             <tr>
                                 <td>Name:</td>
                                 <td>
-                                    <input type="text" maxlength="30" v-model="rm.name" @input="checkNewResourceMappingName" />                                    
+                                    <b-form-input type="text" maxlength="30" v-model="rm.name" @input="checkNewResourceMappingName"></b-form-input>
                                     <span v-if="rm.nameError" class="error-validation-message">This mapping already exists.</span> 
                                 </td>
                             </tr>
                             <tr>
                                 <td>Value:</td>
                                 <td>
-                                    <input type="text" maxlength="30" v-model="rm.value" @input="checkNewResourceMappingValue"/>
+                                    <b-form-input type="text" maxlength="30" v-model="rm.value" @input="checkNewResourceMappingValue"></b-form-input>
                                     <span v-if="rm.valueError" class="error-validation-message">The value is required.</span>
                                 </td>
                             </tr>
@@ -77,7 +77,33 @@
                 </div>
             </div>
             <div class="site-form-holder-right">
-                <span class="form-title">Upload files</span>
+                <div class="upload-form">
+                    <span class="form-title">Upload files</span>
+                    <div>
+                        <b-form-file v-model="upload.contentFile"
+                                     :state="Boolean(upload.contentFile)"
+                                     placeholder="Choose a file or drop it here..."
+                                     drop-placeholder="Drop file here..."></b-form-file>
+                    </div>
+                    <div class="mrg-tp-10x">
+                        <b-form-checkbox v-model="upload.useDestinationPath">Use destination path</b-form-checkbox>
+                    </div>
+                    <div class="upload-bottom-bar">
+                        <div class="upload-bottom-bar-left">
+                            <b-form-input v-model="upload.destinationPath" :disabled="!upload.useDestinationPath"></b-form-input>
+                        </div>
+                        <div class="upload-bottom-bar-right">
+                            <button class="btn btn-primary" @click="uploadContentFile">Upload..</button>
+                        </div>
+                    </div>                  
+                </div>
+                <div class="uploaded-content-holder">
+                    <ul v-if="uploaded.length > 0">
+                        <li v-for="file in uploaded" :key="file">
+                            {{file.name}}
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div> 
     </div>
@@ -96,6 +122,17 @@
                     { name: 'help', value: 'help.html' },
                     { name: 'privacy-policy', value: 'common/policy.html'}
                 ],
+                // upload form view model
+                upload: {
+                    contentFile: null,
+                    useDestinationPath: false,
+                    destinationPath: '',
+                    clear: function () {
+                        this.contentFile = null;
+                        this.useDestinationPath = false;
+                        this.destinationPath = '';
+                    }
+                },
                 uploaded: [],
                 // popup add new resource mapping view model
                 rm: {
@@ -162,6 +199,14 @@
                     let ix = this.resourceMappings.indexOf(mapping);
                     this.resourceMappings.splice(ix, 1);
                 }
+            },
+
+            uploadContentFile: async function () {
+                let file = this.upload.contentFile;
+                console.log(file);
+
+                this.uploaded.push(file);
+                this.upload.clear();
             }
         }
     }
@@ -171,7 +216,7 @@
         font-style: italic;
     }
     .site-name-editor {
-        width: 350px;
+        width: 450px;
     }
     .site-form-holder {
         width: 100%;  
@@ -181,7 +226,7 @@
     }
 
     .site-form-holder-left {
-        width: 450px;
+        width: 550px;
         float: left;
         padding-left: 5px;
         padding-top: 5px;
@@ -189,8 +234,9 @@
 
     .site-form-holder-right {
         padding-top: 5px;
-        padding-left: 10px;
-        width: calc(100% - 450px);
+        padding-left: 25px;
+        min-width: 300px;
+        width: calc(100% - 550px);
         float: left;
     }
     
@@ -238,5 +284,36 @@
         padding-top: 10px;
         color: navy;
         font-weight: bold;
+    }
+
+    .upload-form {
+        padding-top: 2px;
+        max-width: 550px;
+    }
+
+    .mrg-tp-10x {
+        margin-top: 10px;
+    }
+
+    .upload-bottom-bar {
+        padding-top: 10px;
+        width: 100%;
+    }
+
+    .upload-bottom-bar-left {
+        width: calc(100% - 90px);
+        min-width: 150px;
+        float: left;
+    }
+
+    .upload-bottom-bar-right {
+        width: 90px;
+        float: left;
+        text-align: right;
+    }
+
+    .uploaded-content-holder {
+        clear: both;
+        padding-top: 10px;
     }
 </style>
