@@ -41,17 +41,36 @@ var ApiClient = /** @class */ (function () {
     function ApiClient(authService) {
         this.authService = authService;
     }
+    ApiClient.prototype.setAuthorization = function (headers) {
+        var authToken = this.authService.getToken();
+        if (authToken) {
+            headers['Authorization'] = "Bearer " + authToken;
+        }
+    };
     ApiClient.prototype.getAsync = function (url, headers) {
         return __awaiter(this, void 0, void 0, function () {
-            var authToken;
             return __generator(this, function (_a) {
-                authToken = this.authService.getToken();
-                if (authToken) {
-                    headers = headers || {};
-                    headers['Authorization'] = "Bearer " + authToken;
-                }
-                console.log(headers);
+                headers = headers || {};
+                this.setAuthorization(headers);
                 return [2 /*return*/, axios_1.default.get(url, { headers: headers })];
+            });
+        });
+    };
+    ApiClient.prototype.postAsync = function (url, data, headers) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                headers = headers || {};
+                this.setAuthorization(headers);
+                return [2 /*return*/, axios_1.default.post(url, data, { headers: headers })];
+            });
+        });
+    };
+    ApiClient.prototype.putAsync = function (url, data, headers) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                headers = headers || {};
+                this.setAuthorization(headers);
+                return [2 /*return*/, axios_1.default.put(url, data, { headers: headers })];
             });
         });
     };

@@ -69,5 +69,55 @@ namespace Avs.StaticSiteHosting.Services
 
             return siteCursor.ToEnumerable().Count();            
         }
+
+        public async Task<bool> CheckSiteNameUsedAsync(string siteName, string siteId)
+        {
+            var findOptions = new FindOptions<Site>();
+            var filterBuilder = new FilterDefinitionBuilder<Site>();
+
+            var filter = filterBuilder.Where(s => 
+                                s.Name == siteName && 
+                                s.CreatedBy != null);
+
+            if (!string.IsNullOrEmpty(siteId))
+            {
+                var siteIdFilter = filterBuilder.Where(r => r.Id != siteId);
+                filter = filterBuilder.And(filter, siteIdFilter);
+            }
+
+            var siteCursor = await _sites.FindAsync(filter, findOptions).ConfigureAwait(false);
+            var result = await siteCursor.AnyAsync().ConfigureAwait(false);
+
+            return result;
+        }
+
+        public async Task<Site> CreateSiteAsync(Site newSite)
+        {
+            await _sites.InsertOneAsync(newSite).ConfigureAwait(false);
+            return newSite;
+        }
+
+        public async Task<Site> GetSiteByIdAsync(string siteId)
+        {
+            var siteCursor = await _sites.FindAsync(s => s.Id == siteId).ConfigureAwait(false);
+            
+            return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+        }
+
+        public async Task UpdateSiteAsync(Site siteToUpdate)
+        {
+            var siteId = siteToUpdate.Id;
+            var filterBuilder = new FilterDefinitionBuilder<Site>();
+
+            var filter = filterBuilder.Where(s => s.Id == siteId);
+            var updateBuilder = new UpdateDefinitionBuilder<Site>();
+
+            var update = updateBuilder.Set(s => s.Name, siteToUpdate.Name)
+                                      .Set(s => s.Description, siteToUpdate.Description)
+                                      .Set(s => s.IsActive, siteToUpdate.IsActive)
+                                      .Set(s => s.Mappings, siteToUpdate.Mappings);
+            
+            await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
+        }
     }
 }

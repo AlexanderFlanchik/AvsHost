@@ -22,6 +22,7 @@ namespace Avs.StaticSiteHosting
             }
 
             InitStorage(staticSiteOptions.Value.ContentPath);
+            InitStorage(staticSiteOptions.Value.TempContentPath);
 
             var mongoEntityRepository = (MongoEntityRepository)host.Services.GetService(typeof(MongoEntityRepository));
             if (mongoEntityRepository == null)
@@ -41,9 +42,11 @@ namespace Avs.StaticSiteHosting
             if (!Directory.Exists(contentPath))
             {
                 Directory.CreateDirectory(contentPath);
-                Console.WriteLine("Content folder created!");
-            } else {
-                Console.WriteLine($"Found static content storage: {contentPath}");
+                Console.WriteLine($"{contentPath} has been created.");
+            } 
+            else
+            {
+                Console.WriteLine($"{contentPath} found.");
             }
         }
 

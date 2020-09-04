@@ -1,5 +1,6 @@
 using Avs.StaticSiteHosting.Middlewares;
 using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Services.ContentManagement;
 using Avs.StaticSiteHosting.Services.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -34,6 +35,8 @@ namespace Avs.StaticSiteHosting
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISiteService, SiteService>();
 
+            services.AddScoped<IContentManager, ContentManager>();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
                     options.TokenValidationParameters = new TokenValidationParameters()
@@ -48,7 +51,7 @@ namespace Avs.StaticSiteHosting
                     };
                 });
 
-            services.AddControllers();
+            services.AddControllersWithViews().AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

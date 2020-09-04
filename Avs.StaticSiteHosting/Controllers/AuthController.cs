@@ -19,7 +19,7 @@ namespace Avs.StaticSiteHosting.Controllers
     {
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
-        private Func<string, IActionResult> badRequestResponse = (errorMessage) => new BadRequestObjectResult(new { error = errorMessage });
+        private readonly Func<string, IActionResult> badRequestResponse = (errorMessage) => new BadRequestObjectResult(new { error = errorMessage });
 
         public AuthController(IUserService userService, IRoleService roleService)
         {

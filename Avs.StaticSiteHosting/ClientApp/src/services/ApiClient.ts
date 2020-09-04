@@ -5,13 +5,31 @@ export default class ApiClient {
     constructor(private authService: AuthService) {      
     }
 
-    async getAsync(url: string, headers: object): Promise<object> {
+    private setAuthorization(headers: object) {
         let authToken = this.authService.getToken();
         if (authToken) {
-            headers = headers || {};                
-            headers['Authorization'] =`Bearer ${authToken}`;
+            headers['Authorization'] = `Bearer ${authToken}`;
         }
-        console.log(headers);
+    }
+
+    async getAsync(url: string, headers: object): Promise<object> {
+        headers = headers || {};
+        this.setAuthorization(headers);
+
         return axios.get(url, { headers: headers });
+    }
+
+    async postAsync(url: string, data: object, headers: object): Promise<object> {
+        headers = headers || {};
+        this.setAuthorization(headers);
+
+        return axios.post(url, data, { headers: headers });
+    }
+
+    async putAsync(url: string, data: object, headers: object): Promise<object> {
+        headers = headers || {};
+        this.setAuthorization(headers);
+
+        return axios.put(url, data, { headers: headers });
     }
 }

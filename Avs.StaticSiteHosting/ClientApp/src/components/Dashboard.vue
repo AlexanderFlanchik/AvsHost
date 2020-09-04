@@ -25,7 +25,7 @@
                           <router-link to="/sites/create">Add a new site...</router-link>
                       </div>
                   </div>
-                  <router-link to="/sites/create">Add a new site...</router-link>
+                  <router-link to="/sites/create" v-if="totalFound === 0">Add a new site...</router-link>
               </div>
           </div>
 
@@ -53,7 +53,7 @@
                           </td>
                           <td>
                               <a href="javascript:void(0)">Turn Off</a> |
-                              <a href="javascript:void(0)">Update</a> |
+                              <router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> |
                               <a href="javascript:void(0)">Delete</a>
                           </td>
                       </tr>
@@ -73,6 +73,7 @@
 
     const Site = function (siteData) {
         const self = this;
+        self.id = siteData.id;
         self.name = siteData.name;
         self.description = siteData.description;
         self.launchedOn = siteData.launchedOn;

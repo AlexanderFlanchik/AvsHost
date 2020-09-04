@@ -3,6 +3,11 @@
         <div class="general-page-title">
             <span>{{title}}</span>
         </div>
+        <div class="site-form-header">
+            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button> &nbsp;
+            <button class="btn btn-primary" @click="cancel">Cancel</button>
+            <span class="validation-error" v-if="processError && processError.length">{{processError}}</span>
+        </div>
         <div class="site-form-holder">
             <div class="site-form-holder-left">
                 <span class="form-title">Site info</span>
@@ -10,7 +15,21 @@
                     <tr>
                         <td>Site name:</td>
                         <td>
-                            <b-form-input type="text" class="site-name-editor" maxlength="30" v-model="siteName"></b-form-input>
+                            <div>
+                                <b-form-input type="text" 
+                                              class="site-name-editor" 
+                                              maxlength="30" 
+                                              v-model="siteName" 
+                                              @input="validateSiteName"
+                                              @blur="validation.siteName.touched=true;"
+                                              v-bind:class="applyValidationErrorClass"></b-form-input>
+                            </div>
+                            <div class="validation-error" v-if="isSiteNameInvalid">
+                                This site name already exists.
+                            </div>
+                            <div class="validation-error" v-if="!siteName.length && validation.siteName.touched">
+                                The site name is required.
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -22,7 +41,7 @@
                     <tr>
                         <td>Is active:</td>
                         <td>
-                            <input type="checkbox" v-model="isActive" />
+                            <b-form-checkbox v-model="isActive"></b-form-checkbox>
                         </td>
                     </tr>
                 </table>
@@ -93,41 +112,68 @@
                             <b-form-input v-model="upload.destinationPath" :disabled="!upload.useDestinationPath"></b-form-input>
                         </div>
                         <div class="upload-bottom-bar-right">
-                            <button class="btn btn-primary" @click="uploadContentFile">Upload..</button>
+                            <button class="btn btn-primary" @click="uploadContentFile" :disabled="!Boolean(upload.contentFile)">Upload..</button>
                         </div>
                     </div>                  
                 </div>
+                <div v-if="upload.errorMessage" class="upload-error-holder">
+                    {{upload.errorMessage}}
+                </div>
                 <div class="uploaded-content-holder">
+                    <span class="form-title">Uploaded content</span>
                     <ul v-if="uploaded.length > 0">
                         <li v-for="file in uploaded" :key="file">
-                            {{file.name}}
+                            {{file.fullName()}}
                         </li>
                     </ul>
+                    <div class="no-content-message" v-if="uploaded.length === 0">
+                        No content files found. Upload some content to continue.
+                    </div>
                 </div>
             </div>
         </div> 
     </div>
 </template>
 <script>
+    const ContentFile = function (fileData) {
+        const self = this;
+        self.name = fileData.fileName;
+        self.destinationPath = fileData.destinationPath;
+        self.isNew = typeof fileData.isNew == 'undefined' ? false : fileData.isNew;
+        self.fullName = function () {
+            if (!self.destinationPath) {
+                return self.name;
+            }
+
+            var delimeter = '/';
+            if (self.destinationPath.indexOf('\\') > 0) {
+                delimeter = '\\';
+            }
+
+            return self.destinationPath + delimeter + self.name;
+        };
+    };
+
     export default {
         data: function () {
             return {
                 title: '',
                 siteName: '',
+                siteId: null,
                 description: '',
                 isActive: true,
-                resourceMappings: [
-                    { name: 'about-us', value: 'about.html' },
-                    { name: 'dashboard', value: 'public/dashboard.html' },
-                    { name: 'help', value: 'help.html' },
-                    { name: 'privacy-policy', value: 'common/policy.html'}
+                processError: '',
+                resourceMappings: [ //TODO: load this from the server (for editable mode)                  
                 ],
                 // upload form view model
                 upload: {
                     contentFile: null,
                     useDestinationPath: false,
                     destinationPath: '',
+                    uploadSessionId: '',
+                    errorMessage: '',
                     clear: function () {
+                        this.errorMessage = '';
                         this.contentFile = null;
                         this.useDestinationPath = false;
                         this.destinationPath = '';
@@ -154,12 +200,56 @@
                             this.valueError = false;
                         }
                     },
+                },
+                validation: {
+                    siteName: {
+                        touched: false,
+                        valid: true,
+                        inProcess: false
+                    }                   
                 }
             }
         },
-        mounted: function () {
-            this.title = this.$route.query.siteId ? "Edit Site" : "Create New Site";
+        mounted: async function () {
+            this.siteId = this.$route.params.siteId;
+            this.title = this.siteId ? "Edit Site" : "Create New Site";
+
+            if (this.siteId) {
+                // edit existing site, load site data
+                try {
+                    let siteResponse = await this.$apiClient.getAsync(`api/sitedetails/${this.siteId}`);
+                    let data = siteResponse.data;
+
+                    this.siteName = data.siteName;
+                    this.description = data.description;
+                    this.isActive = data.isActive;
+
+                    let lst = [];
+                    let uploaded = data.uploaded;
+                    for (let u of uploaded) {
+                        u.isNew = false;
+                        let uploadedFile = new ContentFile(u);                        
+                        lst.push(uploadedFile);
+                    }
+                    this.uploaded = lst;
+
+                    this.resourceMappings = [];
+                    let mappings = data.resourceMappings;
+                    if (mappings) {
+                        let keys = Object.keys(mappings);
+                        for (let key of keys) {
+                            this.resourceMappings.push({ name: key, value: mappings[key] });
+                        }
+                    }
+
+                    console.log(this.resourceMappings);
+                }
+                catch (e) {
+                    console.log(e);
+                }
+            }            
         },
+
         methods: {
             addResourceMapping: function () {
                 this.rm.clear();
@@ -203,10 +293,117 @@
 
             uploadContentFile: async function () {
                 let file = this.upload.contentFile;
-                console.log(file);
+                
+                if (!this.upload.uploadSessionId) {
+                    let sessionResponse = await this.$apiClient.getAsync('api/contentupload/session');
+                    this.upload.uploadSessionId = sessionResponse.headers['upload-session-id'];
+                }
 
-                this.uploaded.push(file);
-                this.upload.clear();
+                let formData = new FormData();               
+                formData.append('contentFile', file);
+
+                let uploadUrl = `api/contentupload?uploadSessionId=${this.upload.uploadSessionId}`;
+                if (this.upload.useDestinationPath && this.upload.destinationPath) {
+                    uploadUrl += `&destinationPath=${this.upload.destinationPath}`;
+                }
+
+                try {
+                    await this.$apiClient.postAsync(uploadUrl, formData);
+
+                    let cf = new ContentFile({ fileName: file.name, destinationPath: this.upload.destinationPath, isNew: true });
+                    this.uploaded.push(cf);
+                    this.upload.clear();
+                } catch {
+                    let msg = `Unable to upload ${file.name}.`;
+                    if (this.upload.destinationPath) {
+                        msg += 'Please check destination path.';
+                    }
+                    this.upload.errorMessage = msg;
+                }
+            },
+
+            validateSiteName: async function () {
+                if (!this.siteName || !this.siteName.length) {
+                    return;
+                }
+
+                this.validation.siteName.inProcess = true;
+                let validationUrl = `api/SiteDetails/CheckSiteName?siteName=${this.siteName}`;
+                if (this.siteId) {
+                    validationUrl += `&siteId=${this.siteId}`;
+                }
+
+                let validationResult = await this.$apiClient.getAsync(validationUrl);
+                this.validation.siteName.valid = validationResult.data;
+                this.validation.siteName.inProcess = false;
+            },
+
+            cancel: function () {
+                if (confirm('Are you sure to cancel? Any unsaved data will be lost.')) {
+                    this.$router.replace('/');
+                }
+            },
+            createOrUpdateSite: async function () {
+                this.processError = '';
+
+                const getResourceMappings = () => {
+                    if (!this.resourceMappings || !this.resourceMappings.length) {
+                        return null;
+                    }
+
+                    let result = {};
+                    for (let i of this.resourceMappings) {
+                        let key = i["name"];
+                        let value = i["value"];
+                        result[key] = value;
+                    }
+
+                    return result;
+                };
+
+                let siteDetailsModel = {
+                    siteName: this.siteName,
+                    uploadSessionId: this.upload.uploadSessionId,
+                    description: this.description,
+                    isActive: this.isActive,
+                    resourceMappings: getResourceMappings()
+                };
+
+                try {
+                    if (!this.siteId) {
+                        await this.$apiClient.postAsync('api/sitedetails', siteDetailsModel);
+                    } else {
+                        await this.$apiClient.putAsync(`api/sitedetails/${this.siteId}`, siteDetailsModel);
+                    }
+                    this.$router.replace('/');
+                } catch {
+                    let mode = this.siteId ? 'edit' : 'create';
+                    let msg = `Unable to ${mode} your site due to server error. Please try again later.`;
+                    this.processError = msg;
+                }
+            }
+        },
+        computed: {
+            isSiteNameInvalid: function () {
+                let siteNameValidation = this.validation.siteName;
+                return !siteNameValidation.valid && siteNameValidation.touched;
+            },
+
+            saveButtonDisabled: function () {
+                let siteNameValidation = this.validation.siteName;
+                return !this.siteName ||
+                    !this.siteName.length ||
+                    (!siteNameValidation.valid && siteNameValidation.touched) ||
+                    !this.uploaded.length;
+            },
+
+            applyValidationErrorClass: function () {
+                let siteNameValidation = this.validation.siteName;
+                let applied = !siteNameValidation.valid && siteNameValidation.touched;
+
+                return {
+                    'invalid-field': applied
+                };
             }
         }
     }
@@ -221,7 +418,7 @@
     .site-form-holder {
         width: 100%;  
         background-color: azure;
-        height: calc(100vh - 95px);
+        height: calc(100vh - 135px);
         overflow-y: auto;
     }
 
@@ -312,8 +509,43 @@
         text-align: right;
     }
 
+    .upload-error-holder {
+        padding-top: 3px;
+        clear: both;
+        color: red;
+        font-weight: bold;
+    }
+
     .uploaded-content-holder {
         clear: both;
-        padding-top: 10px;
+        padding-top: 55px;
+    }
+
+    .site-form-header {
+        width: 100%;
+        background-color: lavender;
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        height: 50px;
+    }
+
+    .no-content-message {
+        background-color: white;
+        height: 150px;
+        max-width: 550px;
+        padding-top: 60px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .invalid-field {
+        background-color:#ffe6e6;
+        border-color: red;
+    }
+
+    .validation-error {
+        color: red;
+        font-weight: bold;
     }
 </style>

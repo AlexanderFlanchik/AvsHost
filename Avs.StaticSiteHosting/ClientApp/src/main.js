@@ -30,7 +30,7 @@ const routes = [
     { path: '/profile', component: MyProfile },
     { path: '/help', component: Help },
     { path: '/sites/create', component: CreateOrUpdateSite },
-    { path: '/sites/update', component: CreateOrUpdateSite }
+    { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true }
 ];
 
 const router = new VueRouter({ routes });
