@@ -21,7 +21,7 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
             options = staticSiteOptions.Value;
         }
 
-        public async Task CreateSiteContentAsync(Site site, string uploadSessionId)
+        public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
         {
             var uploadFolder = Path.Combine(options.TempContentPath, uploadSessionId);
             var uploadFolderInfo = new DirectoryInfo(uploadFolder);
@@ -32,6 +32,13 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
             var contentEntries = Directory.EnumerateFileSystemEntries(uploadFolder);
             var contentItemList = new List<ContentItem>();
             var fileList = new List<string>();
+            var contentInfos = new List<ContentItem>();
+            var contentInfosToUpdate = new List<ContentItem>();
+
+            if (!string.IsNullOrEmpty(site.Id))
+            {
+                contentInfos = (await contentItems.FindAsync(s => s.Site.Id == site.Id).ConfigureAwait(false)).ToList();
+            }
 
             void GetFilesFromFolder(string folder)
             {
@@ -68,9 +75,18 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
                 Directory.CreateDirectory(destinationFolder);
 
                 var destinationPath = Path.Combine(destinationFolder, fileInfo.Name);
+                if (File.Exists(destinationPath))
+                {
+                    File.Delete(destinationPath);
+                }
+
                 fileInfo.CopyTo(destinationPath);
 
-                contentItemList.Add(new ContentItem()
+                var contentItemFound = contentInfos.FirstOrDefault(ci => ci.FullName == destinationPath);
+                if (contentItemFound == null)
+                {
+                    // Insert a record about new content item uploaded
+                    contentItemList.Add(new ContentItem()
                     {
                         Name = fileInfo.Name,
                         Site = site,
@@ -78,6 +94,11 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
                         UploadedAt = DateTime.UtcNow,
                         FullName = destinationPath
                     });
+                } 
+                else
+                {
+                    contentInfosToUpdate.Add(contentItemFound);
+                }
 
                 fileInfo.Delete();
                 if (!fileInfo.Directory.GetFileSystemInfos().Any())
@@ -86,7 +107,20 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
                 }                
             }
 
-            await contentItems.InsertManyAsync(contentItemList);
+            if (contentItemList.Any())
+            {
+                await contentItems.InsertManyAsync(contentItemList).ConfigureAwait(false);
+            }
+            
+            // Upload date update
+            if (contentInfosToUpdate.Any())
+            {
+                var cIds = contentInfosToUpdate.Select(ci => ci.Id).ToList();
+                var filter = new FilterDefinitionBuilder<ContentItem>().In(i => i.Id, cIds);                               
+                var update = new UpdateDefinitionBuilder<ContentItem>().Set(ci => ci.UploadedAt, DateTime.UtcNow);
+                
+                await contentItems.UpdateManyAsync(filter, update).ConfigureAwait(false);
+            }
 
             Directory.Delete(uploadFolder);
         }        

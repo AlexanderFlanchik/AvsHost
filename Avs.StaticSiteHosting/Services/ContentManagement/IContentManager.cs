@@ -9,7 +9,19 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
 {
     public interface IContentManager
     {
-        Task CreateSiteContentAsync(Site site, string uploadSessionId);
+        /// <summary>
+        /// Uploads new files from upload with given id for the site specified.
+        /// </summary>
+        /// <param name="site">Site reference</param>
+        /// <param name="uploadSessionId">Upload session id</param>
+        /// <returns></returns>
+        Task ProcessSiteContentAsync(Site site, string uploadSessionId);
+        
+        /// <summary>
+        /// Returns a list of content files for the site specified.
+        /// </summary>
+        /// <param name="siteId"></param>
+        /// <returns></returns>
         Task<IEnumerable<ContentItemModel>> GetUploadedContentAsync(string siteId);
     }
 }

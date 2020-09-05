@@ -99,7 +99,7 @@ namespace Avs.StaticSiteHosting.Controllers
                     Mappings = siteDetails.ResourceMappings
                 }).ConfigureAwait(false);
 
-            await _contentManager.CreateSiteContentAsync(newSite, uploadSessionId)
+            await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId)
                 .ConfigureAwait(false);
 
             return Created(
@@ -142,7 +142,7 @@ namespace Avs.StaticSiteHosting.Controllers
 
             if (!string.IsNullOrEmpty(siteDetails.UploadSessionId))
             {
-                await _contentManager.CreateSiteContentAsync(siteToUpdate, siteDetails.UploadSessionId).ConfigureAwait(false);
+                await _contentManager.ProcessSiteContentAsync(siteToUpdate, siteDetails.UploadSessionId).ConfigureAwait(false);
             }
             
             return NoContent();

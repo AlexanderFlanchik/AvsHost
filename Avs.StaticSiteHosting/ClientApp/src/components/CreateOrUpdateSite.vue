@@ -310,8 +310,11 @@
                 try {
                     await this.$apiClient.postAsync(uploadUrl, formData);
 
-                    let cf = new ContentFile({ fileName: file.name, destinationPath: this.upload.destinationPath, isNew: true });
-                    this.uploaded.push(cf);
+                    if (!this.uploaded.find(u => u.name == file.name && u.destinationPath == this.upload.destinationPath)) {
+                        let cf = new ContentFile({ fileName: file.name, destinationPath: this.upload.destinationPath, isNew: true });
+                        this.uploaded.push(cf);
+                    }
+
                     this.upload.clear();
                 } catch {
                     let msg = `Unable to upload ${file.name}.`;

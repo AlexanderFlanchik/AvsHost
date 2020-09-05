@@ -1,6 +1,5 @@
 ﻿using Avs.StaticSiteHosting.DTOs;
 using Avs.StaticSiteHosting.Models;
-using Avs.StaticSiteHosting.Models.Identity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -30,10 +29,25 @@ namespace Avs.StaticSiteHosting.Services
         /// <returns></returns>
         Task<bool> CheckSiteNameUsedAsync(string siteName, string siteId);
 
+        /// <summary>
+        /// Creates a site.
+        /// </summary>
+        /// <param name="newSite">New site (with empty ID)</param>
+        /// <returns></returns>
         Task<Site> CreateSiteAsync(Site newSite);
 
+        /// <summary>
+        /// Returns site details by site ID provided.
+        /// </summary>
+        /// <param name="siteId"></param>
+        /// <returns></returns>
         Task<Site> GetSiteByIdAsync(string siteId);
 
+        /// <summary>
+        /// Updates the existing site.
+        /// </summary>
+        /// <param name="siteToUpdate"></param>
+        /// <returns></returns>
         Task UpdateSiteAsync(Site siteToUpdate);
     }
 }
