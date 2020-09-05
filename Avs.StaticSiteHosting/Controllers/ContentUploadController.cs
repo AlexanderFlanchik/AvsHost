@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
@@ -74,6 +75,41 @@ namespace Avs.StaticSiteHosting.Controllers
             }
 
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("cancelupload")]
+        public IActionResult CancelUpload([FromHeader(Name = GeneralConstants.UPLOAD_SESSION_ID)] string uploadSessionId)
+        {
+            var tempContentPath = staticSiteOptions.TempContentPath;
+            string uploadFolderPath = Path.Combine(tempContentPath, uploadSessionId);
+            
+            if (!Directory.Exists(uploadFolderPath))
+            {
+                return NoContent();
+            }
+
+            void ClearFolder(string path)
+            {
+                var entries = Directory.EnumerateFileSystemEntries(path);
+                foreach (var entry in entries)
+                {
+                    if ((System.IO.File.GetAttributes(entry) & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        ClearFolder(entry);
+                    }
+                    else
+                    {
+                        new FileInfo(entry).Delete();
+                    }    
+                }
+
+                Directory.Delete(path);
+            }
+
+            ClearFolder(uploadFolderPath);
+
+            return NoContent();
         }
     }
 }

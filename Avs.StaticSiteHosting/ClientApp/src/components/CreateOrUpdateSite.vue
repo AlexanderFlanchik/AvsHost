@@ -163,8 +163,7 @@
                 description: '',
                 isActive: true,
                 processError: '',
-                resourceMappings: [ //TODO: load this from the server (for editable mode)                  
-                ],
+                resourceMappings: [],
                 // upload form view model
                 upload: {
                     contentFile: null,
@@ -341,8 +340,12 @@
                 this.validation.siteName.inProcess = false;
             },
 
-            cancel: function () {
+            cancel: async function () {
                 if (confirm('Are you sure to cancel? Any unsaved data will be lost.')) {
+                    if (this.upload.uploadSessionId) {
+                        await this.$apiClient.postAsync('api/contentupload/cancelupload', null, { "upload-session-id" : this.upload.uploadSessionId });
+                    }
+
                     this.$router.replace('/');
                 }
             },
