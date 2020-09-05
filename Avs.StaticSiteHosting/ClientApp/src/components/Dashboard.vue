@@ -70,13 +70,14 @@
 <script>
     import UserInfo from '@/components/UserInfo.vue';
     import NavigationMenu from '@/components/NavigationMenu.vue';
+    const moment = require('moment');
 
     const Site = function (siteData) {
         const self = this;
         self.id = siteData.id;
         self.name = siteData.name;
         self.description = siteData.description;
-        self.launchedOn = siteData.launchedOn;
+        self.launchedOn = siteData.launchedOn ? moment(siteData.launchedOn).format('MM/DD/YYYY hh:mm:ss A') : null;
         self.isActive = siteData.isActive;
     };
 
