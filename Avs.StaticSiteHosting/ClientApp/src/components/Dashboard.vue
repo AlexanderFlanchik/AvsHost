@@ -52,9 +52,9 @@
                               <input type="checkbox" v-model="site.isActive" disabled="disabled" />
                           </td>
                           <td>
-                              <a href="javascript:void(0)">Turn Off</a> |
-                              <router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> |
-                              <a href="javascript:void(0)">Delete</a>
+                              <span><a href="javascript:void(0)">Turn Off</a> | </span>
+                              <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
+                              <span><a href="javascript:void(0)">Delete</a></span>
                           </td>
                       </tr>
                   </tbody>
@@ -84,6 +84,7 @@
     export default {
         data: function () {
             return {                
+                isAdmin: false,
                 sites: [],
                 page: 1,
                 pageSize: 10,
@@ -110,7 +111,10 @@
         props: {
         },
         mounted: function () {
+            let userInfo = this.$authService.getUserInfo();
+            this.isAdmin = userInfo ? userInfo.isAdmin : false;
             this.loadSiteData();
+
         },
         methods: {
             pageChanged: function () {
