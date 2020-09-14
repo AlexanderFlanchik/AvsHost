@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Linq;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-using System;
-using System.IO;
-using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Models.Identity;
+using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Services.ContentManagement;
 
 namespace Avs.StaticSiteHosting.Middlewares
 {
@@ -16,7 +20,7 @@ namespace Avs.StaticSiteHosting.Middlewares
     {
         public StaticSiteMiddleware(RequestDelegate next) {}
 
-        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, MongoEntityRepository mongoRepository)
+        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions,  ISiteService siteService, IContentManager contentManager)
         {
             var routeValues = context.GetRouteData().Values;
             if (await HandleDashboardContent(context))
@@ -24,28 +28,56 @@ namespace Avs.StaticSiteHosting.Middlewares
                 return;
             }
 
-            var siteName = (string)routeValues["sitename"];
-            var sitePath = routeValues["sitepath"];
+            string siteName = (string)routeValues["sitename"], sitePath = (string)routeValues["sitepath"];
+
+            var siteInfo = await siteService.GetSiteByNameAsync(siteName);
+            if (siteInfo == null)
+            {
+                throw new StaticSiteProcessingException(404, "Oops, no such site!", $"No site with name '{siteName}' found.");
+            }
+
+            if (!siteInfo.IsActive)
+            {
+                throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
+            }
 
             var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
             if (!Directory.Exists(siteContentPath))
             {
-                return;
+                throw new StaticSiteProcessingException(404, "Invalid Site",  $"No content folder found for site named '{siteName}'");
             }
 
-            //TODO: should be taken from DB
-            var fileName = (string)sitePath;
-            if (string.IsNullOrEmpty(fileName))
+            var siteOwner = siteInfo.CreatedBy;
+            if (siteOwner.Status != UserStatus.Active)
             {
-                return;
+                throw new StaticSiteProcessingException(400, "Invalid Site", "This content cannot be provided because its owner has been blocked.");
             }
 
-            var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
-            var fi = fileProvider.GetFileInfo(fileName);
+            var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id);
+            if (contentItems == null || !contentItems.Any())
+            {
+                throw new StaticSiteProcessingException(400, "Oops, no content", $"No content found for site named '{siteName}'");
+            }
 
-            await context.Response.SendFileAsync(fi);
-            
-            Console.WriteLine($"Content sent: {fileName}");
+            var resourceMappings = siteInfo.Mappings;
+            var mappedSitePath = resourceMappings.FirstOrDefault(m => m.Key == sitePath).Value;
+            var fileName = mappedSitePath != null ? mappedSitePath : sitePath;
+            var contentItem = contentItems.FirstOrDefault(ci => 
+                  ci.FileName == fileName || $"{ci.DestinationPath.Replace('\\', '/')}/{ci.FileName}" == fileName
+             );
+
+            if (contentItem != null)
+            {
+                var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
+                var fi = fileProvider.GetFileInfo(fileName);
+
+                await context.Response.SendFileAsync(fi);
+                Console.WriteLine($"Content sent: {fileName}");
+            }
+            else
+            {
+                throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
+            }
         }
 
         private async ValueTask<bool> HandleDashboardContent(HttpContext context)

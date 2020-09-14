@@ -104,6 +104,13 @@ namespace Avs.StaticSiteHosting.Services
             return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
+        public async Task<Site> GetSiteByNameAsync(string siteName)
+        {
+            var siteCursor = await _sites.FindAsync(s => s.Name == siteName).ConfigureAwait(false);
+            
+            return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+        }
+
         public async Task UpdateSiteAsync(Site siteToUpdate)
         {
             var siteId = siteToUpdate.Id;

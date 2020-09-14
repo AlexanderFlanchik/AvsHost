@@ -44,6 +44,13 @@ namespace Avs.StaticSiteHosting.Services
         Task<Site> GetSiteByIdAsync(string siteId);
 
         /// <summary>
+        /// Returns site details by site name provided.
+        /// </summary>
+        /// <param name="siteName"></param>
+        /// <returns></returns>
+        Task<Site> GetSiteByNameAsync(string siteName);
+
+        /// <summary>
         /// Updates the existing site.
         /// </summary>
         /// <param name="siteToUpdate"></param>
