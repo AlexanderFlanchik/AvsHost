@@ -52,7 +52,7 @@
                               <input type="checkbox" v-model="site.isActive" disabled="disabled" />
                           </td>
                           <td>
-                              <span><a href="javascript:void(0)">Turn Off</a> | </span>
+                              <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
                               <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
                               <span><a href="javascript:void(0)">Delete</a></span>
                           </td>
@@ -120,7 +120,14 @@
             pageChanged: function () {
                 console.log('page changed: ' + this.page);
                 this.loadSiteData();
-            }           
+            },
+            toggleSiteStatus: async function (siteId) {
+                let toggleResult = await this.$apiClient.postAsync('api/dashboardoperations/toggleSiteStatus', { siteId });
+                let site = this.sites.find(s => s.id == siteId);
+                if (site) {
+                    site.isActive = toggleResult.data;
+                }
+            }
         },
         components: {
             UserInfo,

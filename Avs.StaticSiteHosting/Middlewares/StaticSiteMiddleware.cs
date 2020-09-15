@@ -59,8 +59,7 @@ namespace Avs.StaticSiteHosting.Middlewares
                 throw new StaticSiteProcessingException(400, "Oops, no content", $"No content found for site named '{siteName}'");
             }
 
-            var resourceMappings = siteInfo.Mappings;
-            var mappedSitePath = resourceMappings?.FirstOrDefault(m => m.Key == sitePath).Value;
+            var mappedSitePath = siteInfo.Mappings?.FirstOrDefault(m => m.Key == sitePath).Value;
             var fileName = mappedSitePath != null ? mappedSitePath : sitePath;
             var contentItem = contentItems.FirstOrDefault(ci => 
                   ci.FileName == fileName || $"{ci.DestinationPath.Replace('\\', '/')}/{ci.FileName}" == fileName

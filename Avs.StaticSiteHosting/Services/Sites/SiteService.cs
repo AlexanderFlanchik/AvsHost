@@ -126,5 +126,19 @@ namespace Avs.StaticSiteHosting.Services
             
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }
+
+        public async Task<bool> ToggleSiteStatusAsync(string siteId)
+        {
+            var site = await GetSiteByIdAsync(siteId).ConfigureAwait(false);
+            if (site == null)
+            {
+                return false;
+            }
+
+            site.IsActive = !site.IsActive;
+            await UpdateSiteAsync(site).ConfigureAwait(false);
+
+            return site.IsActive;
+        }
     }
 }
