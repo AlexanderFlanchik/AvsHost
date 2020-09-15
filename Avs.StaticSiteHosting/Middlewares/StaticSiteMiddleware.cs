@@ -20,7 +20,7 @@ namespace Avs.StaticSiteHosting.Middlewares
     {
         public StaticSiteMiddleware(RequestDelegate next) {}
 
-        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions,  ISiteService siteService, IContentManager contentManager)
+        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ISiteService siteService, IContentManager contentManager)
         {
             var routeValues = context.GetRouteData().Values;
             if (await HandleDashboardContent(context))
@@ -30,7 +30,7 @@ namespace Avs.StaticSiteHosting.Middlewares
 
             string siteName = (string)routeValues["sitename"], sitePath = (string)routeValues["sitepath"];
 
-            var siteInfo = await siteService.GetSiteByNameAsync(siteName);
+            var siteInfo = await siteService.GetSiteByNameAsync(siteName).ConfigureAwait(false);
             if (siteInfo == null)
             {
                 throw new StaticSiteProcessingException(404, "Oops, no such site!", $"No site with name '{siteName}' found.");
@@ -53,14 +53,14 @@ namespace Avs.StaticSiteHosting.Middlewares
                 throw new StaticSiteProcessingException(400, "Invalid Site", "This content cannot be provided because its owner has been blocked.");
             }
 
-            var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id);
+            var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id).ConfigureAwait(false);
             if (contentItems == null || !contentItems.Any())
             {
                 throw new StaticSiteProcessingException(400, "Oops, no content", $"No content found for site named '{siteName}'");
             }
 
             var resourceMappings = siteInfo.Mappings;
-            var mappedSitePath = resourceMappings.FirstOrDefault(m => m.Key == sitePath).Value;
+            var mappedSitePath = resourceMappings?.FirstOrDefault(m => m.Key == sitePath).Value;
             var fileName = mappedSitePath != null ? mappedSitePath : sitePath;
             var contentItem = contentItems.FirstOrDefault(ci => 
                   ci.FileName == fileName || $"{ci.DestinationPath.Replace('\\', '/')}/{ci.FileName}" == fileName
@@ -71,7 +71,7 @@ namespace Avs.StaticSiteHosting.Middlewares
                 var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
                 var fi = fileProvider.GetFileInfo(fileName);
 
-                await context.Response.SendFileAsync(fi);
+                await context.Response.SendFileAsync(fi).ConfigureAwait(false);
                 Console.WriteLine($"Content sent: {fileName}");
             }
             else
