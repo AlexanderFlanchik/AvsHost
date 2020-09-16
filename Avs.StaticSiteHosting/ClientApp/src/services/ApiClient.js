@@ -74,6 +74,15 @@ var ApiClient = /** @class */ (function () {
             });
         });
     };
+    ApiClient.prototype.deleteAsync = function (url, headers) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                headers = headers || {};
+                this.setAuthorization(headers);
+                return [2 /*return*/, axios_1.default.delete(url, { headers: headers })];
+            });
+        });
+    };
     return ApiClient;
 }());
 exports.default = ApiClient;

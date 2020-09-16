@@ -32,4 +32,11 @@ export default class ApiClient {
 
         return axios.put(url, data, { headers: headers });
     }
+
+    async deleteAsync(url: string, headers: object): Promise<object> {
+        headers = headers || {};
+        this.setAuthorization(headers);
+
+        return axios.delete(url, { headers: headers });
+    }
 }

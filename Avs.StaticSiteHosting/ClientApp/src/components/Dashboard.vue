@@ -54,7 +54,7 @@
                           <td>
                               <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
                               <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
-                              <span><a href="javascript:void(0)">Delete</a></span>
+                              <span><a href="javascript:void(0)" @click="deleteSite(site.id)">Delete</a></span>
                           </td>
                       </tr>
                   </tbody>
@@ -126,6 +126,17 @@
                 let site = this.sites.find(s => s.id == siteId);
                 if (site) {
                     site.isActive = toggleResult.data;
+                }
+            },
+            deleteSite: async function (siteId) {
+                if (confirm(`This will delete the site with all its content. Continue?`)) {
+                    await this.$apiClient.deleteAsync(`api/dashboardoperations/${siteId}`);
+
+                    let site = this.sites.find(s => s.id == siteId);
+                    let idx = this.sites.indexOf(site);
+
+                    this.sites.splice(idx, 1);
+                    this.totalFound--;
                 }
             }
         },
