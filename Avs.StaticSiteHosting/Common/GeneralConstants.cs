@@ -11,5 +11,7 @@
         public const string ADMIN_ROLE = "Administrator";
         public const string TOTAL_ROWS_AMOUNT = "total-rows-amount";
         public const string UPLOAD_SESSION_ID = "upload-session-id";
+
+        public const string ERROR_ROUTE = "_error";
     }
 }

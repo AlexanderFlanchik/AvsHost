@@ -16,16 +16,19 @@
                         <td>Site name:</td>
                         <td>
                             <div>
-                                <b-form-input type="text" 
-                                              class="site-name-editor" 
-                                              maxlength="30" 
-                                              v-model="siteName" 
+                                <b-form-input type="text"
+                                              class="site-name-editor"
+                                              maxlength="30"
+                                              v-model="siteName"
                                               @input="validateSiteName"
                                               @blur="validation.siteName.touched=true;"
                                               v-bind:class="applyValidationErrorClass"></b-form-input>
                             </div>
                             <div class="validation-error" v-if="isSiteNameInvalid">
                                 This site name already exists.
+                            </div>
+                            <div class="validation-error" v-if="isSiteNameReserved">
+                                This site name is reserved. Please choose another one.
                             </div>
                             <div class="validation-error" v-if="!siteName.length && validation.siteName.touched">
                                 The site name is required.
@@ -329,6 +332,10 @@
                     return;
                 }
 
+                if (this.siteName.toLowerCase() == '_error') { // its reserved
+                    return;
+                }
+
                 this.validation.siteName.inProcess = true;
                 let validationUrl = `api/SiteDetails/CheckSiteName?siteName=${this.siteName}`;
                 if (this.siteId) {
@@ -395,9 +402,15 @@
                 return !siteNameValidation.valid && siteNameValidation.touched;
             },
 
+            isSiteNameReserved: function () {
+                let siteNameValidation = this.validation.siteName;
+                return this.siteName && this.siteName.toLowerCase() == '_error' && siteNameValidation.touched;
+            },
+
             saveButtonDisabled: function () {
                 let siteNameValidation = this.validation.siteName;
                 return !this.siteName ||
+                    this.siteName.toLowerCase() == '_error' ||
                     !this.siteName.length ||
                     (!siteNameValidation.valid && siteNameValidation.touched) ||
                     !this.uploaded.length;

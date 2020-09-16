@@ -1,0 +1,83 @@
+﻿@model Avs.StaticSiteHosting.DTOs.ErrorInfoModel
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>@Model.Title</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            background-color: /*#59A1FF */ #5DADE2;
+        }
+
+        #wrapper {
+            height: 100%;
+            background-color: /*#59A1FF */ #5DADE2;
+        }
+
+        .footer {
+            z-index: 9999;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 25px;
+            color: white;
+            background-color: navy;
+            text-align: center;
+        }
+
+        .error-title {
+            font-weight: bold;
+            font-size: 48pt;
+            color: White;
+            padding: 5px;
+            height: 85px;
+            margin-left: 20px;
+        }
+
+        .error-message {
+            padding-left: 15px;
+            padding-top: 5px;
+            margin-left: 20px;
+            margin-right:20px;
+            width: calc(100% - 45px);
+            background-color: azure;
+            height: calc(100% - 110px);
+        }
+
+        .error-message-general {
+            font-size: 22pt;
+            color: navy;
+            text-align: center;
+        }
+
+        .error-message-details {
+            color: darkred;
+            text-align: center;
+            font-weight: bold;
+            font-size: 26pt;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div class="error-title">
+            @Model.Title
+        </div>
+        <div class="error-message">
+            <p class="error-message-general">It seems that your current request cannot be processed successfully. Please find the failure reason.</p>
+            <p class="error-message-details">@Model.ErrorMessage</p>
+        </div>        
+        <div class="footer">&copy; 2020 AVS</div>
+    </div>
+</body>
+
+</html>

@@ -61,6 +61,10 @@ namespace Avs.StaticSiteHosting
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler($"/{GeneralConstants.ERROR_ROUTE}");
+            }
 
             app.UseRouting();
             app.UseDashboard();
