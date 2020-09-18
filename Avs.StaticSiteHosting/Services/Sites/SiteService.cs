@@ -2,6 +2,7 @@
 using Avs.StaticSiteHosting.DTOs;
 using Avs.StaticSiteHosting.Models;
 using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,10 +41,7 @@ namespace Avs.StaticSiteHosting.Services
                         break;
                     case SortOrder.Desc:
                         sort = sortDefBuilder.Descending(query.SortField);
-                        break;
-                    default:
-                        sort = null;
-                        break;
+                        break;               
                 }
 
                 findOptions.Sort = sort;
@@ -132,7 +130,7 @@ namespace Avs.StaticSiteHosting.Services
             var site = await GetSiteByIdAsync(siteId).ConfigureAwait(false);
             if (site == null)
             {
-                return false;
+                throw new InvalidOperationException($"No site with ID = {siteId} found.");
             }
 
             site.IsActive = !site.IsActive;

@@ -79,6 +79,11 @@
         self.isActive = siteData.isActive;
     };
 
+    // sort states
+    const NoSort = { order: '', next: Desc };
+    const Asc = { order: 'Asc', next: NoSort };
+    const Desc = { order: 'Desc', next: Asc };
+       
     export default {
         data: function () {
             return {
@@ -88,13 +93,13 @@
                 pageSize: 10,
                 pageSizes: [10, 25, 50, 100],
                 totalFound: 0,
-                sortOrder: 'Asc',
+                sortState: NoSort,
                 sortField: '',
                 loadSiteData: async function () {
                     let apiUrl = `api/sites?page=${this.page}&pageSize=${this.pageSize}`;
 
-                    if (this.sortField) {
-                        apiUrl += `&sortOrder=${this.sortOrder}&sortField=${this.sortField}`;
+                    if (this.sortField && this.sortState.order) {
+                        apiUrl += `&sortOrder=${this.sortState.order}&sortField=${this.sortField}`;
                     }
 
                     this.$apiClient.getAsync(apiUrl).then((response) => {
@@ -140,6 +145,20 @@
             },
             pageSizeChanged: function () {
                 console.log('page size changed: ' + this.pageSize);
+                this.loadSiteData();
+            },
+
+            sort: function (field) {
+                if (field != this.sortField) {
+                    this.sortField = field;
+                    this.sortState = NoSort;
+                }
+
+                this.sortState = this.sortState.next;
+                if (!this.sortState.order.length) {
+                    this.sortField = '';
+                }
+
                 this.loadSiteData();
             }
         },

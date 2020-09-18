@@ -23,8 +23,16 @@ namespace Avs.StaticSiteHosting.Controllers
         [Route("toggleSiteStatus")]
         public async Task<IActionResult> ToggleSiteStatus(ToggleSiteStatusRequestModel requestModel)
         {
-            var toggleResult = await _siteService.ToggleSiteStatusAsync(requestModel.SiteId)
-                .ConfigureAwait(false);
+            bool toggleResult;
+            try
+            {
+                toggleResult = await _siteService.ToggleSiteStatusAsync(requestModel.SiteId)
+                    .ConfigureAwait(false);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok(toggleResult);
         }
