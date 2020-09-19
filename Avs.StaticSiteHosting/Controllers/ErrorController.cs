@@ -16,9 +16,7 @@ namespace Avs.StaticSiteHosting.Controllers
                 return Redirect("/");
             }
 
-            var exception = errorFeature.Error as StaticSiteProcessingException;
-            
-            if (exception == null)
+            if (!(errorFeature.Error is StaticSiteProcessingException exception))
             {
                 errorModel.ErrorMessage = "Unknown server error";
                 errorModel.Title = "Error";

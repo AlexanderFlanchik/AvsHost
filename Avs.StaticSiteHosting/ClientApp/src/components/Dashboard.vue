@@ -30,9 +30,16 @@
             <table class="table table-striped columns-holder" v-if="totalFound > 0">
                 <thead>
                     <tr>
-                        <th class="w-300">Name</th>
+                        <th class="w-300">
+                            <a href="javascript:void(0)" 
+                                v-bind:class="{ asc: sortField == 'Name' && sortState.order == 'Asc', desc: sortField == 'Name' && sortState.order == 'Desc' }" 
+                                @click="sort('Name')">Name</a>
+                        </th>
                         <th class="w-300">Description</th>
-                        <th class="w-300">Launched On</th>
+                        <th class="w-300">
+                            <a href="javascript:void(0)" 
+                                v-bind:class="{ asc: sortField == 'LaunchedOn' && sortState.order == 'Asc', desc: sortField == 'LaunchedOn' && sortState.order == 'Desc' }"   
+                                @click="sort('LaunchedOn')">Launched On</a></th>
                         <th class="w-150">Is Active</th>
                         <th>Actions</th>
                     </tr>
@@ -79,10 +86,16 @@
         self.isActive = siteData.isActive;
     };
 
+    const SortState = function () {
+        const self = this;
+        self.setState = function (order, next) {
+            self.order = order;
+            self.next = next;
+        };
+    }
+
     // sort states
-    const NoSort = { order: '', next: Desc };
-    const Asc = { order: 'Asc', next: NoSort };
-    const Desc = { order: 'Desc', next: Asc };
+    const NoSort = new SortState(), Asc = new SortState(), Desc = new SortState();
        
     export default {
         data: function () {
@@ -112,14 +125,20 @@
                 }
             }
         },
+
         props: {
         },
+
         mounted: function () {
+            NoSort.setState('', Desc);
+            Asc.setState('Asc', NoSort);
+            Desc.setState('Desc', Asc);
+
             let userInfo = this.$authService.getUserInfo();
             this.isAdmin = userInfo ? userInfo.isAdmin : false;
             this.loadSiteData();
-
         },
+
         methods: {
             pageChanged: function () {
                 console.log('page changed: ' + this.page);
@@ -152,6 +171,8 @@
                 if (field != this.sortField) {
                     this.sortField = field;
                     this.sortState = NoSort;
+                    console.log(this.sortState);
+                    console.log(this.sortState.next);
                 }
 
                 this.sortState = this.sortState.next;
@@ -267,5 +288,13 @@
 
     .page-size-select {
         width: 65px;
+    }
+
+    .asc:after {
+        content: "\2193";
+    }
+
+    .desc:after {
+        content: "\2191";
     }
 </style>
