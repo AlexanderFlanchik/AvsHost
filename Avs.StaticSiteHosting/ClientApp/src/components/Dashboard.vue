@@ -60,6 +60,7 @@
                                 <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
                                 <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
                                 <span><a href="javascript:void(0)" @click="deleteSite(site.id)">Delete</a></span>
+                                <span v-if="site.landingPage"><span> | </span><a v-bind:href="'/' + site.name + '/' + site.landingPage" target="_blank">Browse</a></span>
                             </td>
                         </tr>
                     </tbody>
@@ -83,6 +84,7 @@
         self.name = siteData.name;
         self.description = siteData.description;
         self.launchedOn = siteData.launchedOn ? moment(siteData.launchedOn).format('MM/DD/YYYY hh:mm:ss A') : null;
+        self.landingPage = siteData.landingPage;
         self.isActive = siteData.isActive;
     };
 
@@ -159,6 +161,7 @@
                     this.totalFound--;
                 }
             },
+
             pageSizeChanged: function () {
                 this.loadSiteData();
             },

@@ -15,6 +15,7 @@ namespace Avs.StaticSiteHosting.DTOs
         public bool IsActive { get; set; }
 
         public IDictionary<string, string> ResourceMappings { get; set; }               
+        public string LandingPage { get; set; }
     }
 
     public class SiteDetailsResponse : SiteDetailsModel

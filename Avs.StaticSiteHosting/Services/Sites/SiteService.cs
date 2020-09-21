@@ -120,7 +120,8 @@ namespace Avs.StaticSiteHosting.Services
             var update = updateBuilder.Set(s => s.Name, siteToUpdate.Name)
                                       .Set(s => s.Description, siteToUpdate.Description)
                                       .Set(s => s.IsActive, siteToUpdate.IsActive)
-                                      .Set(s => s.Mappings, siteToUpdate.Mappings);
+                                      .Set(s => s.Mappings, siteToUpdate.Mappings)
+                                      .Set(s => s.LandingPage, siteToUpdate.LandingPage);
             
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }

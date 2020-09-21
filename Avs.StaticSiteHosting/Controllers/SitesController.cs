@@ -63,7 +63,8 @@ namespace Avs.StaticSiteHosting.Controllers
                     Name = s.Name,
                     Description = s.Description,
                     LaunchedOn = s.LaunchedOn,
-                    IsActive = s.IsActive
+                    IsActive = s.IsActive,
+                    LandingPage = s.LandingPage
                 }).ToArray());
         }
     }

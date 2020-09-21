@@ -42,6 +42,12 @@
                         </td>
                     </tr>
                     <tr>
+                        <td class="vertical-tex-align">Landing page:</td>
+                        <td>
+                            <b-form-input type="text" v-model="landingPage"></b-form-input>
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Is active:</td>
                         <td>
                             <b-form-checkbox v-model="isActive"></b-form-checkbox>
@@ -165,6 +171,7 @@
                 siteId: null,
                 description: '',
                 isActive: true,
+                landingPage: '',
                 processError: '',
                 resourceMappings: [],
                 // upload form view model
@@ -225,6 +232,7 @@
                     this.siteName = data.siteName;
                     this.description = data.description;
                     this.isActive = data.isActive;
+                    this.landingPage = data.landingPage;
 
                     let lst = [];
                     let uploaded = data.uploaded;
@@ -379,6 +387,7 @@
                     uploadSessionId: this.upload.uploadSessionId,
                     description: this.description,
                     isActive: this.isActive,
+                    landingPage: this.landingPage,
                     resourceMappings: getResourceMappings()
                 };
 

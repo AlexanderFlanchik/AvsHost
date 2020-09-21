@@ -9,5 +9,6 @@ namespace Avs.StaticSiteHosting.DTOs
         public string Description { get; set; }
         public DateTime? LaunchedOn { get; set; }
         public bool IsActive { get; set; }
+        public string LandingPage { get; set; }
     }
 }

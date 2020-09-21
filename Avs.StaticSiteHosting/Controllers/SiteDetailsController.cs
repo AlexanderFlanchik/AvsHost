@@ -62,6 +62,7 @@ namespace Avs.StaticSiteHosting.Controllers
                     Description = site.Description,
                     IsActive = site.IsActive,
                     ResourceMappings = site.Mappings,
+                    LandingPage = site.LandingPage,
                     Uploaded = uploadedFiles.ToList()
                 };
 
@@ -96,7 +97,8 @@ namespace Avs.StaticSiteHosting.Controllers
                     IsActive = siteDetails.IsActive,
                     CreatedBy = currentUser,
                     LaunchedOn = DateTime.UtcNow,
-                    Mappings = siteDetails.ResourceMappings
+                    Mappings = siteDetails.ResourceMappings,
+                    LandingPage = siteDetails.LandingPage
                 }).ConfigureAwait(false);
 
             await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId)
@@ -137,6 +139,7 @@ namespace Avs.StaticSiteHosting.Controllers
             siteToUpdate.IsActive = siteDetails.IsActive;
             siteToUpdate.Description = siteDetails.Description;
             siteToUpdate.Mappings = siteDetails.ResourceMappings;
+            siteToUpdate.LandingPage = siteDetails.LandingPage;
 
             await _siteService.UpdateSiteAsync(siteToUpdate).ConfigureAwait(false);
 
