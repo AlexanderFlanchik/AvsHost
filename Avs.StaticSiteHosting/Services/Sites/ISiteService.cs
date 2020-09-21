@@ -63,5 +63,12 @@ namespace Avs.StaticSiteHosting.Services
         /// <param name="siteId">Site ID</param>
         /// <returns></returns>
         Task<bool> ToggleSiteStatusAsync(string siteId);
+
+        /// <summary>
+        /// Deletes the site.
+        /// </summary>
+        /// <param name="siteId"></param>
+        /// <returns></returns>
+        Task DeleteSiteAsync(string siteId);
     }
 }

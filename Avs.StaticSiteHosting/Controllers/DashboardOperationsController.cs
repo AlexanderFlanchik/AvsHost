@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.DTOs;
 using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Services.ContentManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,6 +37,21 @@ namespace Avs.StaticSiteHosting.Controllers
             }
 
             return Ok(toggleResult);
+        }
+
+        [HttpDelete("{siteId}")]
+        public async Task<IActionResult> DeleteStite([Required] string siteId, [FromServices] IContentManager contentManager)
+        {
+            var siteToDelete = await _siteService.GetSiteByIdAsync(siteId).ConfigureAwait(false);
+            if (siteToDelete == null)
+            {
+                return NotFound();
+            }
+
+            await contentManager.DeleteSiteContentAsync(siteToDelete);
+            await _siteService.DeleteSiteAsync(siteId);
+
+            return Ok();
         }
     }
 }

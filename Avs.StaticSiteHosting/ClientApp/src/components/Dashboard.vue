@@ -92,7 +92,7 @@
             self.order = order;
             self.next = next;
         };
-    }
+    };
 
     // sort states
     const NoSort = new SortState(), Asc = new SortState(), Desc = new SortState();
@@ -116,11 +116,9 @@
                     }
 
                     this.$apiClient.getAsync(apiUrl).then((response) => {
-                        console.log(response);
                         let siteRows = response.data.map(s => new Site(s));
                         this.sites = siteRows;
                         this.totalFound = Number(response.headers["total-rows-amount"]);
-                        console.log('Rows total: ' + this.totalFound);
                     });
                 }
             }
@@ -141,7 +139,6 @@
 
         methods: {
             pageChanged: function () {
-                console.log('page changed: ' + this.page);
                 this.loadSiteData();
             },
             toggleSiteStatus: async function (siteId) {
@@ -163,7 +160,6 @@
                 }
             },
             pageSizeChanged: function () {
-                console.log('page size changed: ' + this.pageSize);
                 this.loadSiteData();
             },
 
@@ -171,8 +167,6 @@
                 if (field != this.sortField) {
                     this.sortField = field;
                     this.sortState = NoSort;
-                    console.log(this.sortState);
-                    console.log(this.sortState.next);
                 }
 
                 this.sortState = this.sortState.next;

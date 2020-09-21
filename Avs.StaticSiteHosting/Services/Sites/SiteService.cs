@@ -138,5 +138,13 @@ namespace Avs.StaticSiteHosting.Services
 
             return site.IsActive;
         }
+
+        public async Task DeleteSiteAsync(string siteId)
+        {
+            var filterBuilder = new FilterDefinitionBuilder<Site>();
+            var filter = filterBuilder.Where(s => s.Id == siteId);
+
+            await _sites.DeleteOneAsync(filter).ConfigureAwait(false);
+        }
     }
 }

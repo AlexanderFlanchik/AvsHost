@@ -144,5 +144,39 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
                     };
             });
         }
+
+        public async Task DeleteSiteContentAsync(Site site)
+        {
+            var ciCursor = await contentItems.FindAsync(i => i.Site.Id == site.Id).ConfigureAwait(false);
+            var siteItems = await ciCursor.ToListAsync().ConfigureAwait(false);
+            var siteFolder = Path.Combine(options.ContentPath, site.Name);
+
+            if (!siteItems.Any())
+            {
+                return;
+            }
+
+            foreach (var si in siteItems)
+            {
+                var siInfo = new FileInfo(si.FullName);
+                siInfo.Delete();
+
+                var siFolder = siInfo.Directory;
+                if (!siFolder.GetFileSystemInfos().Any())
+                {
+                    siFolder.Delete();
+                }
+            }
+
+            if (Directory.Exists(siteFolder) && !Directory.GetFileSystemEntries(siteFolder).Any())
+            {
+                Directory.Delete(siteFolder);
+            }
+
+            var idsToDelete = siteItems.Select(i => i.Id).ToArray();
+            var deleteFilter = new FilterDefinitionBuilder<ContentItem>().In(i => i.Id, idsToDelete);
+
+            await contentItems.DeleteManyAsync(deleteFilter).ConfigureAwait(false);
+        }
     }
 }

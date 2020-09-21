@@ -20,8 +20,15 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
         /// <summary>
         /// Returns a list of content files for the site specified.
         /// </summary>
-        /// <param name="siteId"></param>
+        /// <param name="siteId">Site ID</param>
         /// <returns></returns>
         Task<IEnumerable<ContentItemModel>> GetUploadedContentAsync(string siteId);
+
+        /// <summary>
+        /// Deletes site content.
+        /// </summary>
+        /// <param name="site">Site reference</param>
+        /// <returns></returns>
+        Task DeleteSiteContentAsync(Site site);
     }
 }
