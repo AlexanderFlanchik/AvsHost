@@ -40,5 +40,16 @@ namespace Avs.StaticSiteHosting.Services.Identity
         {
             return user.Roles.Any(r => r.Name == GeneralConstants.ADMIN_ROLE);
         }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            var filter = new FilterDefinitionBuilder<User>().Where(u => u.Id == user.Id);
+            var update = new UpdateDefinitionBuilder<User>()
+                .Set(u => u.Name, user.Name)
+                .Set(u => u.Email, user.Email)
+                .Set(u => u.Password, user.Password);
+
+            await _users.UpdateOneAsync(filter, update).ConfigureAwait(false);
+        }
     }
 }
