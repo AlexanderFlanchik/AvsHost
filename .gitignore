@@ -10,3 +10,5 @@
 /Avs.StaticSiteHosting/Content/Test
 /Avs.StaticSiteHosting/obj
 /Avs.StaticSiteHosting/bin/Release/netcoreapp3.1
+/Avs.StaticSiteHosting.DataMigrator/bin/Debug/netcoreapp3.1
+/Avs.StaticSiteHosting.DataMigrator/obj/Debug/netcoreapp3.1
