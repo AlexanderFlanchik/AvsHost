@@ -5,7 +5,11 @@
         public const string USERS_COLLECTION = "Users";
         public const string ROLES_COLLECTION = "Roles";
         public const string SITES_COLLECTION = "Sites";
+        public const string HELPSECTION_COLLECTION = "HelpSections";
+        public const string HELPTOPIC_COLLECTION = "HelpTopics";
+        public const string TOPICPARAGRAPH_COLLECTION = "TopicParagraphs";
         public const string CONTENT_ITEMS_COLLECTION = "ContentItems";
+        public const string HELPRESOURCE_COLLECTION = "HelpResources";
 
         public const string DEFAULT_USER_ROLE = "User";
         public const string ADMIN_ROLE = "Administrator";

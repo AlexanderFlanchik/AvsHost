@@ -1,0 +1,10 @@
+﻿@model Avs.StaticSiteHosting.DTOs.HelpTopicModel
+
+<div>
+    @foreach (var p in Model.Paragraphs)
+    {
+        <p>
+            @Html.Raw(p.Content)
+        </p>
+    }
+</div>

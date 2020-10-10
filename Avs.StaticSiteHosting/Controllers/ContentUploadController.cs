@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Avs.StaticSiteHosting.Controllers
@@ -16,15 +17,20 @@ namespace Avs.StaticSiteHosting.Controllers
     public class ContentUploadController : ControllerBase
     {
         private readonly StaticSiteOptions staticSiteOptions;
-        public ContentUploadController(IOptions<StaticSiteOptions> staticSiteOptions)
+        private readonly ILogger<ContentUploadController> _logger;
+        public ContentUploadController(IOptions<StaticSiteOptions> staticSiteOptions, ILogger<ContentUploadController> logger)
         {
             this.staticSiteOptions = staticSiteOptions.Value;
+            _logger = logger;
         }
 
         [Route("session")]
         public IActionResult StartUploadSession()
         {
-            Response.Headers.Add(GeneralConstants.UPLOAD_SESSION_ID, Guid.NewGuid().ToString());
+            var sessionId = Guid.NewGuid().ToString();
+            _logger.LogInformation($"Started new upload session: ID = {sessionId}");
+            
+            Response.Headers.Add(GeneralConstants.UPLOAD_SESSION_ID, sessionId);
 
             return Ok();
         }
@@ -56,7 +62,7 @@ namespace Avs.StaticSiteHosting.Controllers
                     return BadRequest("Invalid destination path. It must have a folder path format.");
                 }
 
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 return Problem($"Unable to upload {contentFile.FileName}. Server error.");
             }
 
@@ -70,7 +76,7 @@ namespace Avs.StaticSiteHosting.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 return Problem($"Unable to upload {contentFile.FileName}. Server error.");
             }
 

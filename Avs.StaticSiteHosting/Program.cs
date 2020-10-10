@@ -4,7 +4,6 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Avs.StaticSiteHosting.Services;
 
 namespace Avs.StaticSiteHosting
 {
@@ -23,17 +22,7 @@ namespace Avs.StaticSiteHosting
 
             InitStorage(staticSiteOptions.Value.ContentPath);
             InitStorage(staticSiteOptions.Value.TempContentPath);
-
-            var mongoEntityRepository = (MongoEntityRepository)host.Services.GetService(typeof(MongoEntityRepository));
-            if (mongoEntityRepository == null)
-            {
-                throw new Exception("Mongo DB data layer was not found.");
-            }
-
-            var passwordHasher = (PasswordHasher)host.Services.GetService(typeof(PasswordHasher));
-
-            await DbInitialization.InitDbAsync(mongoEntityRepository, passwordHasher);
-
+          
             await host.RunAsync();
         }
 

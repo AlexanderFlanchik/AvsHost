@@ -10,6 +10,7 @@ using Avs.StaticSiteHosting.Models.Identity;
 using Avs.StaticSiteHosting.Services;
 using Avs.StaticSiteHosting.Services.Identity;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Avs.StaticSiteHosting.Controllers
 {
@@ -20,11 +21,13 @@ namespace Avs.StaticSiteHosting.Controllers
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
         private readonly Func<string, IActionResult> badRequestResponse = (errorMessage) => new BadRequestObjectResult(new { error = errorMessage });
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IUserService userService, IRoleService roleService)
+        public AuthController(IUserService userService, IRoleService roleService, ILogger<AuthController> logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService)); 
+            _roleService = roleService ?? throw new ArgumentNullException(nameof(roleService));
+            _logger = logger;
         }
 
         [HttpPost]
@@ -67,7 +70,7 @@ namespace Avs.StaticSiteHosting.Controllers
             );
 
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
-            System.Diagnostics.Debug.WriteLine($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
+            _logger.LogInformation($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
             
             return Ok(new { 
                 token = encodedToken,
@@ -113,7 +116,7 @@ namespace Avs.StaticSiteHosting.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Unable to register a new user.");
                 return Problem($"Cannot create a new user due to server error.");
             }
 

@@ -15,7 +15,7 @@ namespace Avs.StaticSiteHosting.Services.ContentManagement
         private readonly IMongoCollection<ContentItem> contentItems;
         private readonly StaticSiteOptions options;
 
-        public ContentManager(MongoEntityRepository entityRepository,  IOptions<StaticSiteOptions> staticSiteOptions)
+        public ContentManager(MongoEntityRepository entityRepository, IOptions<StaticSiteOptions> staticSiteOptions)
         {
             contentItems = entityRepository.GetEntityCollection<ContentItem>(GeneralConstants.CONTENT_ITEMS_COLLECTION);
             options = staticSiteOptions.Value;

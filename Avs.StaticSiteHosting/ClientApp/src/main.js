@@ -1,7 +1,8 @@
 import Vue from 'vue';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { BootstrapVue } from 'bootstrap-vue';
+import 'bootstrap-vue/dist/bootstrap-vue.min.css';
+import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue';
 import VueRouter from 'vue-router';
 import App from './App.vue';
 import Dashboard from './components/Dashboard.vue';
@@ -15,6 +16,7 @@ import Help from './components/Help.vue';
 import ApiClient from './services/ApiClient';
 
 Vue.use(BootstrapVue);
+Vue.use(BootstrapVueIcons);
 Vue.use(VueRouter);
 Vue.config.productionTip = false;
 

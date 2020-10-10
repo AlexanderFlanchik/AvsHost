@@ -33,9 +33,12 @@ namespace Avs.StaticSiteHosting
 
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
+            
             services.AddScoped<ISiteService, SiteService>();
-
             services.AddScoped<IContentManager, ContentManager>();
+            
+            services.AddScoped<IHelpContentService, HelpContentService>();
+            services.AddScoped<IHelpResourceService, HelpResourceService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
@@ -76,7 +79,7 @@ namespace Avs.StaticSiteHosting
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
-                endpoints.MapControllers();       
+                endpoints.MapControllers();
             });
         }
     }

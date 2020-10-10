@@ -1,0 +1,128 @@
+[
+  {
+    "SectionExternalID": "Section_11",
+    "TopicOrdinalNo": 1,
+    "Name": "P1",
+    "OrdinalNo": 1,
+    "Content": "<strong>AVS StaticSite Hosting</strong> allows a user to host simple static site and manage it. The user can turn site on or off, upload different types of content, remove some content, or delete site at all."
+  },
+  {
+    "SectionExternalID": "Section_11",
+    "TopicOrdinalNo": 1,
+    "Name": "P2",
+    "OrdinalNo": 2,
+    "Content": "Currently the project consists of 2 different modules – specific static site middleware and dashboard UI with REST API."
+  },
+  {
+    "SectionExternalID": "Section_11",
+    "TopicOrdinalNo": 1,
+    "Name": "P3",
+    "OrdinalNo": 3,
+    "Content": "All you need is to choose your site name & upload site content (*.html, *.js. *.css).  You also may choose the landing page for your site. After it your site will be able on the route <strong>http://{Your site name}/{landing page}.</strong>"
+  },
+  {
+    "SectionExternalID": "Section_11",
+    "TopicOrdinalNo": 1,
+    "Name": "P4",
+    "OrdinalNo": 4,
+    "Content": "To host your sites, the account registration is required. After registration you have a possibility to view your sites and manage them using our <strong>Dashboard</strong>"
+  },
+  {
+    "SectionExternalID": "Section_12",
+    "TopicOrdinalNo": 1,
+    "Name": "P1",
+    "OrdinalNo": 1,
+    "Content": "<strong>Dashboard</strong> page shows all your sites and allows to manage them. Each site must have a name required for site routing, but you can also provide a site description which can be displayed in the dashboard grid. The dashboard also provide additional information about sites including site creation date."
+  },
+  {
+    "SectionExternalID": "Section_12",
+    "TopicOrdinalNo": 1,
+    "Name": "P2",
+    "OrdinalNo": 2,
+    "Content": "<div style='text-align: center;'><img src='api/helpresources/img1.png' /></div>"
+  },
+  {
+    "SectionExternalID": "Section_12",
+    "TopicOrdinalNo": 1,
+    "Name": "P3",
+    "OrdinalNo": 3,
+    "Content": "Use <strong>action</strong> column buttons to manage the site selected. You can <strong>turn</strong> it <strong>on/off</strong>, edit (<strong>update</strong>), <strong>delete</strong> site, or <strong>browse</strong> it. If you select <strong>Update</strong>, the <strong>Edit Site</strong> page will open.<br/>Please note that selecting <strong>Delete</strong> and confirming your operation will remove all site data with the site content. Use this option very carefully."
+  },
+  {
+    "SectionExternalID": "Section_12",
+    "TopicOrdinalNo": 1,
+    "Name": "P4",
+    "OrdinalNo": 4,
+    "Content": "The link <strong>Browse</strong> appears <strong>only</strong> if you have provided the landing page for site. You can do it using the <strong>Edit Site</strong> page."
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P1",
+    "OrdinalNo": 1,
+    "Content": "To create new site installation, click the link “<strong>Add new site…</strong>” in the Dashboard page. The Create Site page will open:"
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P2",
+    "OrdinalNo": 2,
+    "Content": "<div style='text-align:center;'><img src='api/helpresources/img2.png' /></div>"
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P3",
+    "OrdinalNo": 3,
+    "Content": "Enter a site name (required), description (optional), and landing page (e.g. index.html).<br/>Check &quot;<strong>Is Active</strong>&quot; Please don't use names like <strong>_error</strong> or <strong>api</strong> because they are reserved in the system. If you want the new site to be accessible for routing."
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P4",
+    "OrdinalNo": 4,
+    "Content": "Upload site content using Upload Files section. For upload you can specify <strong>destination path</strong>. For example, if you have a reference like js/my-site.js in your index.html, you should upload my-site.js and specify destination path as js. Files without destination path are placed in the site root directory."
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P5",
+    "OrdinalNo": 5,
+    "Content": "You can provide resource mappings for the content files uploaded. For example, if there is a file like about.html and you have provided the resource mapping for it as &quot;about&quot;, the file will be available through the route http://{your site}/about."
+  },
+  {
+    "SectionExternalID": "Section_13",
+    "TopicOrdinalNo": 1,
+    "Name": "P6",
+    "OrdinalNo": 6,
+    "Content": "To create a site, you have to upload some content and set the site name."
+  },
+  {
+    "SectionExternalID": "Section_14",
+    "TopicOrdinalNo": 1,
+    "Name": "P1",
+    "OrdinalNo": 1,
+    "Content": "Use <strong>Update</strong> link in the dashboard page to start editing the site selected. The user interface used for site editing is the same that you saw when creating a new site."
+  },
+  {
+    "SectionExternalID": "Section_14",
+    "TopicOrdinalNo": 1,
+    "Name": "P2",
+    "OrdinalNo": 2,
+    "Content": "During editing, you can change site name, description, landing page and resource mappings. You can also make your site active or inactive. Also there is possibility to upload new files for the site content using <strong>Upload Files</strong> section."
+  },
+  {
+    "SectionExternalID": "Section_14",
+    "TopicOrdinalNo": 1,
+    "Name": "P3",
+    "OrdinalNo": 3,
+    "Content": "Please note that the new site name you have entered is validated against the names of all existing sites. So, if you enter a name that is already in use by other user or site, you will be warned and you will have to change the site name. It <strong>must be unique among</strong> all users/sites to provide correct site routing."
+  },
+  {
+    "SectionExternalID": "Section_14",
+    "TopicOrdinalNo": 1,
+    "Name": "P4",
+    "OrdinalNo": 4,
+    "Content": "Also if you try to upload a file that has already been uploaded with the site content, it just will be replaced."
+  }
+]

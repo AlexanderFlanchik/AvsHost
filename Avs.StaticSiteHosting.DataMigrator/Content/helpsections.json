@@ -1,0 +1,26 @@
+[
+  {
+    "Name": "General",
+    "ExternalID": "Section_1"
+  },
+  {
+    "Name": "Getting Started",
+    "ParentSectionID": "Section_1",
+    "ExternalID": "Section_11"
+  },
+  {
+    "Name": "Dashboard",
+    "ParentSectionID": "Section_1",
+    "ExternalID": "Section_12"
+  },
+  {
+    "Name": "Create Site",
+    "ParentSectionID": "Section_1",
+    "ExternalID": "Section_13"
+  },
+  {
+    "Name": "Site Management",
+    "ParentSectionID": "Section_1",
+    "ExternalID": "Section_14"
+  }
+]

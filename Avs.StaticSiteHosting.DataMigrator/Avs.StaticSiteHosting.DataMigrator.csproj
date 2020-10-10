@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="db_connection.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="db_connection.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Avs.StaticSiteHosting\Avs.StaticSiteHosting.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Content\Images\Help\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Content\helpsections.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\helptopics.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\paragraphs.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

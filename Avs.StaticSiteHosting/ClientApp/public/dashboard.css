@@ -59,3 +59,7 @@
     background-color: navy;
     text-align: center;
 }
+
+.list-without-bullets {
+    list-style-type: none;
+}
