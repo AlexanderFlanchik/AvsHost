@@ -1,5 +1,5 @@
-﻿using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Models;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Avs.StaticSiteHosting.Services.ContentManagement
+namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 {
     public class ContentManager : IContentManager
     {

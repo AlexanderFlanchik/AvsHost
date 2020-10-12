@@ -1,8 +1,8 @@
-﻿using Avs.StaticSiteHosting.DTOs;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Avs.StaticSiteHosting.Controllers
+namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route(GeneralConstants.ERROR_ROUTE)]
     public class ErrorController : Controller

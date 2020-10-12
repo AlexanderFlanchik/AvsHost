@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avs.StaticSiteHosting
+namespace Avs.StaticSiteHosting.Web
 {
     /// <summary>
     /// General exception which can be thrown by StaticSiteMiddleware.

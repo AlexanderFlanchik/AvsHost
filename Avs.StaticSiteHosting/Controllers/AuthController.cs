@@ -5,14 +5,14 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Models.Identity;
-using Avs.StaticSiteHosting.Services;
-using Avs.StaticSiteHosting.Services.Identity;
+using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models.Identity;
+using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web.Services.Identity;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Avs.StaticSiteHosting.Controllers
+namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [ApiController]
     [Route("[controller]")]

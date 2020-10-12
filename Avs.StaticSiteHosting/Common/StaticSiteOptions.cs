@@ -1,4 +1,4 @@
-﻿namespace Avs.StaticSiteHosting
+﻿namespace Avs.StaticSiteHosting.Web
 {
     public class StaticSiteOptions
     {

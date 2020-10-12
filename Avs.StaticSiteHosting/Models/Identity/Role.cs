@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 
-namespace Avs.StaticSiteHosting.Models.Identity
+namespace Avs.StaticSiteHosting.Web.Models.Identity
 {
     /// <summary>
     /// Application user role

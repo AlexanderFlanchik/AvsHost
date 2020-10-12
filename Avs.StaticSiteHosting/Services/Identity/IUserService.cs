@@ -1,7 +1,7 @@
-﻿using Avs.StaticSiteHosting.Models.Identity;
+﻿using Avs.StaticSiteHosting.Web.Models.Identity;
 using System.Threading.Tasks;
 
-namespace Avs.StaticSiteHosting.Services.Identity
+namespace Avs.StaticSiteHosting.Web.Services.Identity
 {
     public interface IUserService
     {

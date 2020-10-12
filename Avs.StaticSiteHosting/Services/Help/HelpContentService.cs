@@ -1,12 +1,12 @@
-﻿using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Models;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Avs.StaticSiteHosting.Services
+namespace Avs.StaticSiteHosting.Web.Services
 {
     public class HelpContentService : IHelpContentService
     {

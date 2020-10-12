@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Avs.StaticSiteHosting.Models
+namespace Avs.StaticSiteHosting.Web.Models
 {
     public class ContentItem : BaseEntity
     {

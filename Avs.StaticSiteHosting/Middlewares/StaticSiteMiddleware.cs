@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
-using Avs.StaticSiteHosting.Models.Identity;
-using Avs.StaticSiteHosting.Services;
-using Avs.StaticSiteHosting.Services.ContentManagement;
+using Avs.StaticSiteHosting.Web.Models.Identity;
+using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 
-namespace Avs.StaticSiteHosting.Middlewares
+namespace Avs.StaticSiteHosting.Web.Middlewares
 {
     /// <summary>
     /// General middleware which serves static site content.

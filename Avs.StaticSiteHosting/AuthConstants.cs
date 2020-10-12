@@ -2,7 +2,7 @@
 using System;
 using System.Text;
 
-namespace Avs.StaticSiteHosting
+namespace Avs.StaticSiteHosting.Web
 {
     public class AuthSettings
     {

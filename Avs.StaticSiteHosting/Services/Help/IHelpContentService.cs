@@ -1,8 +1,8 @@
-﻿using Avs.StaticSiteHosting.DTOs;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Avs.StaticSiteHosting.Services
+namespace Avs.StaticSiteHosting.Web.Services
 {
     public interface IHelpContentService
     {

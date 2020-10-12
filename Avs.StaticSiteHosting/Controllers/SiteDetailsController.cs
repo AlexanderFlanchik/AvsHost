@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Models;
-using Avs.StaticSiteHosting.Services;
-using Avs.StaticSiteHosting.Services.ContentManagement;
-using Avs.StaticSiteHosting.Services.Identity;
+using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Avs.StaticSiteHosting.Controllers
+namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

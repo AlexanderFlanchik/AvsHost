@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Avs.StaticSiteHosting.Controllers
+namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

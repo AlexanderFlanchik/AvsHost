@@ -1,7 +1,7 @@
-using Avs.StaticSiteHosting.Middlewares;
-using Avs.StaticSiteHosting.Services;
-using Avs.StaticSiteHosting.Services.ContentManagement;
-using Avs.StaticSiteHosting.Services.Identity;
+using Avs.StaticSiteHosting.Web.Middlewares;
+using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Avs.StaticSiteHosting
+namespace Avs.StaticSiteHosting.Web
 {
     public class Startup
     {

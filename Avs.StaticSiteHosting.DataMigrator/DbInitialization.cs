@@ -1,11 +1,10 @@
-﻿using Avs.StaticSiteHosting.Models.Identity;
-using Avs.StaticSiteHosting.Services;
+﻿using Avs.StaticSiteHosting.Web.Models.Identity;
+using Avs.StaticSiteHosting.Web.Services;
 using System;
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using Avs.StaticSiteHosting.Web;
 
 namespace Avs.StaticSiteHosting.DataMigrator
 {

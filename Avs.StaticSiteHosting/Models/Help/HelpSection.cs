@@ -1,4 +1,4 @@
-﻿namespace Avs.StaticSiteHosting.Models
+﻿namespace Avs.StaticSiteHosting.Web.Models
 {
     public class HelpSection: RoleAccessEntity
     {

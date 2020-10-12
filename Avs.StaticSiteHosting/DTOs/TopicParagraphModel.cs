@@ -1,4 +1,4 @@
-﻿namespace Avs.StaticSiteHosting.DTOs
+﻿namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class TopicParagraphModel
     {

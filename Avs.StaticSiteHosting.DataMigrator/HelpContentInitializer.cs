@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Avs.StaticSiteHosting.Models;
+using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web;
 using Microsoft.AspNetCore.StaticFiles;
 using MongoDB.Driver;
 using Newtonsoft.Json;

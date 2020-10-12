@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Avs.StaticSiteHosting.Common;
-using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Web.Common;
+using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
-namespace Avs.StaticSiteHosting.Controllers
+namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

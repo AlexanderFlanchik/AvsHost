@@ -1,8 +1,8 @@
-﻿using Avs.StaticSiteHosting.Models.Identity;
+﻿using Avs.StaticSiteHosting.Web.Models.Identity;
 using System;
 using System.Collections.Generic;
 
-namespace Avs.StaticSiteHosting.Models
+namespace Avs.StaticSiteHosting.Web.Models
 {
     public class Site : BaseEntity
     {

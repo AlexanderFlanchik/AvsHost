@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Avs.StaticSiteHosting.DTOs
+namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class RegisterRequestModel : ProfileModel
     {           

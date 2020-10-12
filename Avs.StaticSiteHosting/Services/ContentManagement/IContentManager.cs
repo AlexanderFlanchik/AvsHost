@@ -1,9 +1,9 @@
-﻿using Avs.StaticSiteHosting.DTOs;
-using Avs.StaticSiteHosting.Models;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Avs.StaticSiteHosting.Services.ContentManagement
+namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 {
     public interface IContentManager
     {

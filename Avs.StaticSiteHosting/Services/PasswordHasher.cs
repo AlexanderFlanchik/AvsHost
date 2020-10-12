@@ -1,6 +1,6 @@
 ﻿using BCryptHasher = BCrypt.Net.BCrypt;
 
-namespace Avs.StaticSiteHosting.Services
+namespace Avs.StaticSiteHosting.Web.Services
 {
     public class PasswordHasher
     {

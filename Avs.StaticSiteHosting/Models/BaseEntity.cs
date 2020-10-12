@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Avs.StaticSiteHosting.Models
+namespace Avs.StaticSiteHosting.Web.Models
 {
     /// <summary>
     /// Represents general entity to store in MongoDB database.

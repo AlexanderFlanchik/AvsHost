@@ -1,4 +1,5 @@
-﻿using Avs.StaticSiteHosting.Services;
+﻿using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;

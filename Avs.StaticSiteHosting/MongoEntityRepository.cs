@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace Avs.StaticSiteHosting
+namespace Avs.StaticSiteHosting.Web
 {
     /// <summary>
     /// General repository which servers collections of Mongo entities.

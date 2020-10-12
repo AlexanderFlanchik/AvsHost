@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Avs.StaticSiteHosting.Services;
+using Avs.StaticSiteHosting.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Avs.StaticSiteHosting.Web.Controllers

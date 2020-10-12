@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Avs.StaticSiteHosting.DTOs
+namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class HelpTopicModel
     {

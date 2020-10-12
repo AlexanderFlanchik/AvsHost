@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Avs.StaticSiteHosting.DTOs
+namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class SiteDetailsModel
     {

@@ -1,6 +1,6 @@
-﻿using Avs.StaticSiteHosting.Common;
+﻿using Avs.StaticSiteHosting.Web.Common;
 
-namespace Avs.StaticSiteHosting.DTOs
+namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class SitesQuery : PaginationParameters
     {

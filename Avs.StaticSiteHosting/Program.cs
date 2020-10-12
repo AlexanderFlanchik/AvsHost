@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
-namespace Avs.StaticSiteHosting
+namespace Avs.StaticSiteHosting.Web
 {
     public class Program
     {
