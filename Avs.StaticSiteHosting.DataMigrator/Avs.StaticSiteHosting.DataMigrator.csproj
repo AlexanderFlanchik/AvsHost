@@ -30,6 +30,12 @@
     <None Update="Content\helptopics.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Content\Images\Help\img1.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\Images\Help\img2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\paragraphs.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

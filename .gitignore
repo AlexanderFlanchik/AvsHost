@@ -12,3 +12,5 @@
 /Avs.StaticSiteHosting/bin/Release/netcoreapp3.1
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/netcoreapp3.1
 /Avs.StaticSiteHosting.DataMigrator/obj/Debug/netcoreapp3.1
+/Avs.StaticSiteHosting.DataMigrator/bin/Release/netcoreapp3.1
+/Avs.StaticSiteHosting.DataMigrator/obj/Release/netcoreapp3.1

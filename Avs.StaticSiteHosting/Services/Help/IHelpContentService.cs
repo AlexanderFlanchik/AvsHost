@@ -10,5 +10,6 @@ namespace Avs.StaticSiteHosting.Services
         Task<HelpTopicModel> GetTopicBySectionId(string sectionId, int ordinalNo);
         Task<List<HelpSectionModel>> GetAllHelpSectionsAsync();
         Task<IEnumerable<TopicParagraphModel>> GetTopicContentAsync(string topicId);
+        Task<HelpResourceModel> GetHelpResourceAsync(string resourceName);
     }
 }

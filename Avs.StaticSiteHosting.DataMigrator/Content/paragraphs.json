@@ -11,7 +11,7 @@
     "TopicOrdinalNo": 1,
     "Name": "P2",
     "OrdinalNo": 2,
-    "Content": "Currently the project consists of 2 different modules – specific static site middleware and dashboard UI with REST API."
+    "Content": "Currently the project consists of 2 different modules &#8212; specific static site middleware and dashboard UI with REST API."
   },
   {
     "SectionExternalID": "Section_11",
@@ -60,7 +60,7 @@
     "TopicOrdinalNo": 1,
     "Name": "P1",
     "OrdinalNo": 1,
-    "Content": "To create new site installation, click the link “<strong>Add new site…</strong>” in the Dashboard page. The Create Site page will open:"
+    "Content": "To create new site installation, click the link &quot;<strong>Add new site&#46;&#46;&#46;</strong>&quot; in the Dashboard page. The Create Site page will open:"
   },
   {
     "SectionExternalID": "Section_13",
@@ -74,7 +74,7 @@
     "TopicOrdinalNo": 1,
     "Name": "P3",
     "OrdinalNo": 3,
-    "Content": "Enter a site name (required), description (optional), and landing page (e.g. index.html).<br/>Check &quot;<strong>Is Active</strong>&quot; Please don't use names like <strong>_error</strong> or <strong>api</strong> because they are reserved in the system. If you want the new site to be accessible for routing."
+    "Content": "Enter a site name (required), description (optional), and landing page (e.g. index.html).Please don't use names like <strong>_error</strong> or <strong>api</strong> because they are reserved in the system.<br/>Check &quot;<strong>Is Active</strong>&quot; if you want the new site to be accessible for routing."
   },
   {
     "SectionExternalID": "Section_13",

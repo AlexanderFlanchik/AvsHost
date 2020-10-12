@@ -13,12 +13,14 @@ namespace Avs.StaticSiteHosting.Services
         private readonly IMongoCollection<HelpSection> _helpSections;
         private readonly IMongoCollection<HelpTopic> _helpTopics;
         private readonly IMongoCollection<TopicParagraph> _topicParagraphs;
+        private readonly IMongoCollection<HelpResource> _helpResources;
 
         public HelpContentService(MongoEntityRepository entityRepository)
         {
             _helpSections = entityRepository.GetEntityCollection<HelpSection>(GeneralConstants.HELPSECTION_COLLECTION);
             _helpTopics = entityRepository.GetEntityCollection<HelpTopic>(GeneralConstants.HELPTOPIC_COLLECTION);
             _topicParagraphs = entityRepository.GetEntityCollection<TopicParagraph>(GeneralConstants.TOPICPARAGRAPH_COLLECTION);
+            _helpResources = entityRepository.GetEntityCollection<HelpResource>(GeneralConstants.HELPRESOURCE_COLLECTION);
         }
 
         public async Task<List<HelpSectionModel>> GetAllHelpSectionsAsync()
@@ -77,6 +79,21 @@ namespace Avs.StaticSiteHosting.Services
             var paragraphList = await pgCursor.ToListAsync().ConfigureAwait(false);
 
             return paragraphList.Select(p => new TopicParagraphModel { Id = p.Id, Content = p.Content, RolesAllowed = p.RolesAllowed });
+        }
+
+        public async Task<HelpResourceModel> GetHelpResourceAsync(string resourceName)
+        {
+            var filter = new FilterDefinitionBuilder<HelpResource>()
+                    .Where(r => r.Name == resourceName);
+            
+            var resCursor = await _helpResources.FindAsync(filter).ConfigureAwait(false);
+            var resource = await resCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+            if (resource == null)
+            {
+                return null;
+            }
+
+            return new HelpResourceModel { Content = resource.Content, ContentType = resource.ContentType };
         }
 
         private void FillHelpSectionList(IEnumerable<HelpSection> rootSectionList, ILookup<string, HelpSection> childSections, List<HelpSectionModel> resultSectionList)

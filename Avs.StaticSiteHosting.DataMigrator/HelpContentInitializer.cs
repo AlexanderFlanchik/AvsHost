@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Models;
+using Microsoft.AspNetCore.StaticFiles;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 
@@ -134,6 +135,39 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 }
             }
 
+            var imageFolder = new DirectoryInfo(Path.Combine(contentPath, "Images\\Help"));
+            var imagesToImport = imageFolder.GetFiles();
+            var ctpProvider = new FileExtensionContentTypeProvider();
+            var helpResources = entityRepository.GetEntityCollection<HelpResource>(GeneralConstants.HELPRESOURCE_COLLECTION);
+
+            Console.WriteLine("Processing help system images...");
+
+            foreach (var img in imagesToImport)
+            {
+                var resource = (await helpResources.FindAsync(r => r.Name == img.Name)).FirstOrDefault();
+                using var ms = new MemoryStream();
+                await img.OpenRead().CopyToAsync(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                if (resource != null)
+                {                   
+                    await helpResources.UpdateOneAsync(new FilterDefinitionBuilder<HelpResource>().Where(r => r.Name == img.Name),
+                        new UpdateDefinitionBuilder<HelpResource>().Set(r => r.Content, ms.ToArray()));
+                }
+                else
+                {
+                    var contentType = "application/octet-stream";
+                    _ = ctpProvider.TryGetContentType(img.Name, out contentType);
+                    await helpResources.InsertOneAsync(new HelpResource
+                                                      {
+                                                          Name = img.Name,
+                                                          Content = ms.ToArray(),
+                                                          ContentType = contentType
+                                                      });
+                }
+            }
+
+            Console.WriteLine("Help images have been processed.");
             Console.WriteLine("Help sub-system data initialization has completed successfully.");
         }
 
