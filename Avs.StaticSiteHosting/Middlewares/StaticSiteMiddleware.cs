@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -69,6 +70,12 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             {
                 var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
                 var fi = fileProvider.GetFileInfo(fileName);
+                FileExtensionContentTypeProvider contentTypeProvider = new FileExtensionContentTypeProvider();
+
+                if (contentTypeProvider.TryGetContentType(fi.Name, out var contentType))
+                {
+                    context.Response.ContentType = contentType;
+                }
 
                 await context.Response.SendFileAsync(fi).ConfigureAwait(false);
                 Console.WriteLine($"Content sent: {fileName}");
