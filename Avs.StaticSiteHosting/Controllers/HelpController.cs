@@ -60,7 +60,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             Response.Headers.Add("total-topics", new StringValues(totalTopics.ToString()));
             
-            // Search for paragraps available for a user
+            // Search for paragraphs available for a user
             var paragraphs = await _helpService.GetTopicContentAsync(topic.Id).ConfigureAwait(false);
             var filteredParagraphs = paragraphs.Where(p =>
                     p.RolesAllowed == null || 

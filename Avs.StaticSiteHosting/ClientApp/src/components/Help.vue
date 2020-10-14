@@ -12,8 +12,8 @@
                    <HelpSection v-for="section in sections" :key="section" :section="section"></HelpSection>
                </ul>
            </div>
-           <div class="help-topic-content" v-html="currentTopic.content">
-               
+           <div class="help-topic-content">
+               <div  v-html="currentTopic.content"></div>
            </div>
         </div>
     </div>
@@ -114,5 +114,7 @@
         padding-left: 5px;
         padding-top: 10px;
         width: calc(100% - 355px);
+        height: 100%;
+        overflow-y: auto;
     }
 </style>
