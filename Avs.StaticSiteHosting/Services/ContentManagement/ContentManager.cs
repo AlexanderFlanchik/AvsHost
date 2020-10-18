@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System;
@@ -58,7 +59,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             }
 
             GetFilesFromFolder(uploadFolder);
-            
+            FileExtensionContentTypeProvider ctpProvider = new FileExtensionContentTypeProvider();
+
             foreach (var file in fileList)
             {
                 var fileInfo = new FileInfo(file);
@@ -85,13 +87,20 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 var contentItemFound = contentInfos.FirstOrDefault(ci => ci.FullName == destinationPath);
                 if (contentItemFound == null)
                 {
+                    string contentType;
+                    if (!ctpProvider.TryGetContentType(fileInfo.Name, out contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
+
                     // Insert a record about new content item uploaded
                     contentItemList.Add(new ContentItem()
                     {
                         Name = fileInfo.Name,
                         Site = site,
-                        ContentType = "application/octet-stream",
+                        ContentType = contentType,
                         UploadedAt = DateTime.UtcNow,
+                        Size = Math.Round((decimal)fileInfo.Length / 1024, 1),
                         FullName = destinationPath
                     });
                 } 
@@ -117,7 +126,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             {
                 var cIds = contentInfosToUpdate.Select(ci => ci.Id).ToList();
                 var filter = new FilterDefinitionBuilder<ContentItem>().In(i => i.Id, cIds);                               
-                var update = new UpdateDefinitionBuilder<ContentItem>().Set(ci => ci.UploadedAt, DateTime.UtcNow);
+                var update = new UpdateDefinitionBuilder<ContentItem>().Set(ci => ci.UpdateDate, DateTime.UtcNow);
                 
                 await contentItems.UpdateManyAsync(filter, update).ConfigureAwait(false);
             }
@@ -139,7 +148,10 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                     {
                         Id = i.Id,
                         FileName = i.Name,
+                        ContentType = i.ContentType,
                         UploadedAt = i.UploadedAt,
+                        Size = i.Size,
+                        UpdateDate = i.UpdateDate,
                         DestinationPath = destinationPath.Length > 1 ? destinationPath.Substring(1) : destinationPath
                     };
             });

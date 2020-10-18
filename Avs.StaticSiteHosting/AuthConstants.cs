@@ -14,6 +14,6 @@ namespace Avs.StaticSiteHosting.Web
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Secret@ForDashboard!123"));
         }
 
-        public readonly static TimeSpan TokenLifetime = TimeSpan.FromMinutes(60);
+        public readonly static TimeSpan TokenLifetime = TimeSpan.FromMinutes(1440);
     }
 }
