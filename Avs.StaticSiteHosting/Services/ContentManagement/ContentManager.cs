@@ -25,12 +25,10 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
         {
             var uploadFolder = Path.Combine(options.TempContentPath, uploadSessionId);
-            var uploadFolderInfo = new DirectoryInfo(uploadFolder);
             var siteFolder = Path.Combine(options.ContentPath, site.Name);
-            
+
             Directory.CreateDirectory(siteFolder);
 
-            var contentEntries = Directory.EnumerateFileSystemEntries(uploadFolder);
             var contentItemList = new List<ContentItem>();
             var fileList = new List<string>();
             var contentInfos = new List<ContentItem>();
@@ -67,12 +65,12 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 var pathSegments = new List<string>();
 
                 var dir = fileInfo.Directory;
-                while (dir != null && dir.FullName != uploadFolderInfo.FullName)
+                while (dir != null && dir.FullName != uploadFolder)
                 {
                     pathSegments.Add(dir.Name);
                     dir = dir.Parent;
                 }
-
+                             
                 var destinationFolder = Path.Combine(siteFolder, string.Join('\\', pathSegments.ToArray()));
                 Directory.CreateDirectory(destinationFolder);
 
@@ -107,13 +105,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 else
                 {
                     contentInfosToUpdate.Add(contentItemFound);
-                }
-
-                fileInfo.Delete();
-                if (!fileInfo.Directory.GetFileSystemInfos().Any())
-                {
-                    fileInfo.Directory.Delete();
-                }                
+                }                             
             }
 
             if (contentItemList.Any())
@@ -131,7 +123,14 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 await contentItems.UpdateManyAsync(filter, update).ConfigureAwait(false);
             }
 
-            Directory.Delete(uploadFolder);
+            try
+            {
+                Directory.Delete(uploadFolder, true);
+            } 
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+            }
         }        
 
         public async Task<IEnumerable<ContentItemModel>> GetUploadedContentAsync(string siteId)
@@ -189,6 +188,83 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             var deleteFilter = new FilterDefinitionBuilder<ContentItem>().In(i => i.Id, idsToDelete);
 
             await contentItems.DeleteManyAsync(deleteFilter).ConfigureAwait(false);
+        }
+
+        public async Task<(string, string)> GetContentFileAsync(string contentItemId)
+        {
+            var ciCursor = await contentItems.FindAsync(i => i.Id == contentItemId).ConfigureAwait(false);
+            var contentItem = await ciCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+
+            if (contentItem == null)
+            {
+                return (null, null);
+            }
+
+            return (contentItem.ContentType, contentItem.FullName);
+        }
+
+        public async Task UpdateContentItem(string contentItemId, string content)
+        {
+            var ciCursor = await contentItems.FindAsync(i => i.Id == contentItemId).ConfigureAwait(false);
+            var contentItem = await ciCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+            
+            if (contentItem == null)
+            {
+                return;
+            }
+
+
+            var contentFile = new FileInfo(contentItem.FullName);
+            if (!contentFile.Exists)
+            {
+                return;
+            }
+
+            await File.WriteAllTextAsync(contentFile.FullName, content).ConfigureAwait(false);
+            await contentItems.UpdateOneAsync(new FilterDefinitionBuilder<ContentItem>().Where(i => i.Id == contentItem.Id),
+                new UpdateDefinitionBuilder<ContentItem>()
+                    .Set(c => c.UpdateDate, DateTime.UtcNow));
+        }
+
+        public async Task<bool> DeleteContentByIdAsync(string contentItemId)
+        {
+            var ciCursor = await contentItems.FindAsync(i => i.Id == contentItemId).ConfigureAwait(false);
+            var contentItem = await ciCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+            if (contentItem == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                var fi = new FileInfo(contentItem.FullName);
+                fi.Delete();
+
+                await contentItems.DeleteOneAsync(new FilterDefinitionBuilder<ContentItem>().Where(i => i.Id == contentItemId)).ConfigureAwait(false);
+            }
+            catch
+            {
+                return false;
+            }
+            
+            return true;
+        }
+
+        public bool DeleteNewUploadedFile(string fileName, string uploadSessionId)
+        {
+            var filePath = Path.Combine(options.TempContentPath, uploadSessionId, fileName);
+            var fileInfo = new FileInfo(filePath);
+
+            try
+            {
+                fileInfo.Delete();
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

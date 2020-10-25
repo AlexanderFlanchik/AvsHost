@@ -129,26 +129,77 @@
                     {{upload.errorMessage}}
                 </div>
                 <div class="uploaded-content-holder">
-                    <span class="form-title">Uploaded content</span>
-                    <ul v-if="uploaded.length > 0">
-                        <li v-for="file in uploaded" :key="file">
-                            {{file.fullName()}}
-                        </li>
-                    </ul>
+                    <span class="form-title">Uploaded content</span>           
+                    <div v-if="uploaded.length > 0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Size, kB</th>
+                                    <th>Uploaded Date</th>
+                                    <th>Update Date</th>
+                                    <th>&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="file in uploaded" :key="file">
+                                    <td>
+                                        <span class="badge badge-secondary" v-if="file.isNew">New</span>&nbsp;
+                                        {{file.fullName()}}
+                                    </td>
+                                    <td>{{file.size}}</td>
+                                    <td>{{file.uploadedAt}}</td>
+                                    <td>{{file.updateDate}}</td>
+                                    <td>
+                                        <span v-if="!file.isNew"><a :href="downloadLink(file)">Download</a> | </span>
+                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit</a> | </span>
+                                        <span v-if="file.isViewable"><a href="javascript:void(0)" @click="() => view(file)">View</a> | </span>
+                                        <span><a href="javascript:void(0)" @click="() => deleteContentItem(file)">Remove</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </div>    
                     <div class="no-content-message" v-if="uploaded.length === 0">
                         No content files found. Upload some content to continue.
                     </div>
                 </div>
+                <b-modal ref="view-content-dlg" hide-footer size="xl" :title="viewContent.fileName">
+                    <div class="content-centered">
+                        <img :src="viewContent.src" />
+                    </div>
+                    <div class="content-centered dlg-btn-container">
+                        <button class="btn btn-primary" @click="closeViewContent">Close</button>
+                    </div>
+                </b-modal>
+                <b-modal ref="edit-content-dlg" hide-footer size="xl" :title="editContent.fileName">
+                    <div class="content-centered">
+                       <b-form-textarea v-model="editContent.content" class="content-editor"></b-form-textarea>
+                    </div>
+                    <div class="dlg-btn-container dlg-btn-container-right">
+                        <button class="btn btn-primary" @click="updateContent">OK</button>
+                        <button class="btn btn-default" @click="closeEditContent">Cancel</button>
+                    </div>
+                </b-modal>
             </div>
         </div> 
     </div>
 </template>
 <script>
+    const moment = require('moment');
+
     const ContentFile = function (fileData) {
         const self = this;
+        self.id = fileData.id;
         self.name = fileData.fileName;
         self.destinationPath = fileData.destinationPath;
         self.isNew = typeof fileData.isNew == 'undefined' ? false : fileData.isNew;
+        self.size = fileData.size;
+        self.isEditable = fileData.isEditable;
+        self.isViewable = fileData.isViewable;
+        self.uploadedAt = formatDate(fileData.uploadedAt);
+        self.updateDate = formatDate(fileData.updateDate);
+
         self.fullName = function () {
             if (!self.destinationPath) {
                 return self.name;
@@ -161,6 +212,10 @@
 
             return self.destinationPath + delimeter + self.name;
         };
+
+        function formatDate(d) {
+            return d ? moment(d).format('MM/DD/YYYY hh:mm:ss A') : '-';
+        }
     };
 
     export default {
@@ -216,6 +271,14 @@
                         valid: true,
                         inProcess: false
                     }                   
+                },
+                viewContent: {
+                    fileName: '',
+                    src: ''                   
+                },
+                editContent: {
+                    fileName: '',
+                    content: ''
                 }
             }
         },
@@ -321,7 +384,15 @@
                     await this.$apiClient.postAsync(uploadUrl, formData);
 
                     if (!this.uploaded.find(u => u.name == file.name && u.destinationPath == this.upload.destinationPath)) {
-                        let cf = new ContentFile({ fileName: file.name, destinationPath: this.upload.destinationPath, isNew: true });
+                        let cf = new ContentFile(
+                                {
+                                    fileName: file.name,
+                                    size: Math.round(10 * file.size / 1024) / 10,
+                                    uploadedAt: new Date(),
+                                    destinationPath: this.upload.destinationPath,
+                                    isNew: true
+                                });
+                            
                         this.uploaded.push(cf);
                     }
 
@@ -403,6 +474,70 @@
                     let msg = `Unable to ${mode} your site due to server error. Please try again later.`;
                     this.processError = msg;
                 }
+            },
+            downloadLink: function (file) {
+                if (!file || !file.id) {
+                    return '#';
+                }
+
+                let url = `api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`;                
+                return url;
+            },
+            view: function (file) {               
+                this.viewContent.src = `api/sitedetails/content-get?contentItemId=${file.id}&maxWidth=600&__accessToken=${this.$authService.getToken()}`;
+                this.viewContent.fileName = file.name;
+
+                this.$refs["view-content-dlg"].show();
+            },
+            edit: async function (file) {
+                let fileResponse = await this.$apiClient.getAsync(`api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`);
+                this.editContent.content = fileResponse.data;
+                this.editContent.fileName = file.name;
+                this.editContent.id = file.id;
+                
+                this.$refs["edit-content-dlg"].show();
+            },
+            updateContent: async function () {
+                let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${this.editContent.id}`, { content: this.editContent.content });
+                console.log(updateResponse);
+                if (updateResponse.status == 200) {
+                    let updatedItem = this.uploaded.find(i => i.id == this.editContent.id);
+                    if (updatedItem) {
+                        updatedItem.updateDate = moment(new Date()).format('MM/DD/YYYY hh:mm:ss A');
+                    }
+                }
+                this.$refs["edit-content-dlg"].hide();
+            },
+            closeViewContent: function () {
+                this.$refs["view-content-dlg"].hide();
+            },
+            closeEditContent: function () {
+                this.$refs["edit-content-dlg"].hide();
+            },
+            deleteContentItem: async function (file) {
+                if (!confirm(`Are you sure to delete file ${file.name}?`)) {
+                    return;
+                }
+
+                let deleteUrl = `api/sitedetails/content-delete`;
+                if (file.id) {
+                    deleteUrl += `?contentItemId=${file.id}`;
+                } else {
+                    deleteUrl += `?contentItemName=${file.fullName()}&uploadSessionId=${this.upload.uploadSessionId}`;
+                }
+
+                let response = await this.$apiClient.deleteAsync(deleteUrl);
+                console.log(response);
+
+                try {
+                    if (response.status == 200) {
+                        let itemDeleted = this.uploaded.find(i => i.name == file.name);
+                        let ix = this.uploaded.indexOf(itemDeleted);
+                        this.uploaded.splice(ix, 1);
+                    }
+                } catch {
+                    alert(`Unable to delete ${file.name}. Server error or the file does not exist.`);
+                }
             }
         },
         computed: {
@@ -432,7 +567,7 @@
                 return {
                     'invalid-field': applied
                 };
-            }
+            }          
         }
     }
 </script>
@@ -547,6 +682,7 @@
     .uploaded-content-holder {
         clear: both;
         padding-top: 55px;
+        padding-right: 5px;
     }
 
     .site-form-header {
@@ -575,5 +711,22 @@
     .validation-error {
         color: red;
         font-weight: bold;
+    }
+
+    .content-centered {
+        text-align: center;
+    }
+
+    .dlg-btn-container {
+        padding-top: 5px;
+        background-color: azure;
+    }
+
+    .content-editor {
+        min-height: 570px;
+    }
+
+    .dlg-btn-container-right {
+        text-align: right;
     }
 </style>

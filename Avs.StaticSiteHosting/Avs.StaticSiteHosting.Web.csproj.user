@@ -10,7 +10,7 @@
     <WebStackScaffolding_LayoutPageFile />
     <WebStackScaffolding_IsAsyncSelected>False</WebStackScaffolding_IsAsyncSelected>
     <NameOfLastUsedPublishProfile>IISProfile</NameOfLastUsedPublishProfile>
-    <ActiveDebugProfile>Avs.StaticSiteHosting</ActiveDebugProfile>
+    <ActiveDebugProfile>Avs.StaticSiteHosting.Web</ActiveDebugProfile>
     <View_SelectedScaffolderID>RazorViewEmptyScaffolder</View_SelectedScaffolderID>
     <View_SelectedScaffolderCategoryPath>root/View</View_SelectedScaffolderCategoryPath>
     <WebStackScaffolding_ViewDialogWidth>600</WebStackScaffolding_ViewDialogWidth>

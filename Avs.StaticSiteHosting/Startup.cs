@@ -39,6 +39,8 @@ namespace Avs.StaticSiteHosting.Web
             
             services.AddScoped<IHelpContentService, HelpContentService>();
             services.AddScoped<IHelpResourceService, HelpResourceService>();
+            
+            services.AddTransient<ImageResizeService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options => {
@@ -70,6 +72,17 @@ namespace Avs.StaticSiteHosting.Web
             }
 
             app.UseRouting();
+            app.Use(async (ctx, next) =>
+            {
+                if (ctx.Request.Method == "GET" && 
+                    ctx.Request.Query.TryGetValue(GeneralConstants.GET_ACCESS_TOKEN_NAME, out var tokenVal))
+                {
+                    var accessToken = tokenVal.ToString();
+                    ctx.Request.Headers["authorization"] = $"Bearer {accessToken}";
+                }
+                await next();
+            });
+
             app.UseDashboard();
             
             // Auth is only required for dashboard Web API

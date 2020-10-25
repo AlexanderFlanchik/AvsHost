@@ -95,25 +95,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return NoContent();
             }
 
-            void ClearFolder(string path)
-            {
-                var entries = Directory.EnumerateFileSystemEntries(path);
-                foreach (var entry in entries)
-                {
-                    if ((System.IO.File.GetAttributes(entry) & FileAttributes.Directory) == FileAttributes.Directory)
-                    {
-                        ClearFolder(entry);
-                    }
-                    else
-                    {
-                        new FileInfo(entry).Delete();
-                    }    
-                }
-
-                Directory.Delete(path);
-            }
-
-            ClearFolder(uploadFolderPath);
+            Directory.Delete(uploadFolderPath, true);
 
             return NoContent();
         }

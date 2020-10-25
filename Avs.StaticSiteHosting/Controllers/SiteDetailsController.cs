@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.DTOs;
@@ -90,23 +92,23 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return BadRequest("Cannot find user by ID provided.");
             }
 
-            var newSite = await _siteService.CreateSiteAsync(new Site()
-                {
-                    Name = siteDetails.SiteName,
-                    Description = siteDetails.Description,
-                    IsActive = siteDetails.IsActive,
-                    CreatedBy = currentUser,
-                    LaunchedOn = DateTime.UtcNow,
-                    Mappings = siteDetails.ResourceMappings,
-                    LandingPage = siteDetails.LandingPage
-                }).ConfigureAwait(false);
+            var siteData = new Site()
+            {
+                Name = siteDetails.SiteName,
+                Description = siteDetails.Description,
+                IsActive = siteDetails.IsActive,
+                CreatedBy = currentUser,
+                LaunchedOn = DateTime.UtcNow,
+                Mappings = siteDetails.ResourceMappings,
+                LandingPage = siteDetails.LandingPage
+            };
 
-            await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId)
-                .ConfigureAwait(false);
+            var newSite = await _siteService.CreateSiteAsync(siteData).ConfigureAwait(false);
+            await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId).ConfigureAwait(false);
 
-            return Created(
-                    $"api/siteDetails?siteId={newSite.Id}", 
-                    newSite);
+            var routeValues = new { siteId = newSite.Id };
+
+            return CreatedAtAction(nameof(GetSiteDetails), routeValues, newSite);
         }
 
         [HttpPut("{siteId}")]
@@ -149,6 +151,95 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
             
             return NoContent();
+        }
+
+        [HttpGet]
+        [Route("content-get")]
+        public async Task<IActionResult> GetContent([Required] string contentItemId, int? maxWidth, [FromServices] ImageResizeService resizeService)
+        {
+            var (contentType, fullName) = await _contentManager.GetContentFileAsync(contentItemId);
+            contentType ??= "application/octet-stream";
+            
+            if (string.IsNullOrEmpty(fullName))
+            {
+                return NotFound();
+            }
+
+            FileInfo fileInfo = new FileInfo(fullName);
+            if (!fileInfo.Exists)
+            {
+                return NotFound();
+            }
+            
+            Response.Headers.Add("content-disposition", $"attachment;filename={fileInfo.Name}");
+
+            var fileStream = fileInfo.OpenRead();
+
+            if (maxWidth.HasValue) // its graphic content, possible we need to resize it to fit max width.
+            {
+                try
+                {
+                    var resizedImageStream = await resizeService.GetResizedImageStreamAsync(fileStream, contentType, maxWidth.Value);
+                    
+                    return File(resizedImageStream, contentType);
+                }
+                catch (InvalidOperationException)
+                {
+                    return BadRequest(ModelState); // the image is invalid
+                }
+                finally
+                {
+                    fileStream.Dispose();
+                }
+            }
+
+            return File(fileStream, contentType);
+        }
+
+        [HttpPut]
+        [Route("content-edit/{contentItemId}")]
+        public async Task<IActionResult> EditContent([Required] string contentItemId, EditContentModel model)
+        {
+            await _contentManager.UpdateContentItem(contentItemId, model.Content).ConfigureAwait(false);
+            
+            return Ok();
+        }
+
+        [HttpDelete]
+        [Route("content-delete")]
+        public async Task<IActionResult> DeleteContent(string contentItemId, string contentItemName, string uploadSessionId)
+        {
+            if (!string.IsNullOrEmpty(contentItemName) && string.IsNullOrEmpty(uploadSessionId))
+            {
+                return BadRequest("Content item ID must be specified with non-empty upload session ID.");
+            }
+
+            bool isDeleted;
+            string errorMsg;
+
+            if (!string.IsNullOrEmpty(contentItemId))
+            {
+                isDeleted = await _contentManager.DeleteContentByIdAsync(contentItemId).ConfigureAwait(false);
+
+                errorMsg = isDeleted ? string.Empty : $"Cannot delete content with ID: {contentItemId}";
+            }
+            else if (!string.IsNullOrEmpty(contentItemName))
+            {
+                isDeleted = _contentManager.DeleteNewUploadedFile(contentItemName, uploadSessionId);
+
+                errorMsg = isDeleted ? string.Empty : $"No file deleted, content file name {contentItemName}, session ID: {uploadSessionId}.";
+            }
+            else
+            {
+                return BadRequest("You must specify either content item ID or name with upload session ID");
+            }
+
+            if (!isDeleted)
+            {
+                return BadRequest(new { errorMsg });
+            }
+
+            return Ok();
         }
     }
 }
