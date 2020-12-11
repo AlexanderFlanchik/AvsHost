@@ -5,6 +5,19 @@ export default class AuthService {
     constructor() { }
     tokenKey = 'auth_token';
 
+    private isLocked: boolean = false;
+    public IsUserLocked() {
+        return this.isLocked;
+    }
+
+    public lockUser() {
+        this.isLocked = true;
+    }
+
+    public unLockUser() {
+        this.isLocked = false;
+    }
+
     public isAuthenticated() {
         let tokenJson = localStorage.getItem(this.tokenKey);
         if (!tokenJson) {

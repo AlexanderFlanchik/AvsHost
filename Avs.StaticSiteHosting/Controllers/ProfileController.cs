@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.DTOs;
@@ -7,19 +8,22 @@ using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ProfileController : ControllerBase
+    public sealed class ProfileController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ILogger<ProfileController> _logger;
         
-        public ProfileController(IUserService userService)
+        public ProfileController(IUserService userService, ILogger<ProfileController> logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _logger = logger;
         }
         
         [HttpPost]
@@ -63,6 +67,87 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             await _userService.UpdateUserAsync(user).ConfigureAwait(false);
             
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("user/{userId}")]
+        [Authorize(Roles = "Administrator")]
+        public async Task<IActionResult> GetUserProfile([Required] string userId)
+        {
+            var user = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+                        
+            return user == null ? (IActionResult)NotFound() :
+             Ok(new UserProfileModel() 
+                { 
+                    Id = userId,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Status = user.Status,
+                    DateJoined = user.DateJoined,
+                    LastLocked = user.LastLocked,
+                    Comment = user.Comment
+                });            
+        }
+
+        [HttpPut]
+        [Authorize(Roles = "Administrator")]
+        [Route("UpdateUserProfile/{userId}")]
+        public async Task<IActionResult> UpdateUserProfile(string userId, UserStatusModel updateRequest, [FromServices] ISiteService siteService)
+        {
+            var user = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var newStatus = updateRequest.Status;
+            var newComment = updateRequest.Comment;
+            bool isModified = false;
+
+            if (user.Status != newStatus)
+            {
+                if (newStatus == UserStatus.Locked)
+                {
+                    user.LastLocked = DateTime.Now;
+                    user.LocksAmount++;
+                    _logger.LogInformation($"User with ID = {userId} is banned by administrator at {user.LastLocked}.");
+                }
+                else
+                {
+                    _logger.LogInformation($"Ban is removed from the user ID = {userId} at {DateTime.UtcNow}.");
+                }
+                user.Status = newStatus;
+                await siteService.UpdateSitesStatusAsync(userId, newStatus).ConfigureAwait(false);
+
+                isModified = true;
+            }
+
+            if (user.Comment != newComment)
+            {
+                user.Comment = updateRequest.Comment;
+                isModified = true;
+            }
+            
+            if (isModified)
+            {
+                await _userService.UpdateUserAsync(user).ConfigureAwait(false);
+            }
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("profile-info")]
+        public async Task<IActionResult> GetProfileInfo()
+        {
+            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
+            var profile = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            if (profile == null)
+            {
+                return NotFound();
+            }    
+
+            return Ok(new { profile.Status, profile.Comment });
         }
 
         private async Task<(User, IActionResult)> ValidateCurrentUserAsync()

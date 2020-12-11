@@ -9,7 +9,7 @@
         <div class="dashboard-content">
             <table class="w-100prc">
                 <tr>
-                    <td>Your sites:&nbsp;<strong>{{totalFound}}</strong></td>
+                    <td>{{isAdmin ? "All Sites" : "Your sites"}}:&nbsp;<strong>{{totalFound}}</strong></td>
                     <td class="pager-conatiner" v-if="totalFound > 0">
                         <b-pagination v-model="page"
                                       :total-rows="totalFound"
@@ -23,7 +23,7 @@
                         <b-form-select v-model="pageSize" :options="pageSizes" @change="pageSizeChanged" size="sm" class="page-size-select"></b-form-select>                      
                     </td>
                     <td class="new-site-link-container">
-                        <router-link to="/sites/create">Add a new site...</router-link>
+                        <router-link to="/sites/create" v-if="!isAdmin">Add a new site...</router-link>
                     </td>
                 </tr>
             </table>
@@ -40,6 +40,9 @@
                             <a href="javascript:void(0)" 
                                 v-bind:class="{ asc: sortField == 'LaunchedOn' && sortState.order == 'Asc', desc: sortField == 'LaunchedOn' && sortState.order == 'Desc' }"   
                                 @click="sort('LaunchedOn')">Launched On</a></th>
+                        <th class="w-300" v-if="isAdmin">
+                            User Name
+                        </th>
                         <th class="w-150">Is Active</th>
                         <th>Actions</th>
                     </tr>
@@ -53,6 +56,9 @@
                             <td class="w-300">{{site.name}}</td>
                             <td class="w-300">{{site.description}}</td>
                             <td class="w-300">{{site.launchedOn}}</td>
+                            <td class="w-300" v-if="isAdmin">
+                                <router-link :to="{ path: '/user-profile/' + site.owner.id }">{{site.owner.name}}</router-link>
+                            </td>
                             <td class="w-150">
                                 <input type="checkbox" v-model="site.isActive" disabled="disabled" />
                             </td>
@@ -60,7 +66,7 @@
                                 <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
                                 <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
                                 <span><a href="javascript:void(0)" @click="deleteSite(site.id)">Delete</a></span>
-                                <span v-if="site.landingPage"><span> | </span><a v-bind:href="'/' + site.name + '/' + site.landingPage" target="_blank">Browse</a></span>
+                                <span v-if="!isAdmin && site.landingPage"><span> | </span><a v-bind:href="'/' + site.name + '/' + site.landingPage" target="_blank">Browse</a></span>
                             </td>
                         </tr>
                     </tbody>
@@ -86,6 +92,10 @@
         self.launchedOn = siteData.launchedOn ? moment(siteData.launchedOn).format('MM/DD/YYYY hh:mm:ss A') : null;
         self.landingPage = siteData.landingPage;
         self.isActive = siteData.isActive;
+        self.owner = {
+            id: siteData.owner.id,
+            name: siteData.owner.userName
+        };
     };
 
     const SortState = function () {

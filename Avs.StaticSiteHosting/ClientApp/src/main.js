@@ -13,6 +13,7 @@ import Registered from './components/Registered.vue';
 import MyProfile from './components/MyProfile.vue';
 import CreateOrUpdateSite from './components/CreateOrUpdateSite.vue';
 import Help from './components/Help.vue';
+import UserProfile from './components/UserProfile.vue';
 import ApiClient from './services/ApiClient';
 
 Vue.use(BootstrapVue);
@@ -32,7 +33,8 @@ const routes = [
     { path: '/profile', component: MyProfile },
     { path: '/help', component: Help },
     { path: '/sites/create', component: CreateOrUpdateSite },
-    { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true }
+    { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true },
+    { path: '/user-profile/:userId', component: UserProfile, props: true }
 ];
 
 const router = new VueRouter({ routes });

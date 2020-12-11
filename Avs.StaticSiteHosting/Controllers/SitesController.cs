@@ -24,7 +24,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
         }
 
-        public async Task<ActionResult<IEnumerable<SiteModel>>> GetSites(int page, int pageSize, string sortOrder, string sortField)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<SiteModel>>> GetSitesData(int page, int pageSize, string sortOrder, string sortField)
         {           
             var query = new SitesQuery()
             {
@@ -38,7 +39,9 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var roles = claims.Where(r => r.Type == ClaimsIdentity.DefaultRoleClaimType).ToArray();
             var isAdmin = roles.Any(r => r.Value == GeneralConstants.ADMIN_ROLE);
 
-            int totalFound;
+            var calcAmountsTasks = new List<Task<int>>();
+            string ownerUserID = null;
+
             if (!isAdmin)
             {
                 var userId = claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
@@ -47,25 +50,30 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     return BadRequest("Invalid user.");
                 }
 
-                query.OwnerId = userId;
-                totalFound = await _siteService.GetSitesAmountAsync(query.OwnerId);
+                ownerUserID = userId;
             }
-            else
-            {
-                totalFound = await _siteService.GetSitesAmountAsync();
-            }
-                        
-            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalFound.ToString()));
+            
+            query.OwnerId = ownerUserID;
+            calcAmountsTasks.AddRange(new[] { _siteService.GetSitesAmountAsync(ownerUserID), _siteService.GetActiveSitesAmountAsync(ownerUserID) });
+            var amounts = await Task.WhenAll(calcAmountsTasks.ToArray()).ConfigureAwait(false);
+                       
+            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
+            Response.Headers.Add(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));
 
-            return Ok((await _siteService.GetSitesAsync(query))
-                .Select(s => new SiteModel() { 
-                    Id = s.Id,
-                    Name = s.Name,
-                    Description = s.Description,
-                    LaunchedOn = s.LaunchedOn,
-                    IsActive = s.IsActive,
-                    LandingPage = s.LandingPage
-                }).ToArray());
+            var sitesList = (await _siteService.GetSitesAsync(query).ConfigureAwait(false))
+                    .Select(s => new SiteModel()
+                        {
+                            Id = s.Id,
+                            Name = s.Name,
+                            Description = s.Description,
+                            LaunchedOn = s.LaunchedOn,
+                            IsActive = s.IsActive,
+                            LandingPage = s.LandingPage,
+                            Owner = new UserModel { Id = s.CreatedBy.Id, UserName = s.CreatedBy.Name }
+                        }
+                    ).ToArray();
+
+            return Ok(sitesList);
         }
     }
 }

@@ -46,12 +46,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 return badRequestResponse("Invalid password entered.");
             }
-           
-            if (user.Status != UserStatus.Active)
-            {
-                return badRequestResponse("Your account has been locked. Please contact administrator.");
-            }
-
+                     
             var currentTimestamp = DateTime.UtcNow;
             var tokenLifeTime = AuthSettings.TokenLifetime;
             var signingCredentials = new SigningCredentials(AuthSettings.SecurityKey(), SecurityAlgorithms.HmacSha256);
@@ -113,6 +108,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 newUser.Roles = new[] { userRole };
 
                 await _userService.CreateUserAsync(newUser);
+
+                _logger.LogInformation($"Registered: {newUser.Name}.");
             }
             catch (Exception ex)
             {

@@ -8,7 +8,14 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime? LaunchedOn { get; set; }
+        public UserModel Owner { get; set; }
         public bool IsActive { get; set; }
         public string LandingPage { get; set; }
+    }
+
+    public class UserModel
+    {
+        public string Id { get; set; }
+        public string UserName { get; set; }
     }
 }

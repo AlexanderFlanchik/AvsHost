@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web.Models.Identity;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,7 +21,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// <param name="ownerId">Owner ID</param>
         /// <returns></returns>
         Task<int> GetSitesAmountAsync(string ownerId = null);
-        
+        Task<int> GetActiveSitesAmountAsync(string ownerId = null);
         /// <summary>
         /// Checks if a site with the name given already exists.
         /// </summary>
@@ -70,5 +71,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// <param name="siteId"></param>
         /// <returns></returns>
         Task DeleteSiteAsync(string siteId);
+
+        Task UpdateSitesStatusAsync(string ownerId, UserStatus status);
     }
 }

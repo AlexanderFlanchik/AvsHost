@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Web.Models.Identity;
 using MongoDB.Driver;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Identity
 
         public async Task CreateUserAsync(User user)
         {
+            user.DateJoined = DateTime.UtcNow;
             await _users.InsertOneAsync(user).ConfigureAwait(false);
         }
 
@@ -47,7 +49,12 @@ namespace Avs.StaticSiteHosting.Web.Services.Identity
             var update = new UpdateDefinitionBuilder<User>()
                 .Set(u => u.Name, user.Name)
                 .Set(u => u.Email, user.Email)
-                .Set(u => u.Password, user.Password);
+                .Set(u => u.Password, user.Password)
+                .Set(u => u.LastLocked, user.LastLocked)
+                .Set(u => u.Status, user.Status)
+                .Set(u => u.LocksAmount, user.LocksAmount)
+                .Set(u => u.Comment, user.Comment)
+                .Set(u => u.LastLogin, user.LastLogin);                
 
             await _users.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }

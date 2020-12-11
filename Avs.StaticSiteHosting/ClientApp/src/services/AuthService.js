@@ -41,7 +41,17 @@ var axios_1 = require("axios");
 var AuthService = /** @class */ (function () {
     function AuthService() {
         this.tokenKey = 'auth_token';
+        this.isLocked = false;
     }
+    AuthService.prototype.IsUserLocked = function () {
+        return this.isLocked;
+    };
+    AuthService.prototype.lockUser = function () {
+        this.isLocked = true;
+    };
+    AuthService.prototype.unLockUser = function () {
+        this.isLocked = false;
+    };
     AuthService.prototype.isAuthenticated = function () {
         var tokenJson = localStorage.getItem(this.tokenKey);
         if (!tokenJson) {

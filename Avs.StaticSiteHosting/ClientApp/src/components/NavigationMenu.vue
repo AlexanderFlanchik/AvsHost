@@ -8,7 +8,7 @@
                 <router-link to ="/profile" class="navigation-menu-item-link" active-class="link-active">My Profile</router-link>
             </li>
             <li class="navigation-menu-item">
-                <router-link to="/help" class="navigation-menu-item-link" active-class="link-active">Help...</router-link>
+                <router-link to="/help" class="navigation-menu-item-link" active-class="link-active">Help</router-link>
             </li>
         </ul>
     </div>

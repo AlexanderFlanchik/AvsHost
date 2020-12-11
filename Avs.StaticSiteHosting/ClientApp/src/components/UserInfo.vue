@@ -1,13 +1,16 @@
 ﻿<template>
     <div class="user-info-bar" v-if="isUserInfoShown">
-        Welcome, {{userName}}! | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
+        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active'">BANNED</span> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
     </div>
 </template>
 <script>
     export default {
         data: function () {
             return {
-                userName: ''
+                userName: '',
+                status: '',
+                statuses: ['Active', 'Locked'],
+                comment: ''
             };
         },
         methods: {
@@ -21,6 +24,20 @@
             if (userInfo && userInfo.name) {
                 this.userName = userInfo.name;
             }
+
+            this.$apiClient.getAsync('api/profile/profile-info')
+                .then((infoResponse) => {
+                    let info = infoResponse.data;
+                    this.status = this.statuses[info.status];
+                    this.comment = info.comment;
+                    if (this.status != 'Active') {
+                        this.$authService.lockUser();
+                    } else {
+                        this.$authService.unLockUser();
+                    }
+
+                    console.log('status:' + this.status);
+                });
         },
         computed: {
             isUserInfoShown: function () {
@@ -45,5 +62,11 @@
 
     .sign-out-link:hover {
         color: white;
+    }
+
+    .banned {
+        color: white;
+        margin-left: 5px;
+        background-color: red;
     }
 </style>

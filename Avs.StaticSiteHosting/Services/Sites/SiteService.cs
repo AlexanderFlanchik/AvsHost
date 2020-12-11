@@ -1,6 +1,7 @@
 ﻿using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web.Models.Identity;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -54,19 +55,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         }
 
         public async Task<int> GetSitesAmountAsync(string ownerId = null)
-        {
-            IAsyncCursor<Site> siteCursor = null;
-            if (!string.IsNullOrEmpty(ownerId))
-            {
-                siteCursor = await _sites.FindAsync(s => s.CreatedBy != null && s.CreatedBy.Id == ownerId).ConfigureAwait(false);
-            }
-            else
-            {
-                siteCursor = await _sites.FindAsync(s => true).ConfigureAwait(false);
-            }
-
-            return siteCursor.ToEnumerable().Count();            
-        }
+         => await GetSitesAmount(null, ownerId);
 
         public async Task<bool> CheckSiteNameUsedAsync(string siteName, string siteId)
         {
@@ -146,6 +135,41 @@ namespace Avs.StaticSiteHosting.Web.Services
             var filter = filterBuilder.Where(s => s.Id == siteId);
 
             await _sites.DeleteOneAsync(filter).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetActiveSitesAmountAsync(string ownerId = null)
+         => await GetSitesAmount(true, ownerId);
+
+        public async Task UpdateSitesStatusAsync(string ownerId, UserStatus status)
+        {
+            await _sites.UpdateManyAsync(new FilterDefinitionBuilder<Site>().Where(s => s.CreatedBy.Id == ownerId),
+                new UpdateDefinitionBuilder<Site>().Set(s => s.CreatedBy.Status, status)
+             ).ConfigureAwait(false);
+        }
+
+        private async Task<int> GetSitesAmount(bool? isActive, string ownerId)
+        {
+            IAsyncCursor<Site> siteCursor = null;
+            if (!string.IsNullOrEmpty(ownerId))
+            {
+                siteCursor = isActive.HasValue ? await _sites.FindAsync(
+                        s => s.IsActive == isActive.Value && 
+                            s.CreatedBy != null && 
+                            s.CreatedBy.Id == ownerId
+                            ).ConfigureAwait(false)
+                     : 
+                     await _sites.FindAsync(
+                        s => s.CreatedBy != null &&
+                             s.CreatedBy.Id == ownerId).ConfigureAwait(false);
+            }
+            else
+            {
+                siteCursor = isActive.HasValue ? await _sites.FindAsync(s => s.IsActive == isActive.Value).ConfigureAwait(false)
+                     :
+                     await _sites.FindAsync(s => true).ConfigureAwait(false);
+            }
+
+            return siteCursor.ToEnumerable().Count();
         }
     }
 }
