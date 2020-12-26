@@ -3,11 +3,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Hubs;
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
@@ -19,7 +21,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     {
         private readonly IUserService _userService;
         private readonly ILogger<ProfileController> _logger;
-        
+
         public ProfileController(IUserService userService, ILogger<ProfileController> logger)
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -92,7 +94,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         [Route("UpdateUserProfile/{userId}")]
-        public async Task<IActionResult> UpdateUserProfile(string userId, UserStatusModel updateRequest, [FromServices] ISiteService siteService)
+        public async Task<IActionResult> UpdateUserProfile(string userId, UserStatusModel updateRequest, [FromServices]IHubContext<UserNotificationHub> notificationHub, [FromServices]ISiteService siteService)
         {
             var user = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
             if (user == null)
@@ -118,6 +120,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 }
                 user.Status = newStatus;
                 await siteService.UpdateSitesStatusAsync(userId, newStatus).ConfigureAwait(false);
+                await notificationHub.Clients.User(userId).SendAsync("UserStatusChanged", new { currentStatus = newStatus });
 
                 isModified = true;
             }
@@ -128,10 +131,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 isModified = true;
             }
             
-            if (isModified)
+            if (!isModified)
             {
-                await _userService.UpdateUserAsync(user).ConfigureAwait(false);
+                return NoContent();
             }
+
+            await _userService.UpdateUserAsync(user).ConfigureAwait(false);
 
             return Ok();
         }

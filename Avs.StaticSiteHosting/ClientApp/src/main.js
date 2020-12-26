@@ -15,6 +15,7 @@ import CreateOrUpdateSite from './components/CreateOrUpdateSite.vue';
 import Help from './components/Help.vue';
 import UserProfile from './components/UserProfile.vue';
 import ApiClient from './services/ApiClient';
+import { UserNotificationService } from './services/UserNotificationService';
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
@@ -24,6 +25,7 @@ Vue.config.productionTip = false;
 const authService = new AuthService();
 Vue.prototype.$authService = authService;
 Vue.prototype.$apiClient = new ApiClient(authService);
+Vue.prototype.$userNotificationService = new UserNotificationService(authService);
 
 const routes = [
     { path: '/', component: Dashboard },

@@ -1,3 +1,5 @@
+using Avs.StaticSiteHosting.Web.Common;
+using Avs.StaticSiteHosting.Web.Hubs;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
@@ -5,10 +7,12 @@ using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web
 {
@@ -28,6 +32,9 @@ namespace Avs.StaticSiteHosting.Web
             services.Configure<StaticSiteOptions>(Configuration.GetSection("StaticSiteOptions"));
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDbConnection"));
             
+            services.AddSignalR();
+            services.AddSingleton<IUserIdProvider, UserIdProvider>();
+
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
 
@@ -52,7 +59,26 @@ namespace Avs.StaticSiteHosting.Web
                         ValidAudience = AuthSettings.ValidAudience,
                         ValidateLifetime = true,
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = AuthSettings.SecurityKey()
+                        IssuerSigningKey = AuthSettings.SecurityKey(),                        
+                    };
+
+                    options.Events = new JwtBearerEvents()
+                    {
+                        OnMessageReceived = context => 
+                        {
+                            var accessToken = context.Request.Query[GeneralConstants.GET_ACCESS_TOKEN_NAME_SIGNALR]; // For SignalR
+                            if (string.IsNullOrEmpty(accessToken))
+                            {
+                                accessToken = context.Request.Query[GeneralConstants.GET_ACCESS_TOKEN_NAME]; // For authorized GET REST methods
+                            }
+
+                            if (!string.IsNullOrEmpty(accessToken))
+                            {
+                                context.Token = accessToken.ToString();    
+                            }
+                            
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -72,16 +98,16 @@ namespace Avs.StaticSiteHosting.Web
             }
 
             app.UseRouting();
-            app.Use(async (ctx, next) =>
-            {
-                if (ctx.Request.Method == "GET" && 
-                    ctx.Request.Query.TryGetValue(GeneralConstants.GET_ACCESS_TOKEN_NAME, out var tokenVal))
-                {
-                    var accessToken = tokenVal.ToString();
-                    ctx.Request.Headers["authorization"] = $"Bearer {accessToken}";
-                }
-                await next();
-            });
+            //app.Use(async (ctx, next) =>
+            //{
+            //    if (ctx.Request.Method == "GET" && 
+            //        ctx.Request.Query.TryGetValue(GeneralConstants.GET_ACCESS_TOKEN_NAME, out var tokenVal))
+            //    {
+            //        var accessToken = tokenVal.ToString();
+            //        ctx.Request.Headers["authorization"] = $"Bearer {accessToken}";
+            //    }
+            //    await next();
+            //});
 
             app.UseDashboard();
             
@@ -93,6 +119,7 @@ namespace Avs.StaticSiteHosting.Web
             {
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
                 endpoints.MapControllers();
+                endpoints.MapHub<UserNotificationHub>("/user-notification");
             });
         }
     }

@@ -19,5 +19,6 @@
 
         public const string ERROR_ROUTE = "_error";
         public const string GET_ACCESS_TOKEN_NAME = "__accessToken";
+        public const string GET_ACCESS_TOKEN_NAME_SIGNALR = "access_token";
     }
 }

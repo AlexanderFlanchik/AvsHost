@@ -49,7 +49,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var userRoles = GetUserRoles();
 
             // Check role access if needed
-            var allowedRoles = topic.RolesAllowed ?? new string[] { };
+            var allowedRoles = topic.RolesAllowed ?? Array.Empty<string>();
             if (allowedRoles.Any() && !userRoles.Any(r => allowedRoles.Contains(r)))
             {
                 var currentUserId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;

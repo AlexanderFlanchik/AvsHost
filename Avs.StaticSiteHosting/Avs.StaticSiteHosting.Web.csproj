@@ -42,6 +42,7 @@
     <None Remove="ClientApp\src\components\Registered.vue" />
     <None Remove="ClientApp\src\services\ApiClient.ts" />
     <None Remove="ClientApp\src\services\AuthService.ts" />
+    <None Remove="ClientApp\src\services\UserNotificationService.ts" />
   </ItemGroup>
   
   <ItemGroup>

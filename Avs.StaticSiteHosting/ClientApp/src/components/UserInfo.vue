@@ -23,6 +23,15 @@
             let userInfo = this.$authService.getUserInfo();
             if (userInfo && userInfo.name) {
                 this.userName = userInfo.name;
+                this.$userNotificationService.notify((status) => {
+                    console.log("New status code: " + status);
+                    this.status = this.statuses[status];
+                    if (this.status != 'Active') {
+                        this.$authService.lockUser();
+                    } else {
+                        this.$authService.unLockUser();
+                    }
+                });
             }
 
             this.$apiClient.getAsync('api/profile/profile-info')

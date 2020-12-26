@@ -66,6 +66,7 @@
                 let result = await this.$authService.tryGetAccessToken(this.userLogin, this.password);
                 if (result) {
                     console.log('Login succeeded.');
+                    this.$userNotificationService.init();
                     this.$router.push(this.$route.query.returnUrl || '/');
                 } else {
                     this.errors.push('Unable to login: invalid login or password, or service is not available.');
