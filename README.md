@@ -1,2 +1,2 @@
 # AvsHost
-AvsHost .NET Core 3.+ Demo Project
+AvsHost .NET Core 5.+ Demo Project
