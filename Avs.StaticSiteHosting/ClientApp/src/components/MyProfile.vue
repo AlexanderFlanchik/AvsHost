@@ -7,65 +7,92 @@
         <UserInfo />
         <NavigationMenu />
         <div class="profile-content">
-            <fieldset class="profile-fields-container">
-                <legend>Profile settings</legend>
-                <dl>
-                    <dt>
-                        Name:
-                    </dt>
-                    <dd>
-                        <b-form-input type="text" v-model="userName" @blur="validation.userName.touched=true;" @input="validateUserName"></b-form-input>
-                        <span class="validation-error" v-if="userName && validation.userName.touched && !validation.userName.success">This name is already in use.</span>
-                        <span class="validation-error" v-if="validation.userName.touched && !userName">The name is required.</span>
-                    </dd>
+            <div class="left">
+                <fieldset class="profile-fields-container">
+                    <legend>Profile settings</legend>
+                    <dl>
+                        <dt>
+                            Name:
+                        </dt>
+                        <dd>
+                            <b-form-input type="text" v-model="userName" @blur="validation.userName.touched=true;" @input="validateUserName"></b-form-input>
+                            <span class="validation-error" v-if="userName && validation.userName.touched && !validation.userName.success">This name is already in use.</span>
+                            <span class="validation-error" v-if="validation.userName.touched && !userName">The name is required.</span>
+                        </dd>
 
-                    <dt>
-                        Email:
-                    </dt>
-                    <dd>
-                        <b-form-input type="text" v-model="userEmail" @blur="validation.userEmail.touched=true;" @input="validateUserEmail"></b-form-input>
-                        <span class="validation-error" v-if="userEmail && validation.userEmail.touched && !validation.userEmail.success">This e-mail is already in use.</span>
-                        <span class="validation-error" v-if="validation.userEmail.touched && !userEmail">The e-mail is required.</span>
-                    </dd>
-                </dl>
-                <div class="button-container">
-                    <span class="update-result-msg err-msg" v-if="updateResultShown">{{updateResult}}</span>
-                    <button class="btn btn-primary" :disabled="isUpdateDisabled" @click="update">Update</button>
-                </div>
-            </fieldset>
+                        <dt>
+                            Email:
+                        </dt>
+                        <dd>
+                            <b-form-input type="text" v-model="userEmail" @blur="validation.userEmail.touched=true;" @input="validateUserEmail"></b-form-input>
+                            <span class="validation-error" v-if="userEmail && validation.userEmail.touched && !validation.userEmail.success">This e-mail is already in use.</span>
+                            <span class="validation-error" v-if="validation.userEmail.touched && !userEmail">The e-mail is required.</span>
+                        </dd>
+                    </dl>
+                    <div class="button-container">
+                        <span class="update-result-msg err-msg" v-if="updateResultShown">{{updateResult}}</span>
+                        <button class="btn btn-primary" :disabled="isUpdateDisabled" @click="update">Update</button>
+                    </div>
+                </fieldset>
 
-            <fieldset class="profile-fields-container">
-                <legend>Password Management</legend>
-                <dl>
-                    <dt>Current password:</dt>
-                    <dd>
-                        <b-form-input type="password" v-model="userPassword" @blur="validation.userPassword.touched=true;"></b-form-input>
-                        <span class="validation-error" v-if="validation.userPassword.touched && !userPassword">Current password is required.</span>
-                    </dd>
-                    <dt>New password:</dt>
-                    <dd>
-                        <b-form-input type="password" v-model="newPassword" @blur="validation.newPassword.touched=true;"></b-form-input>
-                        <span class="validation-error" v-if="validation.newPassword.touched && !newPassword">New password is required.</span>
-                    </dd>
-                    <dt>New password confirm:</dt>
-                    <dd>
-                        <b-form-input type="password" v-model="confirmNewPassword" @blur="validation.confirmNewPassword.touched=true;"></b-form-input>
-                        <span class="validation-error" v-if="validation.confirmNewPassword.touched && !confirmNewPassword">Confirm new password is required.</span>
-                        <span class="validation-error" 
-                            v-if="newPassword && confirmNewPassword && validation.confirmNewPassword.touched && confirmNewPassword != newPassword">New and confirmed passwords must be the same.</span>
-                    </dd>
-                </dl>
-                <div class="button-container">
-                    <span class="update-result-msg" v-if="changePasswordResultShown" v-bind:class="{'err-msg': changePasswordFailed, 'normal-msg': !changePasswordFailed }">{{changePasswordResult}}</span>
-                    <button class="btn btn-primary" :disabled="isChangePasswordDisabled" @click="changePassword">Change Password..</button>
-                </div>
-            </fieldset>
+                <fieldset class="profile-fields-container">
+                    <legend>Password Management</legend>
+                    <dl>
+                        <dt>Current password:</dt>
+                        <dd>
+                            <b-form-input type="password" v-model="userPassword" @blur="validation.userPassword.touched=true;"></b-form-input>
+                            <span class="validation-error" v-if="validation.userPassword.touched && !userPassword">Current password is required.</span>
+                        </dd>
+                        <dt>New password:</dt>
+                        <dd>
+                            <b-form-input type="password" v-model="newPassword" @blur="validation.newPassword.touched=true;"></b-form-input>
+                            <span class="validation-error" v-if="validation.newPassword.touched && !newPassword">New password is required.</span>
+                        </dd>
+                        <dt>New password confirm:</dt>
+                        <dd>
+                            <b-form-input type="password" v-model="confirmNewPassword" @blur="validation.confirmNewPassword.touched=true;"></b-form-input>
+                            <span class="validation-error" v-if="validation.confirmNewPassword.touched && !confirmNewPassword">Confirm new password is required.</span>
+                            <span class="validation-error"
+                                  v-if="newPassword && confirmNewPassword && validation.confirmNewPassword.touched && confirmNewPassword != newPassword">New and confirmed passwords must be the same.</span>
+                        </dd>
+                    </dl>
+                    <div class="button-container">
+                        <span class="update-result-msg" v-if="changePasswordResultShown" v-bind:class="{'err-msg': changePasswordFailed, 'normal-msg': !changePasswordFailed }">{{changePasswordResult}}</span>
+                        <button class="btn btn-primary" :disabled="isChangePasswordDisabled" @click="changePassword">Change Password..</button>
+                    </div>
+                </fieldset>
+            </div>
+         
+            <div class="left with-left-margin-20 conversation-msg-container">
+                <fieldset class="profile-fields-container conversation-fieldset">
+                    <legend>Communication with Administrator</legend>
+                    <dl>
+                        <dt>Type a message here:</dt>
+                        <dd>
+                            <div class="newMessage-input-container">
+                                <b-form-textarea v-model="newMessage" rows="5"></b-form-textarea>
+                            </div>
+
+                            <div class="button-container">
+                                <button class="btn btn-primary" :disabled="!newMessage" @click="sendMessage">Send..</button>
+                            </div>                          
+                        </dd>
+                    </dl>
+                    <dl>
+                        <dt>Messages history:</dt>
+                        <dd class="conversation-messages-list-container" id="conversation-messages-list-container">
+                            <ConversationMessages ref="conversationMessagesList" pageSize="50" :conversationId="conversationId" />
+                        </dd>
+                    </dl>
+                </fieldset>
+            </div>
         </div>
     </div>
 </template>
 <script>
     import UserInfo from '@/components/UserInfo.vue';
     import NavigationMenu from '@/components/NavigationMenu.vue';
+    import ConversationMessages from '@/components/ConversationMessages.vue';
 
     export default {
         data: function () {
@@ -81,6 +108,8 @@
                 changePasswordResult: '',
                 changePasswordResultShown: false,
                 changePasswordFailed: false,
+                conversationId: '',
+                newMessage: '',
                 validation: {
                     userName: {
                         inProcess: false,
@@ -105,6 +134,9 @@
                         touched: false
                     }
                 },
+
+                messagesScrollTop: 0,
+                messagesPage: 1,
 
                 showUpdateMessage: function (msg) {
                     this.updateResult = msg;
@@ -136,6 +168,26 @@
                 this.userEmail = userInfo.email;
             }
             this.originalUserInfo = Object.freeze(userInfo);
+
+            this.$apiClient.getAsync('api/conversation').then((response) => {
+                let conversation = response.data.conversation;
+                if (conversation) {
+                    this.conversationId = conversation.id;
+                }
+            });
+
+            let messagesContainer = document.getElementById('conversation-messages-list-container');
+            let $this = this;
+
+            messagesContainer.addEventListener('scroll', function (evt) {
+                let currentScrollTop = evt.target.scrollTop;
+                let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
+
+                $this.messagesScrollTop = currentScrollTop;
+                if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
+                    $this.$refs.conversationMessagesList.loadNextPage();
+                }               
+            });
         },
 
         methods: {            
@@ -192,7 +244,39 @@
                 this.$apiClient.postAsync('api/profile/changepassword', pwdData).then(() => {
                     this.showChangePasswordMessage("Password changed.", false);
                 }).catch((e) => this.showChangePasswordMessage(e.response && e.response.data, true));
+            },
+
+            sendMessage: function () {
+                const postMessage = () => {
+                    const data = {
+                        content: this.newMessage,
+                        conversationId: this.conversationId                        
+                    };
+
+                    this.$apiClient.postAsync('api/conversationmessages', data).then((newRowResponse) => {
+                        let content = newRowResponse.data.content;
+                        let dateAdded = newRowResponse.data.dateAdded;
+
+                        this.$refs.conversationMessagesList.addNewRow(content, dateAdded);
+                        this.newMessage = '';
+                    });
+                };
+
+                if (!this.conversationId) {
+                    this.$apiClient.postAsync('api/conversation').then((response) => {
+                        this.conversationId = response.data.conversationId;
+                        postMessage();
+                    });
+                } else {
+                    postMessage();
+                }                
             }
+
+            //onScroll: function (evt) {
+            //    console.log('Scrolled!');
+            //    console.log(evt.target.scrollHeight);
+            //    console.log(evt.target.scrollTop);
+            //}
         },
 
         computed: {
@@ -232,7 +316,8 @@
 
         components: {
             UserInfo,
-            NavigationMenu
+            NavigationMenu,
+            ConversationMessages
         }
     }
 </script>
@@ -241,6 +326,16 @@
         background-color: azure;
         height: calc(100% - 155px);
         padding-left: 10px;
+        overflow-y: auto;
+    }
+
+    .with-left-margin-20 {
+        margin-left: 20px;
+        width: auto;
+    }
+
+    .left {
+        float: left;
     }
 
     .profile-fields-container {
@@ -250,13 +345,21 @@
         border: 1px solid navy;
     }
 
-        .profile-fields-container > legend {
-            width: auto;
-        }
+    .conversation-msg-container {
+        width: calc(100% - 520px) !important;
+        min-width: 500px;
+        padding-right: 10px;
+        height: 100%;
+        padding-bottom: 10px;
+    }
 
-        .button-container {
-            text-align: right;
-        }
+    .profile-fields-container > legend {
+        width: auto;
+    }
+
+    .button-container {
+        text-align: right;
+    }
 
     .update-result-msg {
         padding-right: 10px;
@@ -269,5 +372,20 @@
 
     .normal-msg {
         color: darkgreen;
+    }
+
+    .newMessage-input-container {
+        margin-bottom: 15px;
+    }
+
+    .conversation-fieldset {
+        width: initial !important;
+        padding-right: 20px;
+        max-height: calc(100vh - 199px);       
+    }
+
+    .conversation-messages-list-container {
+        height: calc(100vh - 550px); 
+        overflow-y: auto;
     }
 </style>

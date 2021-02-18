@@ -39,6 +39,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("GetHelpTopic")]
         public async Task<IActionResult> GetHelpTopic(string helpSectionId, int ordinalNo, [FromServices] ILogger<HelpController> logger)
         {
+            if (string.IsNullOrEmpty(helpSectionId) || ordinalNo <= 0)
+            {
+                return BadRequest();
+            }    
+
             var topic = await _helpService.GetTopicBySectionId(helpSectionId, ordinalNo);
             if (topic == null)
             {
