@@ -12,23 +12,32 @@
     </div>
 </template>
 <script>
+    import { Subject } from 'rxjs';
+
     export default {
         props: {
-            pageSize: Object,
-            conversationId: Object
+            pageSize: Object,           
         },
         data: function () {
             return {
+                conversationId: '',
+                conversationId$: new Subject(),
                 completed: false,
-                loadedPages: [],
                 rows: [],
                 pageNumber: 0
             };
         },
         mounted: function () {
-           this.loadNextPage();
+            this.conversationId$.subscribe((convId) => {
+                this.conversationId = convId;
+                this.loadNextPage();
+            });
         },
         methods: {           
+            conversationReady: function (convId) {
+                this.conversationId$.next(convId);
+            },
+
             loadNextPage: function () {
                 if (!this.conversationId || this.completed) {
                     return;

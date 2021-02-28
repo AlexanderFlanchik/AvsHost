@@ -41,7 +41,8 @@ namespace Avs.StaticSiteHosting.Web
 
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
-            
+            services.AddScoped<IUserRoleService, UserRoleService>();
+
             services.AddScoped<ISiteService, SiteService>();
             services.AddScoped<IContentManager, ContentManager>();
             
@@ -114,6 +115,7 @@ namespace Avs.StaticSiteHosting.Web
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
                 endpoints.MapControllers();
                 endpoints.MapHub<UserNotificationHub>("/user-notification");
+                endpoints.MapHub<ConversationMessagesHub>("/conversation-messages");
             });
         }
     }

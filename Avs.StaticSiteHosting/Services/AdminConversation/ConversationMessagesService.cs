@@ -31,7 +31,8 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
             var findOptions = new FindOptions<ConversationMessage>()
             {
                 Limit = pageSize,
-                Skip = (pageNumber - 1) * pageSize
+                Skip = (pageNumber - 1) * pageSize,
+                Sort = new SortDefinitionBuilder<ConversationMessage>().Descending("DateAdded")
             };
 
             var conversationsMessagesQuery = await _conversationMessages.FindAsync(

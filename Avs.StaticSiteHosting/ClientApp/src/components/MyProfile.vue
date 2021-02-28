@@ -81,7 +81,7 @@
                     <dl>
                         <dt>Messages history:</dt>
                         <dd class="conversation-messages-list-container" id="conversation-messages-list-container">
-                            <ConversationMessages ref="conversationMessagesList" pageSize="50" :conversationId="conversationId" />
+                            <ConversationMessages ref="conversationMessagesList" pageSize="50" />
                         </dd>
                     </dl>
                 </fieldset>
@@ -173,6 +173,7 @@
                 let conversation = response.data.conversation;
                 if (conversation) {
                     this.conversationId = conversation.id;
+                    this.$refs.conversationMessagesList.conversationReady(this.conversationId);
                 }
             });
 
