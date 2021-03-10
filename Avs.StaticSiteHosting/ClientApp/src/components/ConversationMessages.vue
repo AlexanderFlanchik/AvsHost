@@ -60,7 +60,7 @@
             },
 
             addNewRow: function (content, dateAdded) {
-                this.rows.push({ content, dateAdded });
+                this.rows.unshift({ content, dateAdded });
             }
         }
     }

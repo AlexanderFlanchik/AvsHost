@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Avs.StaticSiteHosting.Web.DTOs
+﻿namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class ConversationModel
     {

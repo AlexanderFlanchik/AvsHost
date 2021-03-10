@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
@@ -17,13 +18,13 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 
     public class ConversationMessagesService : IConversationMessagesService
     {
-        private readonly IUserService _userService;
         private readonly IMongoCollection<ConversationMessage> _conversationMessages;
+        private readonly IMongoCollection<Conversation> _conversations;
 
-        public ConversationMessagesService(IUserService userService, MongoEntityRepository entityRepository)
+        public ConversationMessagesService(MongoEntityRepository entityRepository)
         {
             _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>("ConversationMessages");
-            _userService = userService;
+            _conversations = entityRepository.GetEntityCollection<Conversation>("Conversations");
         }
 
         public async Task<IEnumerable<ConversationMessageModel>> GetConversationMessagesAsync(string conversationId, int pageNumber, int pageSize)
@@ -51,8 +52,23 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 
         public async Task<ConversationMessageModel> CreateConversationMessage(string authorId, string conversationId, string content)
         {
-            var newConversationMessage = new ConversationMessage { Content = content, ConversationID = conversationId, UserID = authorId, DateAdded = DateTime.UtcNow };
-            await _conversationMessages.InsertOneAsync(newConversationMessage).ConfigureAwait(false);
+            var cf = new FilterDefinitionBuilder<Conversation>().Where(c => c.Id == conversationId);
+            if (!(await _conversations.FindAsync(cf)).Any())
+            {
+                return null; // This is a bad request with invalid conversation ID
+            }
+
+            var messageDate = DateTime.UtcNow;
+            var newConversationMessage = new ConversationMessage 
+                { 
+                    Content = content, 
+                    ConversationID = conversationId, 
+                    UserID = authorId, 
+                    DateAdded = messageDate 
+                };
+
+            newConversationMessage.ViewedBy.Add(authorId);
+            await _conversationMessages.InsertOneAsync(newConversationMessage).ConfigureAwait(false);          
 
             return new ConversationMessageModel 
             { 

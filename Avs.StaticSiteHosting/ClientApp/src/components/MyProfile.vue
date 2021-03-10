@@ -63,7 +63,7 @@
                 </fieldset>
             </div>
          
-            <div class="left with-left-margin-20 conversation-msg-container">
+            <div class="left with-left-margin-20 conversation-msg-container" v-if="!isAdmin">
                 <fieldset class="profile-fields-container conversation-fieldset">
                     <legend>Communication with Administrator</legend>
                     <dl>
@@ -97,6 +97,7 @@
     export default {
         data: function () {
             return {
+                isAdmin: false,
                 userName: '',
                 userEmail: '',
                 userPassword: '',
@@ -166,6 +167,7 @@
             if (userInfo) {
                 this.userName = userInfo.name;
                 this.userEmail = userInfo.email;
+                this.isAdmin = userInfo.isAdmin;
             }
             this.originalUserInfo = Object.freeze(userInfo);
 
@@ -253,7 +255,7 @@
                         content: this.newMessage,
                         conversationId: this.conversationId                        
                     };
-
+                    console.log(data);
                     this.$apiClient.postAsync('api/conversationmessages', data).then((newRowResponse) => {
                         let content = newRowResponse.data.content;
                         let dateAdded = newRowResponse.data.dateAdded;
@@ -264,8 +266,11 @@
                 };
 
                 if (!this.conversationId) {
+                    console.log('No conversation id, creating...');
                     this.$apiClient.postAsync('api/conversation').then((response) => {
-                        this.conversationId = response.data.conversationId;
+                        console.log(response);
+                        this.conversationId = response.data.id;
+                        console.log('conversation id ' + this.conversationId);
                         postMessage();
                     });
                 } else {

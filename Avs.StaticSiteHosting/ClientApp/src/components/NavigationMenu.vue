@@ -7,6 +7,9 @@
             <li class="navigation-menu-item">
                 <router-link to ="/profile" class="navigation-menu-item-link" active-class="link-active">My Profile</router-link>
             </li>
+            <li class="navigation-menu-item" v-if="isAdmin">
+                <router-link to ="/conversations" class="navigation-menu-item-link" active-class="link-active">Conversations</router-link>
+            </li>
             <li class="navigation-menu-item">
                 <router-link to="/help" class="navigation-menu-item-link" active-class="link-active">Help</router-link>
             </li>
@@ -15,7 +18,16 @@
 </template>
 <script>
     export default {
+        data: function () {
+            return {
+                isAdmin: false
+            };
+        },
 
+        mounted: function () {
+            let userInfo = this.$authService.getUserInfo();
+            this.isAdmin = userInfo ? userInfo.isAdmin : false;
+        }
     }
 </script>
 <style>

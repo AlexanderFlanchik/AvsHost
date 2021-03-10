@@ -14,6 +14,7 @@ import MyProfile from './components/MyProfile.vue';
 import CreateOrUpdateSite from './components/CreateOrUpdateSite.vue';
 import Help from './components/Help.vue';
 import UserProfile from './components/UserProfile.vue';
+import Conversations from './components/Conversations.vue';
 import ApiClient from './services/ApiClient';
 import { UserNotificationService } from './services/UserNotificationService';
 
@@ -34,6 +35,7 @@ const routes = [
     { path: '/registered', component: Registered },
     { path: '/profile', component: MyProfile },
     { path: '/help', component: Help },
+    { path: '/conversations', component: Conversations },
     { path: '/sites/create', component: CreateOrUpdateSite },
     { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true },
     { path: '/user-profile/:userId', component: UserProfile, props: true }

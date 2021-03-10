@@ -30,14 +30,26 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(CreateConversationMessageModel message, [FromServices] IUserRoleService userRoleService)
         {
+            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest();
+            }
+
             var services = HttpContext.RequestServices;
             var conversation = (IHubContext<ConversationMessagesHub>)services.GetService(typeof(IHubContext<ConversationMessagesHub>));
             
             var createdMessage = await _conversationMessagesService.CreateConversationMessage(
-                    User.FindFirst(AuthSettings.UserIdClaim)?.Value,
+                    userId,
                     message.ConversationId,
                     message.Content);
 
+            if (createdMessage == null)
+            {
+                return BadRequest($"Conversation not found for ID = {message.ConversationId}");
+            }
+
+            // Send notification to Admin UI through SignalR
             var receiverIds = await userRoleService.GetAdminUserIds().ConfigureAwait(false);
             await conversation.Clients.Users(receiverIds).SendAsync("new-conversation-message", createdMessage);
 
