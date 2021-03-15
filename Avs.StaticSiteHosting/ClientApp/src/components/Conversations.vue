@@ -8,7 +8,7 @@
         <NavigationMenu />
         <div class="conversations-content">
             <div class="left">
-                <ConversationsList/>
+                <ConversationsList />
             </div>
 
             <div class="left with-left-margin-20">
@@ -51,7 +51,6 @@
     .left {
         float: left;
     }
-
 
     .with-left-margin-20 {
         margin-left: 20px;

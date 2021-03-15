@@ -1,6 +1,9 @@
 ﻿using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
@@ -24,8 +27,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 return BadRequest();
             }
+            
+            var (total, conversations) = await _conversationService.GetLatestConversations(pageNumber, pageSize, userId);
+            Response.Headers.Add("total-conversations", new StringValues(total.ToString()));
 
-            return Ok(await _conversationService.GetLatestConversations(pageNumber, pageSize, userId));
+            return Ok(conversations);
         }
     }
 }

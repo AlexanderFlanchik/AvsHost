@@ -11,7 +11,14 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 {
     public interface IConversationService
     {
-        Task<IEnumerable<ConversationModel>> GetLatestConversations(int pageNumber, int pageSize, string currentUserId);
+        /// <summary>
+        /// Gets a list with conversations that contain unread messages for user with ID = currentUserId
+        /// </summary>
+        /// <param name="pageNumber">Page</param>
+        /// <param name="pageSize">Page size</param>
+        /// <param name="currentUserId">Current user ID</param>
+        /// <returns>total conversation amount and paged conversation list.</returns>
+        Task<(long, IEnumerable<ConversationModel>)> GetLatestConversations(int pageNumber, int pageSize, string currentUserId);
         Task<ConversationModel> GetConversationByAuthorID(string authorId);
         Task<ConversationModel> CreateConversation(ConversationModel conversation);
     }
@@ -28,15 +35,16 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
             _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>("ConversationMessages");
         }
 
-        public async Task<IEnumerable<ConversationModel>> GetLatestConversations(int pageNumber, int pageSize, string currentUserId)
+        public async Task<(long, IEnumerable<ConversationModel>)> GetLatestConversations(int pageNumber, int pageSize, string currentUserId)
         {
             var filter = Builders<ConversationMessage>.Filter.Where(c => !c.ViewedBy.Contains(currentUserId));
-            var query = _conversationMessages.Aggregate()
+            var aggr = _conversationMessages.Aggregate()
                 .Match(filter)
                 .SortByDescending(d => d.DateAdded)
-                .Group(k => k.ConversationID, g => new { ConversationId = g.Key, UnreadMessages = g.Count() })
-                .Skip((pageNumber - 1) * pageSize)
-                .Limit(pageSize);
+                .Group(k => k.ConversationID, g => new { ConversationId = g.Key, UnreadMessages = g.Count() });
+
+            var total = (await aggr.Count().FirstAsync())?.Count ?? 0;
+            var query = aggr.Skip((pageNumber - 1) * pageSize).Limit(pageSize);
 
             var unreadConversations = await query.ToListAsync();
             var convIds = unreadConversations.Select(id => id.ConversationId).ToArray();
@@ -49,7 +57,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                           join c in conversationsFound on uc.ConversationId equals c.Id
                           select new ConversationModel { Id = c.Id, Name = c.Name, AuthorID = c.AuthorID, UnreadMessages = uc.UnreadMessages };
            
-            return results;
+            return (total, results);
         }
 
         public async Task<ConversationModel> CreateConversation(ConversationModel conversation)
