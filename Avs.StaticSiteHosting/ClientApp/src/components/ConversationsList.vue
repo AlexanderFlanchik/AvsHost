@@ -1,7 +1,9 @@
 ﻿<template>
     <div class="unread-conversations-container">
         <div v-if="conversations && conversations.length">
-            <div class="conversation-row" v-for="conversation in conversations" :key="conversation">
+            <div class="conversation-row" v-for="conversation in conversations" :key="conversation" 
+                 v-bind:class="{'selected-conversation': conversation.id == selectedConversationId }"
+                 @click="selectConversation(conversation.id)">
                 <span class="conversation-name">{{conversation.name}}</span>
                 <span class="badge badge-pill badge-primary" style="margin-left: 5px;" v-if="conversation.unreadMessages">{{conversation.unreadMessages}}</span>
             </div>
@@ -16,6 +18,9 @@
 </template>
 <script>
     export default {
+        props: {
+            selectedConversationIdSubject: Object
+        },
         data: function () {
             return {
                 selectedConversationId: '',
@@ -50,8 +55,16 @@
             loadMore: function () {
                 this.pageNumber++;
                 this.loadConversations();
+            },
+
+            selectConversation: function (conversationId) {
+                console.log(conversationId + ' selected');
+                this.selectedConversationId = conversationId;
+                if (this.selectedConversationIdSubject) {
+                    this.selectedConversationIdSubject.next(this.selectedConversationId);
+                }
             }
-        }
+        }       
     }
 </script>
 <style scoped>
@@ -59,9 +72,15 @@
         min-width: 200px;
     }
 
+    .selected-conversation {
+        background-color: darkgoldenrod;
+        font-weight: bold;
+    }
+
     .conversation-row {
         margin-top: 5px;
         margin-bottom: 5px;
+        cursor: pointer;
     }
 
     .no-conversation-message {        

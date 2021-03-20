@@ -12,5 +12,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         
         [Required]
         public string Content { get; set; }
+
+        public bool IsAdminMessage { get; set; }
     }
 }

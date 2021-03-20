@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models.Conversations;
 using Avs.StaticSiteHosting.Web.Services.Identity;
+using System.Linq.Expressions;
 
 namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 {
@@ -19,7 +20,26 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
         /// <param name="currentUserId">Current user ID</param>
         /// <returns>total conversation amount and paged conversation list.</returns>
         Task<(long, IEnumerable<ConversationModel>)> GetLatestConversations(int pageNumber, int pageSize, string currentUserId);
+        
+        /// <summary>
+        /// Gets conversation entity by its ID.
+        /// </summary>
+        /// <param name="conversationId">Conversation ID</param>
+        /// <returns></returns>
+        Task<ConversationModel> GetConversationById(string conversationId);
+        
+        /// <summary>
+        /// Gets conversation by its author's ID.
+        /// </summary>
+        /// <param name="authorId">Author's ID</param>
+        /// <returns></returns>               
         Task<ConversationModel> GetConversationByAuthorID(string authorId);
+
+        /// <summary>
+        /// Creates a new user-admin conversation.
+        /// </summary>
+        /// <param name="conversation">Conversation data</param>
+        /// <returns></returns>
         Task<ConversationModel> CreateConversation(ConversationModel conversation);
     }
 
@@ -40,8 +60,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
             var filter = Builders<ConversationMessage>.Filter.Where(c => !c.ViewedBy.Contains(currentUserId));
             var aggr = _conversationMessages.Aggregate()
                 .Match(filter)
-                .SortByDescending(d => d.DateAdded)
-                .Group(k => k.ConversationID, g => new { ConversationId = g.Key, UnreadMessages = g.Count() });
+                .Group(k => k.ConversationID, g => new { ConversationId = g.Key, LastUpdated = g.Max(m => m.DateAdded), UnreadMessages = g.Count() });
 
             var total = (await aggr.Count().FirstAsync())?.Count ?? 0;
             var query = aggr.Skip((pageNumber - 1) * pageSize).Limit(pageSize);
@@ -55,8 +74,15 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 
             var results = from uc in unreadConversations
                           join c in conversationsFound on uc.ConversationId equals c.Id
-                          select new ConversationModel { Id = c.Id, Name = c.Name, AuthorID = c.AuthorID, UnreadMessages = uc.UnreadMessages };
-           
+                          orderby uc.LastUpdated descending
+                          select new ConversationModel
+                          {
+                              Id = c.Id,
+                              Name = c.Name,
+                              AuthorID = c.AuthorID,
+                              UnreadMessages = uc.UnreadMessages
+                          };
+
             return (total, results);
         }
 
@@ -85,23 +111,27 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
             };
         }
 
-        public async Task<ConversationModel> GetConversationByAuthorID(string authorId)
+        public Task<ConversationModel> GetConversationByAuthorID(string authorId) => GetConversationByQueryAsync(c => c.AuthorID == authorId);        
+        
+        public Task<ConversationModel> GetConversationById(string conversationId) => GetConversationByQueryAsync(c => c.Id == conversationId);
+        
+        async Task<ConversationModel> GetConversationByQueryAsync(Expression<Func<Conversation, bool>> filter)
         {
             var existingConversation = (await _conversations.FindAsync(
-                    new FilterDefinitionBuilder<Conversation>().Where(c => c.AuthorID == authorId)).ConfigureAwait(false)
-                   ).FirstOrDefault();
+                     new FilterDefinitionBuilder<Conversation>().Where(filter)).ConfigureAwait(false)
+                    ).FirstOrDefault();
 
             if (existingConversation != null)
             {
-                return new ConversationModel 
-                { 
-                    Id = existingConversation.Id, 
-                    Name = existingConversation.Name, 
-                    AuthorID = authorId
+                return new ConversationModel
+                {
+                    Id = existingConversation.Id,
+                    Name = existingConversation.Name,
+                    AuthorID = existingConversation.AuthorID
                 };
             }
 
             return null;
-        }              
+        }
     }
 }

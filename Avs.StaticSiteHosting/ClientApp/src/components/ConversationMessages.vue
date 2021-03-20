@@ -30,6 +30,11 @@
         mounted: function () {
             this.conversationId$.subscribe((convId) => {
                 this.conversationId = convId;
+                if (this.rows.length) {
+                    this.rows = [];
+                    this.pageNumber = 0;
+                }
+
                 this.loadNextPage();
             });
         },
