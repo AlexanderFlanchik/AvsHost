@@ -17,3 +17,4 @@
 /Avs.StaticSiteHosting.DataMigrator/obj
 /Avs.StaticSiteHosting/bin/Debug/net5.0
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net5.0
+/Avs.StaticSiteHosting/node_modules/*
