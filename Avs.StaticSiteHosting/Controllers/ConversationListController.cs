@@ -11,7 +11,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
-    public class ConversationListController : ControllerBase
+    public class ConversationListController : BaseController
     {
         private readonly IConversationService _conversationService;
 
@@ -21,14 +21,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
 
         public async Task<IActionResult> Get(int pageNumber, int pageSize)
-        {
-            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest();
-            }
-            
-            var (total, conversations) = await _conversationService.GetLatestConversations(pageNumber, pageSize, userId);
+        {                       
+            var (total, conversations) = await _conversationService.GetLatestConversations(pageNumber, pageSize, CurrentUserId);
             Response.Headers.Add("total-conversations", new StringValues(total.ToString()));
 
             return Ok(conversations);

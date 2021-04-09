@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -45,26 +46,44 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
 
             var services = HttpContext.RequestServices;
-            var conversationHub = (IHubContext<ConversationMessagesHub>)services.GetService(typeof(IHubContext<ConversationMessagesHub>));
+            var notificationHub = (IHubContext<UserNotificationHub>)services.GetService(typeof(IHubContext<UserNotificationHub>));
 
             var createdMessage = await _conversationMessagesService.CreateConversationMessage(
                     userId,
                     message.ConversationId,
-                    message.Content);
+                    message.Content
+            );
 
             if (!message.IsAdminMessage)
             {
-                // Send notification to Admin UI through SignalR
+                // Get IDs of Admin users
                 var receiverIds = await userRoleService.GetAdminUserIds().ConfigureAwait(false);
-                await conversationHub.Clients.Users(receiverIds).SendAsync(NEW_MESSAGE, createdMessage);
+                
+                // Send notification to Admin UI through SignalR
+                await notificationHub.Clients.Users(receiverIds).SendAsync(NEW_MESSAGE, createdMessage);
             }
             else
             {
-                // Notify the user
-                await conversationHub.Clients.User(conversation.AuthorID).SendAsync(NEW_MESSAGE, createdMessage);
+                // Notify the user who created the conversation
+                await notificationHub.Clients.User(conversation.AuthorID).SendAsync(NEW_MESSAGE, createdMessage);
             }
 
             return Ok(createdMessage);
-        }        
+        }
+
+        [HttpPost]
+        [Route("makeread")]
+        public async Task<IActionResult> MakeMessagesRead(IEnumerable<string> messageIds)
+        {
+            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return BadRequest();
+            }
+
+            await _conversationMessagesService.MakeMessagesRead(messageIds, userId);
+
+            return Ok();
+        }
     }
 }

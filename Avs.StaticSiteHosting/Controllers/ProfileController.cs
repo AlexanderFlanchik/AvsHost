@@ -152,7 +152,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return NotFound();
             }    
 
-            return Ok(new { profile.Status, profile.Comment });
+            return Ok(new { userId, profile.Status, profile.Comment });
         }
 
         private async Task<(User, IActionResult)> ValidateCurrentUserAsync()

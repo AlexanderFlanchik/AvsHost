@@ -20,6 +20,12 @@ var UserNotificationService = /** @class */ (function () {
         }
         this.connection.on("UserStatusChanged", function (data) { return handler(data.currentStatus); });
     };
+    UserNotificationService.prototype.subscribeForUnreadConversation = function (handler) {
+        if (!this.connection) {
+            this.init();
+        }
+        this.connection.on("new-conversation-message", function (msg) { return handler(msg); });
+    };
     return UserNotificationService;
 }());
 exports.UserNotificationService = UserNotificationService;

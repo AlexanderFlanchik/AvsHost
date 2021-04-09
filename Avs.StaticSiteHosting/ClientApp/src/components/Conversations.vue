@@ -8,7 +8,7 @@
         <NavigationMenu />
         <div class="conversations-content">
             <div class="left conversations-list">
-                <ConversationsList :selectedConversationIdSubject="selectedConversationId$"/>
+                <ConversationsList :selectedConversationIdSubject="selectedConversationId$" ref="conversationsList" />
             </div>
 
             <div class="left conversation-message-list">
@@ -37,6 +37,38 @@
     import ConversationMessages from '@/components/ConversationMessages.vue';
     import { Subject } from 'rxjs';
 
+    const MarkReadMessagesQueue = function (postHandler) {
+        const self = this;
+        let messages = [];      
+        let interval = null;
+
+        self.addMessage = function (msg) {
+            let ids = messages.map(m => m.id);
+            if (ids.indexOf(msg.id) >= 0) {
+                return;
+            }
+
+            messages.push(msg);
+
+            if (!interval) {
+                startProcessing();
+            }
+        };
+
+        function startProcessing() {
+            interval = setInterval(() => {
+                postHandler(messages)
+                    .then((ids) => {
+                        messages = messages.filter(m => ids.indexOf(m.id) < 0);
+                        if (!messages.length) {
+                            clearInterval(interval);
+                            interval = null;
+                        }
+                    });
+            }, 1000);
+        }
+    };
+
     export default {
         data: function() {
             return {
@@ -45,23 +77,76 @@
                 buttonsEnabled: false,
                 newMessage: '',
                 messagesScrollTop: 0,
+                messagesToMakeRead: new MarkReadMessagesQueue(async (msgs) => {
+                    return new Promise((resolve, reject) => {
+                        let ids = msgs.map(m => m.id);
+                        this.$apiClient.postAsync('api/conversationmessages/makeread', ids)
+                            .then(() => {                                
+                                this.$refs.conversationMessagesList.markAsViewed(ids);
+                                this.$refs.conversationsList.updateConversation(this.selectedConversationId, ids.length);
+
+                                resolve(ids);
+                            })
+                            .catch((err) => reject(err));
+                    });
+                })
             };
         },
         
         mounted: function () {
+            let messagesContainer = document.getElementsByClassName('conversation-messages-container')[0];
+            const $this = this;
+
+            const getUnreadRows = (containerTop) => {
+                if (typeof containerTop == 'undefined') {
+                    let containerRect = messagesContainer.getBoundingClientRect();
+                    containerTop = containerRect.top;
+                }
+
+                let inner = messagesContainer.children[0];
+                let messageRowsList = inner.children[0];
+                let messagesRows = messageRowsList.children;
+                let containerBottom = containerTop + messagesContainer.clientHeight;
+
+                let visibleUnreadMessages = Array.from(messagesRows).filter(m => {
+                    let rect = m.getBoundingClientRect();
+                    let isVisible = (rect.top >= containerTop && rect.top < containerBottom) ||
+                        (rect.bottom > containerTop && rect.bottom <= containerBottom) ||
+                        (rect.height > messagesContainer.clientHeight && rect.top <= containerTop && rect.bottom >= containerBottom);
+
+                    isVisible = isVisible && m.getAttribute('isviewed') == "false";
+
+                    return isVisible;
+                });
+
+                return visibleUnreadMessages;
+            };
+
             this.selectedConversationId$.subscribe((id) => {
-                console.log("New conversation selected. Id = " + id);
                 this.selectedConversationId = id;
                 this.buttonsEnabled = true;
+                this.$refs.conversationMessagesList.onFirstLoaded(() => {
+                    let visibleUnreadMessages = getUnreadRows();
+                    for (let m of visibleUnreadMessages) {
+                        $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
+                    }
+                });
                 this.$refs.conversationMessagesList.conversationReady(id);
             });
 
-            let messagesContainer = document.getElementsByClassName('conversation-messages-container')[0];
-            var $this = this;
+            this.$userNotificationService.subscribeForUnreadConversation((msg) => {
+                // new message in conversations
+                this.$refs.conversationsList.onNewMessage(msg);
+            });
 
             messagesContainer.addEventListener('scroll', function (evt) {
                 let currentScrollTop = evt.target.scrollTop;
                 let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
+                let visibleUnreadMessages = getUnreadRows(currentScrollTop);
+
+                for (let m of visibleUnreadMessages) {
+                    $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
+                }
 
                 $this.messagesScrollTop = currentScrollTop;
                 if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
@@ -71,13 +156,10 @@
         },
         methods: {
             sendMessage: function () {
-                console.log('Sending message: ' + this.newMessage);
                 let message = { conversationId: this.selectedConversationId, content: this.newMessage, isAdminMessage: true };
                 this.$apiClient.postAsync('api/conversationmessages', message)
                     .then((response) => {
                         let messageData = response.data;
-                        console.log('Message sent.');
-                        console.log(messageData);
                         this.clearMessage();
                         this.$refs.conversationMessagesList.addNewRow(messageData.content, messageData.dateAdded);
                     });                

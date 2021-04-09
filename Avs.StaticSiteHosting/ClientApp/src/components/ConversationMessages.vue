@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="messages-list-container">
         <div v-if="rows && rows.length">
-            <div v-for="row in rows" :key="row" class="message-row">
+            <div v-for="row in rows" :key="row" class="message-row" :id="row.id" :isViewed="(row.viewedBy.indexOf(userId) >= 0).toString()">
                 <div class="message-date">{{row.dateAdded}}</div>
                 <div class="message-content">{{row.content}}</div>
             </div>
@@ -24,16 +24,21 @@
                 conversationId$: new Subject(),
                 completed: false,
                 rows: [],
-                pageNumber: 0
+                firstLoaded: false,
+                firstLoadedCallback: null,
+                pageNumber: 0,
+                userId: '',
             };
         },
         mounted: function () {
+            this.userId = localStorage.getItem('user-id');
             this.conversationId$.subscribe((convId) => {
                 this.conversationId = convId;
                 if (this.rows.length) {
-                    this.rows = [];
-                    this.pageNumber = 0;
+                    this.rows = [];                   
                 }
+                this.completed = false;
+                this.pageNumber = 0;
 
                 this.loadNextPage();
             });
@@ -60,12 +65,38 @@
                         for (let i = 0; i < newRows.length; i++) {
                             let newRow = newRows[i];
                             this.rows.push(newRow);
-                        }                       
-                    });                
+                        }
+
+                        if (!this.firstLoaded) {
+                            setTimeout(() => {
+                                console.log('firstLoadedCallback fired.');
+                                this.firstLoadedCallback && this.firstLoadedCallback();
+                            }, 50);
+                        }
+                    });
             },
 
             addNewRow: function (content, dateAdded) {
-                this.rows.unshift({ content, dateAdded });
+                this.rows.unshift({ content, dateAdded, viewedBy: [ this.userId ] });
+            },
+
+            markAsViewed: async function (rowIds) {
+                return new Promise((resolve) => {
+                    let rowsToUpdate = this.rows.filter(r => rowIds.indexOf(r.id) >= 0);
+                    if (rowsToUpdate && rowsToUpdate.length) {
+                        for (var i = 0; i < rowsToUpdate.length; i++) {
+                            let r = rowsToUpdate[i];
+                            r.viewedBy.push(this.userId);
+                        }
+                    }
+
+                    resolve(rowsToUpdate);
+                });
+            },
+
+            onFirstLoaded: function (firstLoadedCallback) {
+                console.log('firstLoadedCallback set');
+                this.firstLoadedCallback = firstLoadedCallback;
             }
         }
     }

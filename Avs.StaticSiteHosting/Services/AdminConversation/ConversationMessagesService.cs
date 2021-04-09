@@ -1,11 +1,9 @@
 ﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models.Conversations;
-using Avs.StaticSiteHosting.Web.Services.Identity;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
@@ -14,6 +12,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
     {
         Task<IEnumerable<ConversationMessageModel>> GetConversationMessagesAsync(string conversationId, int pageNumber, int pageSize);
         Task<ConversationMessageModel> CreateConversationMessage(string authorId, string conversationId, string content);
+        Task MakeMessagesRead(IEnumerable<string> messageIds, string userId);
     }
 
     public class ConversationMessagesService : IConversationMessagesService
@@ -23,8 +22,8 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 
         public ConversationMessagesService(MongoEntityRepository entityRepository)
         {
-            _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>("ConversationMessages");
-            _conversations = entityRepository.GetEntityCollection<Conversation>("Conversations");
+            _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>(GeneralConstants.CONVERSATION_MESSAGE_COLLECTION);
+            _conversations = entityRepository.GetEntityCollection<Conversation>(GeneralConstants.CONVERSATION_COLLECTION);
         }
 
         public async Task<IEnumerable<ConversationMessageModel>> GetConversationMessagesAsync(string conversationId, int pageNumber, int pageSize)
@@ -46,7 +45,9 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                     {
                         Id = m.Id,
                         Content = m.Content,
-                        DateAdded = m.DateAdded
+                        DateAdded = m.DateAdded,
+                        ConversationId = m.ConversationID,
+                        ViewedBy = m.ViewedBy.ToArray()
                     });
         }
 
@@ -75,8 +76,17 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                 Id = newConversationMessage.Id, 
                 AuthorID = authorId, 
                 Content = content, 
-                DateAdded = newConversationMessage.DateAdded 
+                DateAdded = newConversationMessage.DateAdded,
+                ConversationId = newConversationMessage.ConversationID
             };
+        }
+
+        public async Task MakeMessagesRead(IEnumerable<string> messageIds, string userId)
+        {
+            var filter = new FilterDefinitionBuilder<ConversationMessage>().In(m => m.Id, messageIds);
+            var update = new UpdateDefinitionBuilder<ConversationMessage>().PushEach(v => v.ViewedBy, new[] { userId });
+            
+            await _conversationMessages.UpdateManyAsync(filter, update).ConfigureAwait(false);                       
         }
     }
 }

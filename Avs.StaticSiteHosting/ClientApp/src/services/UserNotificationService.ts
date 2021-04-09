@@ -22,4 +22,12 @@ export class UserNotificationService {
 
         this.connection.on("UserStatusChanged", (data: any) => handler(data.currentStatus));
     }
+
+    public subscribeForUnreadConversation(handler: (data: any) => void) {
+        if (!this.connection) {
+            this.init();
+        }
+
+        this.connection.on("new-conversation-message", (msg: any) => handler(msg));
+    }
 }

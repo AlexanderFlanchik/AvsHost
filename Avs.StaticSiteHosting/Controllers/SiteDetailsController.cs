@@ -16,7 +16,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SiteDetailsController : Controller
+    public class SiteDetailsController : BaseController
     {
         private readonly ISiteService _siteService;
         private readonly IContentManager _contentManager;
@@ -35,7 +35,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             => Json(!await _siteService.CheckSiteNameUsedAsync(siteName, siteId));
 
         [HttpGet("{siteId}")]
-        public async Task<ActionResult<SiteDetailsResponse>> GetSiteDetails(string siteId, [FromServices] IUserService userService)
+        public async Task<ActionResult<SiteDetailsResponse>> GetSiteDetails(string siteId)
         {
             var site = await _siteService.GetSiteByIdAsync(siteId);
             if (site == null)
@@ -43,15 +43,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return NotFound();
             }
 
-            var userId = User.Claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
-            var currentUser = await userService.GetUserByIdAsync(userId).ConfigureAwait(false);
-            if (currentUser == null)
-            {
-                return BadRequest("Cannot find user by ID provided.");
-            }
-
             // User can edit only own site installations
-            if (userId != site.CreatedBy.Id)
+            if (CurrentUserId != site.CreatedBy.Id)
             {
                 return Unauthorized();
             }
@@ -85,8 +78,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return Conflict("This site name is already in use.");
             }
 
-            var userId = User.Claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
-            var currentUser = await userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            var currentUser = await userService.GetUserByIdAsync(CurrentUserId).ConfigureAwait(false);
             if (currentUser == null)
             {
                 return BadRequest("Cannot find user by ID provided.");
@@ -112,7 +104,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
 
         [HttpPut("{siteId}")]
-        public async Task<IActionResult> UpdateSite(string siteId, SiteDetailsModel siteDetails, [FromServices] IUserService userService)
+        public async Task<IActionResult> UpdateSite(string siteId, SiteDetailsModel siteDetails)
         {
             var siteToUpdate = await _siteService.GetSiteByIdAsync(siteId).ConfigureAwait(false);
             if (siteToUpdate == null)
@@ -124,15 +116,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 return Conflict("This site name is already in use.");
             }
-
-            var userId = User.Claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
-            var currentUser = await userService.GetUserByIdAsync(userId).ConfigureAwait(false);
-            if (currentUser == null)
-            {
-                return BadRequest("Cannot find user by ID provided.");
-            }
-                      
-            if (siteToUpdate.CreatedBy.Id != userId)
+                                  
+            if (siteToUpdate.CreatedBy.Id != CurrentUserId)
             {
                 return Unauthorized();
             }

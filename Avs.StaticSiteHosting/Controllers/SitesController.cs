@@ -15,7 +15,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SitesController : ControllerBase
+    public class SitesController : BaseController
     {
         private readonly ISiteService _siteService;
 
@@ -39,23 +39,14 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var roles = claims.Where(r => r.Type == ClaimsIdentity.DefaultRoleClaimType).ToArray();
             var isAdmin = roles.Any(r => r.Value == GeneralConstants.ADMIN_ROLE);
 
-            var calcAmountsTasks = new List<Task<int>>();
-            string ownerUserID = null;
-
-            if (!isAdmin)
-            {
-                var userId = claims.FirstOrDefault(r => r.Type == AuthSettings.UserIdClaim)?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return BadRequest("Invalid user.");
-                }
-
-                ownerUserID = userId;
-            }
-            
+            string ownerUserID = !isAdmin ? CurrentUserId : null;                        
             query.OwnerId = ownerUserID;
-            calcAmountsTasks.AddRange(new[] { _siteService.GetSitesAmountAsync(ownerUserID), _siteService.GetActiveSitesAmountAsync(ownerUserID) });
-            var amounts = await Task.WhenAll(calcAmountsTasks.ToArray()).ConfigureAwait(false);
+       
+            var amounts = await Task.WhenAll(new[]
+                    {
+                        _siteService.GetSitesAmountAsync(ownerUserID),
+                        _siteService.GetActiveSitesAmountAsync(ownerUserID)
+                    }).ConfigureAwait(false);
                        
             Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
             Response.Headers.Add(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));

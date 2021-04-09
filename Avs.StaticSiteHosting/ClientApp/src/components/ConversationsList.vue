@@ -63,6 +63,32 @@
                 if (this.selectedConversationIdSubject) {
                     this.selectedConversationIdSubject.next(this.selectedConversationId);
                 }
+            },
+            onNewMessage: function (messageData) {
+                let conversationId = messageData.conversationId;
+                let foundConversation = this.conversations.find(c => c.id == conversationId);
+                if (foundConversation) {
+                    let unread = foundConversation.unreadMessages || 0;
+                    foundConversation.unreadMessages = unread + 1;
+                    let i = this.conversations.indexOf(foundConversation);
+                    this.conversations.splice(i, 1);
+                    this.conversations.unshift(foundConversation);
+                } else {
+                    this.$apiClient.getAsync(`api/conversation/${conversationId}`).then((response) => {
+                        console.log(response.data);
+                        let conversation = response.data.conversation;
+                        this.conversations.unshift({ id: conversationId, name: conversation.name, unreadMessages: 1 });
+                    });
+                }
+            },
+
+            updateConversation: function (conversationId, readMessagesCount) {
+                let conversation = this.conversations.find(c => c.id == conversationId);
+                if (!conversation) {
+                    return;
+                }
+
+                conversation.unreadMessages = conversation.unreadMessages >= readMessagesCount ? conversation.unreadMessages - readMessagesCount : 0;
             }
         }       
     }

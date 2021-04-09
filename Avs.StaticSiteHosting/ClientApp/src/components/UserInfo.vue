@@ -44,6 +44,7 @@
                     } else {
                         this.$authService.unLockUser();
                     }
+                    localStorage.setItem('user-id', info.userId);
 
                     console.log('status:' + this.status);
                 });

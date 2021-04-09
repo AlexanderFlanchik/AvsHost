@@ -109,13 +109,12 @@ namespace Avs.StaticSiteHosting.Web
             // Auth is only required for dashboard Web API
             app.UseAuthentication();
             app.UseAuthorization();
-
+            
             app.UseEndpoints(endpoints =>
-            {
+            {               
                 endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
                 endpoints.MapControllers();
                 endpoints.MapHub<UserNotificationHub>("/user-notification");
-                endpoints.MapHub<ConversationMessagesHub>("/conversation-messages");
             });
         }
     }

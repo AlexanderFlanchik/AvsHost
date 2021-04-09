@@ -7,6 +7,7 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models.Conversations;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using System.Linq.Expressions;
+using static Avs.StaticSiteHosting.Web.GeneralConstants;
 
 namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
 {
@@ -41,6 +42,13 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
         /// <param name="conversation">Conversation data</param>
         /// <returns></returns>
         Task<ConversationModel> CreateConversation(ConversationModel conversation);
+
+        /// <summary>
+        /// Checks if there is any unread conversations for user with Id specified.
+        /// </summary>
+        /// <param name="userId">User ID.</param>
+        /// <returns>true if there are unread messages for the user specified, otherwise false.</returns>
+        Task<bool> AnyUserUnreadConversations(string userId);
     }
 
     public class ConversationService : IConversationService
@@ -48,11 +56,22 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
         private readonly IUserService _userService;
         private readonly IMongoCollection<Conversation> _conversations;
         private readonly IMongoCollection<ConversationMessage> _conversationMessages;
+
         public ConversationService(MongoEntityRepository entityRepository, IUserService userService)
         {
             _userService = userService;
-            _conversations = entityRepository.GetEntityCollection<Conversation>("Conversations");
-            _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>("ConversationMessages");
+            _conversations = entityRepository.GetEntityCollection<Conversation>(CONVERSATION_COLLECTION);
+            _conversationMessages = entityRepository.GetEntityCollection<ConversationMessage>(CONVERSATION_MESSAGE_COLLECTION);
+        }
+
+        public async Task<bool> AnyUserUnreadConversations(string userId)
+        {
+            var filter = Builders<ConversationMessage>.Filter.Where(c => !c.ViewedBy.Contains(userId));
+            var aggr = _conversationMessages.Aggregate()
+              .Match(filter)
+              .Group(k => k.ConversationID, g => new { ConversationId = g.Key });
+
+            return await aggr.AnyAsync();            
         }
 
         public async Task<(long, IEnumerable<ConversationModel>)> GetLatestConversations(int pageNumber, int pageSize, string currentUserId)

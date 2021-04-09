@@ -15,7 +15,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class HelpController : Controller
+    public class HelpController : BaseController
     {
         private readonly IHelpContentService _helpService;
         public HelpController(IHelpContentService helpService)
@@ -57,8 +57,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var allowedRoles = topic.RolesAllowed ?? Array.Empty<string>();
             if (allowedRoles.Any() && !userRoles.Any(r => allowedRoles.Contains(r)))
             {
-                var currentUserId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
-                logger.LogWarning($"The topic with ID = {topic.Id} is not available for user ID = {currentUserId}.");
+                logger.LogWarning($"The help topic with ID = {topic.Id} is not available for user ID = {CurrentUserId}.");
 
                 return new EmptyResult();
             }
@@ -69,10 +68,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var paragraphs = await _helpService.GetTopicContentAsync(topic.Id).ConfigureAwait(false);
             var filteredParagraphs = paragraphs.Where(p =>
                     p.RolesAllowed == null || 
-                    userRoles.Any(r => p.RolesAllowed.Contains(r))
+                    userRoles.Any(role => 
+                            p.RolesAllowed.Contains(role))
              ).ToList();
 
-            logger.LogInformation($"Help page requested ID = {topic.Id}, {filteredParagraphs.Count()} paragraphs found.");
+            logger.LogInformation($"Help page requested ID = {topic.Id}, {filteredParagraphs.Count} paragraphs found.");
             topic.Paragraphs = filteredParagraphs;
                      
             return PartialView("HelpTopicContent", topic);

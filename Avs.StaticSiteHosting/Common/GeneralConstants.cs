@@ -2,6 +2,8 @@
 {
     public class GeneralConstants
     {
+        #region MongoDb collections
+
         public const string USERS_COLLECTION = "Users";
         public const string ROLES_COLLECTION = "Roles";
         public const string SITES_COLLECTION = "Sites";
@@ -10,9 +12,18 @@
         public const string TOPICPARAGRAPH_COLLECTION = "TopicParagraphs";
         public const string CONTENT_ITEMS_COLLECTION = "ContentItems";
         public const string HELPRESOURCE_COLLECTION = "HelpResources";
+        public const string CONVERSATION_COLLECTION = "Conversations";
+        public const string CONVERSATION_MESSAGE_COLLECTION = "ConversationMessages";
+
+        #endregion
+
+        #region Roles
 
         public const string DEFAULT_USER_ROLE = "User";
         public const string ADMIN_ROLE = "Administrator";
+
+        #endregion
+
         public const string TOTAL_ROWS_AMOUNT = "total-rows-amount";
         public const string ACTIVE_SITES_AMOUNT = "active-sites-amount";
         public const string UPLOAD_SESSION_ID = "upload-session-id";

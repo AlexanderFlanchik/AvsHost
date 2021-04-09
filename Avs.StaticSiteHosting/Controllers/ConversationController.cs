@@ -3,6 +3,7 @@ using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Threading.Tasks;
 
@@ -11,7 +12,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [Authorize]
     [ApiController]
-    public class ConversationController : ControllerBase
+    public class ConversationController : BaseController
     {
         private readonly IConversationService _conversationService;
         private readonly IUserService _userService;
@@ -23,26 +24,23 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
-            var response = new { conversation = await _conversationService.GetConversationByAuthorID(userId) };
-            return Ok(response);
-        }
+        public async Task<IActionResult> Get() => Ok(new { conversation = await _conversationService.GetConversationByAuthorID(CurrentUserId) });
 
+        [HttpGet("{conversationId}")]
+        public async Task<IActionResult> Get(string conversationId)
+           => Ok(new { conversation = await _conversationService.GetConversationById(conversationId) });
+                
         [HttpPost]
         public async Task<IActionResult> Create()
-        {
-            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest();
-            }
-
-            var author = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
-            var newConversation = await _conversationService.CreateConversation(new ConversationModel { AuthorID = userId, Name = author.Name });
+        {            
+            var author = await _userService.GetUserByIdAsync(CurrentUserId).ConfigureAwait(false);
+            var newConversation = await _conversationService.CreateConversation(new ConversationModel { AuthorID = CurrentUserId, Name = author.Name });
             
             return Ok(newConversation);
         }
+
+        [HttpGet]
+        [Route("unread")]
+        public async Task<IActionResult> AreUnreadConversations() => Ok(await _conversationService.AnyUserUnreadConversations(CurrentUserId));                      
     }
 }
