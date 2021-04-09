@@ -81,7 +81,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                 .Match(filter)
                 .Group(k => k.ConversationID, g => new { ConversationId = g.Key, LastUpdated = g.Max(m => m.DateAdded), UnreadMessages = g.Count() });
 
-            var total = (await aggr.Count().FirstAsync())?.Count ?? 0;
+            var total = (await aggr.Count().FirstOrDefaultAsync())?.Count ?? 0;
             var query = aggr.Skip((pageNumber - 1) * pageSize).Limit(pageSize);
 
             var unreadConversations = await query.ToListAsync();

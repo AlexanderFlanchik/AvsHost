@@ -49,6 +49,12 @@
                     console.log('status:' + this.status);
                 });
         },
+
+        beforeDestroy: function () {
+            let channel = this.$userNotificationService.UserStatusChanged;
+            this.$userNotificationService.unsubscribe(channel);
+        },
+
         computed: {
             isUserInfoShown: function () {
                 return this.$authService.isAuthenticated();

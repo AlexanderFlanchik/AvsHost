@@ -5,6 +5,9 @@ var signalR = require("@microsoft/signalr");
 var UserNotificationService = /** @class */ (function () {
     function UserNotificationService(authService) {
         this.authService = authService;
+        // Events
+        this.UserStatusChanged = "UserStatusChanged";
+        this.NewConversationMessage = "new-conversation-message";
     }
     UserNotificationService.prototype.init = function () {
         var _this = this;
@@ -18,13 +21,20 @@ var UserNotificationService = /** @class */ (function () {
         if (!this.connection) {
             this.init();
         }
-        this.connection.on("UserStatusChanged", function (data) { return handler(data.currentStatus); });
+        this.connection.on(this.UserStatusChanged, function (data) { return handler(data.currentStatus); });
     };
     UserNotificationService.prototype.subscribeForUnreadConversation = function (handler) {
         if (!this.connection) {
             this.init();
         }
-        this.connection.on("new-conversation-message", function (msg) { return handler(msg); });
+        this.connection.on(this.NewConversationMessage, function (msg) { return handler(msg); });
+    };
+    UserNotificationService.prototype.unsubscribe = function (event) {
+        if (!this.connection) {
+            console.log('No connection');
+            return;
+        }
+        this.connection.off(event);
     };
     return UserNotificationService;
 }());

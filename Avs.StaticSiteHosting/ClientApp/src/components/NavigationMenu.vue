@@ -34,9 +34,15 @@
             // on start - check if there are unread conversations
             // and subscribe for new unread messages
             if (this.isAdmin && this.$route.path != "/conversations") {
-                this.$apiClient.getAsync('api/conversation/unread').then((response) => this.unreadConversations = response.data);
-                this.$userNotificationService.subscribeForUnreadConversation(() => this.unreadConversations = true);
+                this.$userNotificationService.subscribeForUnreadConversation(() => this.unreadConversations = true);               
+                this.$apiClient.getAsync('api/conversation/unread').then((response) => {
+                    this.unreadConversations = response.data;
+                });  
             }
+        },
+        beforeDestroy: function () {
+            let channel = this.$userNotificationService.NewConversationMessage;
+            this.$userNotificationService.unsubscribe(channel);            
         }
     }
 </script>
@@ -46,7 +52,6 @@
         font-weight: bold;
     }
     .nav-menu-container {
-
     }
 
     .navigation-menu {

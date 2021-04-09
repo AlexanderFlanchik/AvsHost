@@ -4,6 +4,10 @@ import AuthService from './AuthService';
 export class UserNotificationService {
     private connection: signalR.HubConnection;
 
+    // Events
+    readonly UserStatusChanged = "UserStatusChanged";
+    readonly NewConversationMessage = "new-conversation-message";
+
     constructor(private authService: AuthService) {}
 
     public init() {
@@ -20,7 +24,7 @@ export class UserNotificationService {
             this.init();
         }
 
-        this.connection.on("UserStatusChanged", (data: any) => handler(data.currentStatus));
+        this.connection.on(this.UserStatusChanged, (data: any) => handler(data.currentStatus));
     }
 
     public subscribeForUnreadConversation(handler: (data: any) => void) {
@@ -28,6 +32,15 @@ export class UserNotificationService {
             this.init();
         }
 
-        this.connection.on("new-conversation-message", (msg: any) => handler(msg));
+        this.connection.on(this.NewConversationMessage, (msg: any) => handler(msg));
+    }
+   
+    public unsubscribe(event: string) {
+        if (!this.connection) {
+            console.log('No connection');
+            return;
+        }
+
+        this.connection.off(event);
     }
 }
