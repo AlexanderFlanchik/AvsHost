@@ -8,9 +8,9 @@
         <NavigationMenu />
         <div class="conversations-content">
             <div class="left conversations-list">
-                <ConversationsList :selectedConversationIdSubject="selectedConversationId$" ref="conversationsList" />
+                <ConversationsList :selectedConversationIdSubject="selectedConversationId$" ref="conversationsList" :onNewConversationsLoadedCallback="onNewUnreadConversations"/>
                 <hr class="component-splitter" />
-                <ConversationSearch :selectedConversationIdSubject="selectedConversationId$" ref="conversationSearch" />
+                <ConversationSearch :selectedConversationIdSubject="selectedConversationId$" :unreadConversationsSubject="unreadConversations$" ref="conversationSearch" />
             </div>
 
             <div class="left conversation-message-list">
@@ -77,6 +77,7 @@
         data: function() {
             return {
                 selectedConversationId$: new Subject(),
+                unreadConversations$: new Subject(),
                 selectedConversationId: null,
                 buttonsEnabled: false,
                 newMessage: '',
@@ -140,7 +141,14 @@
 
             this.$userNotificationService.subscribeForUnreadConversation((msg) => {
                 // new message in conversations
-                this.$refs.conversationsList.onNewMessage(msg);
+                let conversationId = msg.conversationId;
+                if (this.$refs.conversationSearch.getConversationIds().indexOf(conversationId) < 0) {
+                    // now conversation in search list, show it in "Unread" conversations
+                    this.$refs.conversationsList.onNewMessage(msg);
+                    this.$refs.conversationSearch.ignoreConversation(conversationId);
+                } else {
+                    this.$refs.conversationSearch.onNewMessage(msg);
+                }
             });
 
             messagesContainer.addEventListener('scroll', function (evt) {
@@ -159,6 +167,11 @@
             });
         },
         methods: {
+            onNewUnreadConversations: function (ids) {
+                console.log('Conversation.onNewUnreadConversations invoked.');
+                this.unreadConversations$.next(ids);
+            },
+
             sendMessage: function () {
                 let message = { conversationId: this.selectedConversationId, content: this.newMessage, isAdminMessage: true };
                 this.$apiClient.postAsync('api/conversationmessages', message)

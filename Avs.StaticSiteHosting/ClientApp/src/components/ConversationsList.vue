@@ -19,7 +19,8 @@
 <script>
     export default {
         props: {
-            selectedConversationIdSubject: Object
+            selectedConversationIdSubject: Object,
+            onNewConversationsLoadedCallback: Object
         },
         data: function () {
             return {
@@ -29,12 +30,17 @@
                 conversations: [],
                 totalConversations: 0,
                 conversationsToLoad: 0,
+                onNewConversationsLoadedCallback: null
             };
         },
         mounted: function () {
             this.loadConversations();
         },
         methods: {
+            getConversationIds: function () {
+                return this.conversations.map(c => c.id);
+            },
+
             loadConversations: function () {
                 this.$apiClient.getAsync(`api/conversationlist?pageSize=${this.pageSize}&pageNumber=${this.pageNumber}`)
                     .then((response) => {
@@ -43,9 +49,15 @@
                             this.conversationsToLoad = this.totalConversations;
                         }
 
+                        let ids = [];
                         let rows = response.data;
                         for (let row of rows) {
                             this.conversations.push(row);
+                            ids.push(row.id);
+                        }
+
+                        if (this.onNewConversationsLoadedCallback) {
+                            this.onNewConversationsLoadedCallback(ids);
                         }
 
                         this.conversationsToLoad -= rows.length;
