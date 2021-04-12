@@ -63,3 +63,12 @@
 .list-without-bullets {
     list-style-type: none;
 }
+
+/***v-select styles override ***/
+.vs__dropdown-toggle {
+    border: 1px solid navy !important;
+}
+
+.vs__open-indicator {
+    fill: navy !important;
+}

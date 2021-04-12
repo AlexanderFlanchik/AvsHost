@@ -41,6 +41,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpGet]
         [Route("unread")]
-        public async Task<IActionResult> AreUnreadConversations() => Ok(await _conversationService.AnyUserUnreadConversations(CurrentUserId));                      
+        public async Task<IActionResult> AreUnreadConversations() => Ok(await _conversationService.AnyUserUnreadConversations(CurrentUserId));
+
+        [HttpPost]
+        [Route("search")]
+        public async Task<IActionResult> SearchConversation(SearchConversationModel searchRequest)
+            => Ok(await _conversationService.SearchConversationsByName(searchRequest.SearchName, searchRequest.IgnoreConversationIds));
     }
 }

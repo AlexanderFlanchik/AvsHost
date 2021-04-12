@@ -49,6 +49,14 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
         /// <param name="userId">User ID.</param>
         /// <returns>true if there are unread messages for the user specified, otherwise false.</returns>
         Task<bool> AnyUserUnreadConversations(string userId);
+
+        /// <summary>
+        /// Searches for conversations using the name specified.
+        /// </summary>
+        /// <param name="name">Conversation name or its fragment.</param>
+        /// <param name="ignoreIds">IDs of conversations that should be ignored.</param>
+        /// <returns></returns>
+        Task<IEnumerable<ConversationModel>> SearchConversationsByName(string name, string[] ignoreIds);
     }
 
     public class ConversationService : IConversationService
@@ -103,6 +111,30 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                           };
 
             return (total, results);
+        }
+
+        public async Task<IEnumerable<ConversationModel>> SearchConversationsByName(string name, string[] ignoreIds)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return Array.Empty<ConversationModel>();
+            }
+
+            var nameTerm = name.ToLowerInvariant();
+
+            var nameFilter = new FilterDefinitionBuilder<Conversation>().Where(r => r.Name.ToLowerInvariant().Contains(nameTerm));
+            var idsFilter = new FilterDefinitionBuilder<Conversation>().Nin(c => c.Id, ignoreIds);
+            
+            var query = await _conversations.FindAsync(nameFilter & idsFilter);
+            var lst = await query.ToListAsync();
+           
+            return lst.Select(c => new ConversationModel
+                                    {
+                                        Id = c.Id,
+                                        Name = c.Name,
+                                        AuthorID = c.AuthorID
+                                    }
+            );
         }
 
         public async Task<ConversationModel> CreateConversation(ConversationModel conversation)

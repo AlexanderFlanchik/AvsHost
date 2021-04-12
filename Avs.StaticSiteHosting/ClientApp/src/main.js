@@ -1,7 +1,9 @@
 import Vue from 'vue';
+import vSelect from 'vue-select';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-vue/dist/bootstrap-vue.min.css';
+import 'vue-select/dist/vue-select.css';
 import { BootstrapVue, BootstrapVueIcons } from 'bootstrap-vue';
 import VueRouter from 'vue-router';
 import App from './App.vue';
@@ -20,6 +22,7 @@ import { UserNotificationService } from './services/UserNotificationService';
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
+Vue.component('v-select', vSelect);
 Vue.use(VueRouter);
 Vue.config.productionTip = false;
 

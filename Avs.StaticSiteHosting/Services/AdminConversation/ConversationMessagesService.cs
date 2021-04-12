@@ -45,6 +45,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                     {
                         Id = m.Id,
                         Content = m.Content,
+                        AuthorID = m.UserID,
                         DateAdded = m.DateAdded,
                         ConversationId = m.ConversationID,
                         ViewedBy = m.ViewedBy.ToArray()

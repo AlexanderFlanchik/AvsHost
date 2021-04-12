@@ -9,6 +9,8 @@
         <div class="conversations-content">
             <div class="left conversations-list">
                 <ConversationsList :selectedConversationIdSubject="selectedConversationId$" ref="conversationsList" />
+                <hr class="component-splitter" />
+                <ConversationSearch :selectedConversationIdSubject="selectedConversationId$" ref="conversationSearch" />
             </div>
 
             <div class="left conversation-message-list">
@@ -35,6 +37,8 @@
     import NavigationMenu from '@/components/NavigationMenu.vue';
     import ConversationsList from '@/components/ConversationsList.vue';
     import ConversationMessages from '@/components/ConversationMessages.vue';
+    import ConversationSearch from '@/components/ConversationSearch.vue';
+
     import { Subject } from 'rxjs';
 
     const MarkReadMessagesQueue = function (postHandler) {
@@ -173,7 +177,8 @@
             UserInfo,
             NavigationMenu,
             ConversationMessages,
-            ConversationsList
+            ConversationsList,
+            ConversationSearch
         }
     }
 </script>
@@ -185,14 +190,18 @@
         overflow-y: auto;
     }
 
+    hr.component-splitter {
+      border-top: 2px solid navy;
+    }
+
     .left {
         float: left;
     }
 
     .conversations-list {
         margin-top: 5px;
-        width: 300px;
-        padding-right: 3px;
+        width: 310px;
+        padding-right: 10px;
         border-right-color: navy;
         border-right-style: solid;
         height: calc(100vh - 205px);

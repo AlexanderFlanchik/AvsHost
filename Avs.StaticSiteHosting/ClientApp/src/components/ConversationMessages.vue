@@ -1,8 +1,8 @@
 ﻿<template>
     <div class="messages-list-container">
         <div v-if="rows && rows.length">
-            <div v-for="row in rows" :key="row" class="message-row" :id="row.id" :isViewed="(row.viewedBy.indexOf(userId) >= 0).toString()">
-                <div class="message-date">{{row.dateAdded}}</div>
+            <div class="message-row-base" v-for="row in rows" :key="row" v-bind:class="{ 'message-row-own' : userId == row.authorID, 'message-row' : userId != row.authorID }" :id="row.id" :isViewed="(row.viewedBy.indexOf(userId) >= 0).toString()">
+                <div class="message-date-base" v-bind:class="{ 'message-date-own' : userId == row.authorID, 'message-date' : userId != row.authorID }" >{{formatDate(row.dateAdded)}}</div>
                 <div class="message-content">{{row.content}}</div>
             </div>
         </div>
@@ -13,6 +13,7 @@
 </template>
 <script>
     import { Subject } from 'rxjs';
+    const moment = require('moment');
 
     export default {
         props: {
@@ -32,6 +33,7 @@
         },
         mounted: function () {
             this.userId = localStorage.getItem('user-id');
+            console.log(this.userId);
             this.conversationId$.subscribe((convId) => {
                 this.conversationId = convId;
                 if (this.rows.length) {
@@ -44,6 +46,10 @@
             });
         },
         methods: {           
+            formatDate: function (date) {
+                return moment(date).format('MM/DD/YYYY hh:mm:ss A');
+            },
+
             conversationReady: function (convId) {
                 this.conversationId$.next(convId);
             },
@@ -72,12 +78,13 @@
                                 console.log('firstLoadedCallback fired.');
                                 this.firstLoadedCallback && this.firstLoadedCallback();
                             }, 50);
+                            this.firstLoaded = true;
                         }
                     });
             },
 
             addNewRow: function (content, dateAdded) {
-                this.rows.unshift({ content, dateAdded, viewedBy: [ this.userId ] });
+                this.rows.unshift({ content, dateAdded, viewedBy: [this.userId], authorID: this.userId });
             },
 
             markAsViewed: async function (rowIds) {
@@ -95,7 +102,6 @@
             },
 
             onFirstLoaded: function (firstLoadedCallback) {
-                console.log('firstLoadedCallback set');
                 this.firstLoadedCallback = firstLoadedCallback;
             }
         }
@@ -107,22 +113,40 @@
         max-height: inherit;
     }
 
-    .message-row {
+    .message-row-base {
         margin-top: 10px;
         padding: 5px;
-        background-color: #ECC9FF;
         margin-bottom: 10px;
+        border-radius: 8px;
+    }
+
+    .message-row-own {
+        background-color: darkcyan;
+        color: white;
+    }
+
+    .message-row {
+        background-color: #ECC9FF;        
+    }
+
+    .message-date-base {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 5px;
+        color: white;
     }
 
     .message-date {
-        padding-top: 5px;
-        padding-bottom: 5px;
-        background-color:darkorchid;
-        color: white;
+        background-color:darkorchid;  
+    }
+
+    .message-date-own {
+        background-color: darkslategrey;        
     }
 
     .message-content {
         padding-top: 5px;
+        padding-left: 5px;
     }
 
     .no-records-msg {
