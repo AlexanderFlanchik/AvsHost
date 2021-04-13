@@ -103,6 +103,18 @@
 
             onFirstLoaded: function (firstLoadedCallback) {
                 this.firstLoadedCallback = firstLoadedCallback;
+            },
+
+            onNewRow: function (msg) {
+                let m = {
+                    id: msg.id,
+                    content: msg.content,
+                    dateAdded: msg.dateAdded,
+                    viewedBy: [],
+                    authorID: msg.authorID
+                };
+
+                this.rows.unshift(m);
             }
         }
     }

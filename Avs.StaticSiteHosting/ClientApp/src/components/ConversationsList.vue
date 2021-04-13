@@ -30,7 +30,6 @@
                 conversations: [],
                 totalConversations: 0,
                 conversationsToLoad: 0,
-                onNewConversationsLoadedCallback: null
             };
         },
         mounted: function () {
@@ -56,10 +55,7 @@
                             ids.push(row.id);
                         }
 
-                        if (this.onNewConversationsLoadedCallback) {
-                            this.onNewConversationsLoadedCallback(ids);
-                        }
-
+                        this.onNewConversationsLoadedCallback && this.onNewConversationsLoadedCallback(ids);
                         this.conversationsToLoad -= rows.length;
                         console.log('Current page: ' + this.pageNumber + ' Conversations to load:' + this.conversationsToLoad);
                     });
@@ -100,7 +96,10 @@
                     return;
                 }
 
-                conversation.unreadMessages = conversation.unreadMessages >= readMessagesCount ? conversation.unreadMessages - readMessagesCount : 0;
+                setTimeout(() => {
+                    conversation.unreadMessages = conversation.unreadMessages >= readMessagesCount ? conversation.unreadMessages - readMessagesCount : 0;
+                    this.$forceUpdate();
+                });
             }
         }       
     }

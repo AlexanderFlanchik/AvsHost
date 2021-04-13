@@ -40,38 +40,7 @@
     import ConversationSearch from '@/components/ConversationSearch.vue';
 
     import { Subject } from 'rxjs';
-
-    const MarkReadMessagesQueue = function (postHandler) {
-        const self = this;
-        let messages = [];      
-        let interval = null;
-
-        self.addMessage = function (msg) {
-            let ids = messages.map(m => m.id);
-            if (ids.indexOf(msg.id) >= 0) {
-                return;
-            }
-
-            messages.push(msg);
-
-            if (!interval) {
-                startProcessing();
-            }
-        };
-
-        function startProcessing() {
-            interval = setInterval(() => {
-                postHandler(messages)
-                    .then((ids) => {
-                        messages = messages.filter(m => ids.indexOf(m.id) < 0);
-                        if (!messages.length) {
-                            clearInterval(interval);
-                            interval = null;
-                        }
-                    });
-            }, 1000);
-        }
-    };
+    import MarkReadMessagesQueue from '@/services/MarkReadMessagesQueue';
 
     export default {
         data: function() {
@@ -86,9 +55,13 @@
                     return new Promise((resolve, reject) => {
                         let ids = msgs.map(m => m.id);
                         this.$apiClient.postAsync('api/conversationmessages/makeread', ids)
-                            .then(() => {                                
-                                this.$refs.conversationMessagesList.markAsViewed(ids);
-                                this.$refs.conversationsList.updateConversation(this.selectedConversationId, ids.length);
+                            .then(() => {                                                             
+                                this.$refs.conversationMessagesList.markAsViewed(ids);                                
+                                if (this.$refs.conversationSearch.getConversationIds().indexOf(this.selectedConversationId) < 0) {                                    
+                                    this.$refs.conversationsList.updateConversation(this.selectedConversationId, ids.length);
+                                } else {                                    
+                                    this.$refs.conversationSearch.updateConversation(this.selectedConversationId, ids.length);
+                                }
 
                                 resolve(ids);
                             })
@@ -149,6 +122,11 @@
                 } else {
                     this.$refs.conversationSearch.onNewMessage(msg);
                 }
+
+                if (this.selectedConversationId == conversationId) {
+                    this.$refs.conversationMessagesList.onNewRow(msg);
+                    this.messagesToMakeRead.addMessage({ id: msg.id });
+                }
             });
 
             messagesContainer.addEventListener('scroll', function (evt) {
@@ -167,8 +145,7 @@
             });
         },
         methods: {
-            onNewUnreadConversations: function (ids) {
-                console.log('Conversation.onNewUnreadConversations invoked.');
+            onNewUnreadConversations: function (ids) {                
                 this.unreadConversations$.next(ids);
             },
 

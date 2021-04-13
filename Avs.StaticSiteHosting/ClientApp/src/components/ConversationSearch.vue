@@ -54,12 +54,8 @@
         mounted: function () {
             if (this.unreadConversationsSubject) {
                 this.unreadConversationsSubject.subscribe((ids) => {
-                    this.ignoreIds = this.ignoreIds.concat(ids);
-                    console.log('ignoredIds:');
-                    console.log(this.ignoreIds);
+                    this.ignoreIds = this.ignoreIds.concat(ids);                    
                 });
-            } else {
-                console.log('no unreadConversationsSubject passed to search component.');
             }
         },
 
@@ -113,6 +109,19 @@
                 if (this.ignoreIds.indexOf(conversationId) < 0) {
                     this.ignoreIds.push(conversationId);
                 }
+            },
+
+            updateConversation: function (conversationId, readMessagesCount) {                
+                let conversation = this.conversations.find(c => c.id == conversationId);
+                if (!conversation) {                  
+                    return;
+                }
+
+                setTimeout(() => {
+                    conversation.unreadMessages = conversation.unreadMessages >= readMessagesCount ? conversation.unreadMessages - readMessagesCount : 0;
+                    console.log(conversation.unreadMessages);
+                    this.$forceUpdate();
+                });
             }
         }
     }
