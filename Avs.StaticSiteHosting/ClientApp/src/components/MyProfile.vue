@@ -80,8 +80,8 @@
                     </dl>
                     <dl>
                         <dt>Messages history:</dt>
-                        <dd class="conversation-messages-list-container" id="conversation-messages-list-container">
-                            <ConversationMessages ref="conversationMessagesList" pageSize="50" />
+                        <dd>                            
+                            <ConversationMessagesWrapper ref="conversationMessagesList"  />
                         </dd>
                     </dl>
                 </fieldset>
@@ -92,10 +92,8 @@
 <script>
     import UserInfo from '@/components/UserInfo.vue';
     import NavigationMenu from '@/components/NavigationMenu.vue';
-    import ConversationMessages from '@/components/ConversationMessages.vue';
-
-    import MarkReadMessagesQueue from '@/services/MarkReadMessagesQueue';
-
+    import ConversationMessagesWrapper from '@/components/ConversationMessagesWrapper.vue';
+    
     export default {
         data: function () {
             return {
@@ -138,18 +136,6 @@
                     }
                 },
 
-                messagesScrollTop: 0,
-                messagesPage: 1,
-                messagesToMakeRead: new MarkReadMessagesQueue(async (msgs) => {
-                    return new Promise((resolve, reject) => {
-                        let ids = msgs.map(m => m.id);
-                        this.$apiClient.postAsync('api/conversationmessages/makeread', ids)
-                            .then(() => {
-                                this.$refs.conversationMessagesList.markAsViewed(ids); 
-                                resolve(ids);
-                            }).catch(err => reject(err));
-                    });                                        
-                }),
                 showUpdateMessage: function (msg) {
                     this.updateResult = msg;
                     this.updateResultShown = true;
@@ -186,66 +172,8 @@
                 let conversation = response.data.conversation;
                 if (conversation) {
                     this.conversationId = conversation.id;
-
-                    // The same as in Conversation page
-                    this.$refs.conversationMessagesList.onFirstLoaded(() => {
-                        let visibleUnreadMessages = getUnreadRows();
-                        for (let m of visibleUnreadMessages) {
-                            $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
-                        }
-                    });
-                    this.$refs.conversationMessagesList.conversationReady(this.conversationId);
+                    this.$refs.conversationMessagesList.dispatch('conversationReady', this.conversationId);
                 }
-            });
-
-            this.$userNotificationService.subscribeForUnreadConversation((msg) => {
-                this.$refs.conversationMessagesList.onNewRow(msg);
-                this.messagesToMakeRead.addMessage({ id: msg.id });
-            });
-
-            let messagesContainer = document.getElementById('conversation-messages-list-container');
-            let $this = this;
-
-            // TODO: the same as in Conversation page
-            const getUnreadRows = (containerTop) => {
-                if (typeof containerTop == 'undefined') {
-                    let containerRect = messagesContainer.getBoundingClientRect();
-                    containerTop = containerRect.top;
-                }
-
-                let inner = messagesContainer.children[0];
-                let messageRowsList = inner.children[0];
-                let messagesRows = messageRowsList.children;
-                let containerBottom = containerTop + messagesContainer.clientHeight;
-
-                let visibleUnreadMessages = Array.from(messagesRows).filter(m => {
-                    let rect = m.getBoundingClientRect();
-                    let isVisible = (rect.top >= containerTop && rect.top < containerBottom) ||
-                        (rect.bottom > containerTop && rect.bottom <= containerBottom) ||
-                        (rect.height > messagesContainer.clientHeight && rect.top <= containerTop && rect.bottom >= containerBottom);
-
-                    isVisible = isVisible && m.getAttribute('isviewed') == "false";
-
-                    return isVisible;
-                });
-
-                return visibleUnreadMessages;
-            };
-
-            messagesContainer.addEventListener('scroll', function (evt) {
-                let currentScrollTop = evt.target.scrollTop;
-                let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
-
-                let visibleUnreadMessages = getUnreadRows(currentScrollTop);
-
-                for (let m of visibleUnreadMessages) {
-                    $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
-                }
-
-                $this.messagesScrollTop = currentScrollTop;
-                if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
-                    $this.$refs.conversationMessagesList.loadNextPage();
-                }               
             });
         },
 
@@ -316,7 +244,7 @@
                         let content = newRowResponse.data.content;
                         let dateAdded = newRowResponse.data.dateAdded;
 
-                        this.$refs.conversationMessagesList.addNewRow(content, dateAdded);
+                        this.$refs.conversationMessagesList.dispatch('addNewRow', { content, dateAdded });
                         this.newMessage = '';
                     });
                 };
@@ -332,13 +260,7 @@
                 } else {
                     postMessage();
                 }                
-            }
-
-            //onScroll: function (evt) {
-            //    console.log('Scrolled!');
-            //    console.log(evt.target.scrollHeight);
-            //    console.log(evt.target.scrollTop);
-            //}
+            }           
         },
 
         computed: {
@@ -379,7 +301,7 @@
         components: {
             UserInfo,
             NavigationMenu,
-            ConversationMessages
+            ConversationMessagesWrapper
         }
     }
 </script>

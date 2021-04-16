@@ -83,7 +83,8 @@
                     });
             },
 
-            addNewRow: function (content, dateAdded) {
+            addNewRow: function (msgData) {
+                const { content, dateAdded } = msgData;
                 this.rows.unshift({ content, dateAdded, viewedBy: [this.userId], authorID: this.userId });
             },
 

@@ -14,9 +14,7 @@
             </div>
 
             <div class="left conversation-message-list">
-                <div class="conversation-messages-container">
-                    <ConversationMessages ref="conversationMessagesList" pageSize="50" />
-                </div>
+                <ConversationMessagesWrapper ref="conversationMessagesList" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" />
                 <div class="send-message-form-container">
                     <div>Enter a message:</div> 
                     
@@ -36,11 +34,10 @@
     import UserInfo from '@/components/UserInfo.vue';
     import NavigationMenu from '@/components/NavigationMenu.vue';
     import ConversationsList from '@/components/ConversationsList.vue';
-    import ConversationMessages from '@/components/ConversationMessages.vue';
+    import ConversationMessagesWrapper from '@/components/ConversationMessagesWrapper.vue';
     import ConversationSearch from '@/components/ConversationSearch.vue';
 
     import { Subject } from 'rxjs';
-    import MarkReadMessagesQueue from '@/services/MarkReadMessagesQueue';
 
     export default {
         data: function() {
@@ -50,70 +47,32 @@
                 selectedConversationId: null,
                 buttonsEnabled: false,
                 newMessage: '',
-                messagesScrollTop: 0,
-                messagesToMakeRead: new MarkReadMessagesQueue(async (msgs) => {
-                    return new Promise((resolve, reject) => {
-                        let ids = msgs.map(m => m.id);
-                        this.$apiClient.postAsync('api/conversationmessages/makeread', ids)
-                            .then(() => {                                                             
-                                this.$refs.conversationMessagesList.markAsViewed(ids);                                
-                                if (this.$refs.conversationSearch.getConversationIds().indexOf(this.selectedConversationId) < 0) {                                    
-                                    this.$refs.conversationsList.updateConversation(this.selectedConversationId, ids.length);
-                                } else {                                    
-                                    this.$refs.conversationSearch.updateConversation(this.selectedConversationId, ids.length);
-                                }
-
-                                resolve(ids);
-                            })
-                            .catch((err) => reject(err));
-                    });
-                })
             };
         },
         
-        mounted: function () {
-            let messagesContainer = document.getElementsByClassName('conversation-messages-container')[0];
-            const $this = this;
-
-            const getUnreadRows = (containerTop) => {
-                if (typeof containerTop == 'undefined') {
-                    let containerRect = messagesContainer.getBoundingClientRect();
-                    containerTop = containerRect.top;
-                }
-
-                let inner = messagesContainer.children[0];
-                let messageRowsList = inner.children[0];
-                let messagesRows = messageRowsList.children;
-                let containerBottom = containerTop + messagesContainer.clientHeight;
-
-                let visibleUnreadMessages = Array.from(messagesRows).filter(m => {
-                    let rect = m.getBoundingClientRect();
-                    let isVisible = (rect.top >= containerTop && rect.top < containerBottom) ||
-                        (rect.bottom > containerTop && rect.bottom <= containerBottom) ||
-                        (rect.height > messagesContainer.clientHeight && rect.top <= containerTop && rect.bottom >= containerBottom);
-
-                    isVisible = isVisible && m.getAttribute('isviewed') == "false";
-
-                    return isVisible;
-                });
-
-                return visibleUnreadMessages;
-            };
-
+        mounted: function () {           
             this.selectedConversationId$.subscribe((id) => {
                 this.selectedConversationId = id;
                 this.buttonsEnabled = true;
-                this.$refs.conversationMessagesList.onFirstLoaded(() => {
-                    let visibleUnreadMessages = getUnreadRows();
-                    for (let m of visibleUnreadMessages) {
-                        $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
-                    }
-                });
-                this.$refs.conversationMessagesList.conversationReady(id);
-            });
+                this.$refs.conversationMessagesList.processVisibleUnreadMessages();
+                this.$refs.conversationMessagesList.dispatch('conversationReady', id);
+            });          
+        },
 
-            this.$userNotificationService.subscribeForUnreadConversation((msg) => {
-                // new message in conversations
+        methods: {
+            messagesToMakeReadHandler: function (ids) {
+                if (this.$refs.conversationSearch.getConversationIds().indexOf(this.selectedConversationId) < 0) {
+                    this.$refs.conversationsList.updateConversation(this.selectedConversationId, ids.length);
+                } else {
+                    this.$refs.conversationSearch.updateConversation(this.selectedConversationId, ids.length);
+                }
+            },
+
+            conversationFilter: function (msgConversationId) {
+                return this.selectedConversationId == msgConversationId;
+            },
+
+            onUnreadConversation: function (msg) {
                 let conversationId = msg.conversationId;
                 if (this.$refs.conversationSearch.getConversationIds().indexOf(conversationId) < 0) {
                     // now conversation in search list, show it in "Unread" conversations
@@ -122,29 +81,8 @@
                 } else {
                     this.$refs.conversationSearch.onNewMessage(msg);
                 }
+            },
 
-                if (this.selectedConversationId == conversationId) {
-                    this.$refs.conversationMessagesList.onNewRow(msg);
-                    this.messagesToMakeRead.addMessage({ id: msg.id });
-                }
-            });
-
-            messagesContainer.addEventListener('scroll', function (evt) {
-                let currentScrollTop = evt.target.scrollTop;
-                let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
-                let visibleUnreadMessages = getUnreadRows(currentScrollTop);
-
-                for (let m of visibleUnreadMessages) {
-                    $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
-                }
-
-                $this.messagesScrollTop = currentScrollTop;
-                if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
-                    $this.$refs.conversationMessagesList.loadNextPage();
-                }
-            });
-        },
-        methods: {
             onNewUnreadConversations: function (ids) {                
                 this.unreadConversations$.next(ids);
             },
@@ -155,7 +93,7 @@
                     .then((response) => {
                         let messageData = response.data;
                         this.clearMessage();
-                        this.$refs.conversationMessagesList.addNewRow(messageData.content, messageData.dateAdded);
+                        this.$refs.conversationMessagesList.dispatch('addNewRow', messageData);
                     });                
             },
 
@@ -166,7 +104,7 @@
         components: {
             UserInfo,
             NavigationMenu,
-            ConversationMessages,
+            ConversationMessagesWrapper,
             ConversationsList,
             ConversationSearch
         }

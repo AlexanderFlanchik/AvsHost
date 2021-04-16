@@ -73,6 +73,7 @@
                 }
             },
             onNewMessage: function (messageData) {
+                console.log('ConversationList onNewMessage invoked.');
                 let conversationId = messageData.conversationId;
                 let foundConversation = this.conversations.find(c => c.id == conversationId);
                 if (foundConversation) {
@@ -82,6 +83,7 @@
                     this.conversations.splice(i, 1);
                     this.conversations.unshift(foundConversation);
                 } else {
+                    console.log('Getting data for conversation with ID = ' + conversationId);
                     this.$apiClient.getAsync(`api/conversation/${conversationId}`).then((response) => {
                         console.log(response.data);
                         let conversation = response.data.conversation;
