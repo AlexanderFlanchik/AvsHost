@@ -110,6 +110,11 @@
             }
         },
 
+        beforeDestroy: function () {
+            let channel = this.$userNotificationService.NewConversationMessage;
+            this.$userNotificationService.unsubscribe(channel);
+        },
+
         components: {
             ConversationMessages
         }
