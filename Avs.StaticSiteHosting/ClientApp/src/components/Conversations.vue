@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <!--<img src="../../public/profile.png" /> &nbsp;-->
+            <img src="../../public/icons8-chat-32.png" /> &nbsp;
             <span>Conversations</span>
         </div>
         <UserInfo />
@@ -14,7 +14,7 @@
             </div>
 
             <div class="left conversation-message-list">
-                <ConversationMessagesWrapper ref="conversationMessagesList" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" />
+                <ConversationMessagesWrapper ref="conversationMessagesList" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" :height="'calc(100vh - 375px)'" />
                 <div class="send-message-form-container">
                     <div>Enter a message:</div> 
                     

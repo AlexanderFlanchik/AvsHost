@@ -6,6 +6,7 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Hubs;
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
+using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -143,16 +144,34 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpGet]
         [Route("profile-info")]
-        public async Task<IActionResult> GetProfileInfo()
+        public async Task<IActionResult> GetProfileInfo([FromServices] IConversationMessagesService messagesService)
         {
             var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
+            var currentUser = await _userService.GetUserByIdAsync(userId);
+            if (currentUser == null)
+            {
+                return BadRequest();
+            }
+
             var profile = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
             if (profile == null)
             {
                 return NotFound();
-            }    
+            }
 
-            return Ok(new { userId, profile.Status, profile.Comment });
+            var profileInfo = new ProfileInfo() 
+                { 
+                    UserId = userId, 
+                    Status = profile.Status, 
+                    Comment = profile.Comment 
+                };
+
+            if (!_userService.IsAdmin(currentUser))
+            {
+                profileInfo.UnreadMessages = await messagesService.GetUserUnreadMessagesAmount(userId);
+            }
+
+            return Ok(profileInfo);
         }
 
         private async Task<(User, IActionResult)> ValidateCurrentUserAsync()

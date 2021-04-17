@@ -9,6 +9,7 @@
 
     export default {
         props: {
+            height: String,
             messagesToMakeReadHandler: Object,
             onUnreadConversation: Object,
             conversationFilter: Object
@@ -37,17 +38,36 @@
 
             const $this = this;
             let messagesContainer = document.getElementsByClassName('conversation-messages-container')[0];
+            messagesContainer.setAttribute("style", `height: ${this.height}`);
 
-            this.getUnreadRows = (containerTop) => {
-                if (typeof containerTop == 'undefined') {
-                    let containerRect = messagesContainer.getBoundingClientRect();
-                    containerTop = containerRect.top;
-                }
-
+            this.getUnreadRows = () => {
+                let containerTop = messagesContainer.getBoundingClientRect().top;
                 let inner = messagesContainer.children[0];
                 let messageRowsList = inner.children[0];
                 let messagesRows = messageRowsList.children;
                 let containerBottom = containerTop + messagesContainer.clientHeight;
+
+                //For debug
+                //console.log(`getUnreadRows: containerTop = ${containerTop}, containerBottom = ${containerBottom}`);
+                //let arr = Array.from(messagesRows).filter(m => m.getAttribute('isviewed') == "false")
+                //    .map(m => {
+                //        let rect = m.getBoundingClientRect();
+                //        return {
+                //            id : m.getAttribute("id"),
+                //            content: m.innerHTML,
+                //            rect: rect,
+                //            containerTop: containerTop,
+                //            rectTopHigherThanContainerTop: rect.top >= containerTop,
+                //            rectTopLowerThanContainerBottom: rect.top < containerBottom,
+                //            rectBottomHigherThanContainerTop: rect.bottom > containerTop,
+                //            rectBottomLowerThanContainerBottom: rect.bottom <= containerBottom,
+                //            rectHeightCondition: rect.height > messagesContainer.clientHeight && rect.top <= containerTop && rect.bottom >= containerBottom
+                //        };
+                //    });
+                
+                //if (arr.length) {
+                //    console.log(arr);
+                //}
 
                 let visibleUnreadMessages = Array.from(messagesRows).filter(m => {
                     let rect = m.getBoundingClientRect();
@@ -82,14 +102,16 @@
             messagesContainer.addEventListener('scroll', function (evt) {
                 let currentScrollTop = evt.target.scrollTop;
                 let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
-                let visibleUnreadMessages = this.getUnreadRows(currentScrollTop);
-
+                let visibleUnreadMessages = $this.getUnreadRows();
                 for (let m of visibleUnreadMessages) {
+                    console.log(m);
                     $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
                 }
 
                 $this.messagesScrollTop = currentScrollTop;
+
                 if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
+                    console.log('Load next page');
                     $this.$refs.conversationMessagesList.loadNextPage();
                 }
             });
@@ -123,7 +145,8 @@
 <style scoped>
     .conversation-messages-container {
         margin-top: 5px;
-        height: calc(100vh - 375px);
+        /*height: calc(100vh - 375px);*/
         overflow-y: auto;
+        padding-bottom: 5px;
     }
 </style>

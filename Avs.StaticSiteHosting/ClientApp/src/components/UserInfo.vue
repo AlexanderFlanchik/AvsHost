@@ -1,6 +1,6 @@
 ﻿<template>
     <div class="user-info-bar" v-if="isUserInfoShown">
-        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active'">BANNED</span> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
+        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active'">BANNED</span> <img v-if="unreadMessages > 0" src="../../public/new-message.png" /><sup v-if="unreadMessages > 0" class="unread-messages-count">({{unreadMessages}})</sup> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
     </div>
 </template>
 <script>
@@ -10,7 +10,8 @@
                 userName: '',
                 status: '',
                 statuses: ['Active', 'Locked'],
-                comment: ''
+                comment: '',
+                unreadMessages: 0
             };
         },
         methods: {
@@ -37,8 +38,12 @@
             this.$apiClient.getAsync('api/profile/profile-info')
                 .then((infoResponse) => {
                     let info = infoResponse.data;
+                    console.log(info);
                     this.status = this.statuses[info.status];
                     this.comment = info.comment;
+                    if (info.unreadMessages) {
+                        this.unreadMessages = info.unreadMessages;
+                    }
                     if (this.status != 'Active') {
                         this.$authService.lockUser();
                     } else {
@@ -63,6 +68,12 @@
     }
 </script>
 <style>
+    .unread-messages-count {
+        font-weight: bold;
+        font-size: 10pt;
+        color: red;
+    }
+
     .user-info-bar {
         text-align: right;
         color: white;

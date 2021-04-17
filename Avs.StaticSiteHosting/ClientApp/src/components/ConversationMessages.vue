@@ -65,6 +65,7 @@
                         let newRows = response.data;
                         if (!newRows.length) {
                             this.completed = true;
+                            console.log("all messages loaded.");
                             return;
                         }
 

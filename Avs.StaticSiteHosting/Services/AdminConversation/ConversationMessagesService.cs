@@ -13,6 +13,7 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
         Task<IEnumerable<ConversationMessageModel>> GetConversationMessagesAsync(string conversationId, int pageNumber, int pageSize);
         Task<ConversationMessageModel> CreateConversationMessage(string authorId, string conversationId, string content);
         Task MakeMessagesRead(IEnumerable<string> messageIds, string userId);
+        Task<int> GetUserUnreadMessagesAmount(string authorId);
     }
 
     public class ConversationMessagesService : IConversationMessagesService
@@ -88,6 +89,25 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
             var update = new UpdateDefinitionBuilder<ConversationMessage>().PushEach(v => v.ViewedBy, new[] { userId });
             
             await _conversationMessages.UpdateManyAsync(filter, update).ConfigureAwait(false);                       
+        }
+
+        public async Task<int> GetUserUnreadMessagesAmount(string authorId)
+        {
+            var conversation = (await _conversations.FindAsync(new FilterDefinitionBuilder<Conversation>().Where(c => c.AuthorID == authorId))
+                ).FirstOrDefault();
+
+            if (conversation == null)
+            {
+                return 0;
+            }
+
+            //var all = (await _conversationMessages.FindAsync(Builders<ConversationMessage>.Filter.Where(m => m.ConversationID == conversation.Id)))
+            //    .ToList().OrderBy(d => d.DateAdded).ToList();
+
+            var filter = Builders<ConversationMessage>.Filter.Where(m => m.ConversationID == conversation.Id && !m.ViewedBy.Contains(authorId));
+            var query = await _conversationMessages.FindAsync(filter);
+            
+            return (await query.ToListAsync()).Count;
         }
     }
 }

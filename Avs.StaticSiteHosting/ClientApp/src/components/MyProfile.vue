@@ -81,7 +81,7 @@
                     <dl>
                         <dt>Messages history:</dt>
                         <dd>                            
-                            <ConversationMessagesWrapper ref="conversationMessagesList"  />
+                            <ConversationMessagesWrapper ref="conversationMessagesList" :height="'calc(100vh - 555px)'"  />
                         </dd>
                     </dl>
                 </fieldset>
