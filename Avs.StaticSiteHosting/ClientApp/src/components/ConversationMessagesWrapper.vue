@@ -47,28 +47,6 @@
                 let messagesRows = messageRowsList.children;
                 let containerBottom = containerTop + messagesContainer.clientHeight;
 
-                //For debug
-                //console.log(`getUnreadRows: containerTop = ${containerTop}, containerBottom = ${containerBottom}`);
-                //let arr = Array.from(messagesRows).filter(m => m.getAttribute('isviewed') == "false")
-                //    .map(m => {
-                //        let rect = m.getBoundingClientRect();
-                //        return {
-                //            id : m.getAttribute("id"),
-                //            content: m.innerHTML,
-                //            rect: rect,
-                //            containerTop: containerTop,
-                //            rectTopHigherThanContainerTop: rect.top >= containerTop,
-                //            rectTopLowerThanContainerBottom: rect.top < containerBottom,
-                //            rectBottomHigherThanContainerTop: rect.bottom > containerTop,
-                //            rectBottomLowerThanContainerBottom: rect.bottom <= containerBottom,
-                //            rectHeightCondition: rect.height > messagesContainer.clientHeight && rect.top <= containerTop && rect.bottom >= containerBottom
-                //        };
-                //    });
-                
-                //if (arr.length) {
-                //    console.log(arr);
-                //}
-
                 let visibleUnreadMessages = Array.from(messagesRows).filter(m => {
                     let rect = m.getBoundingClientRect();
                     let isVisible = (rect.top >= containerTop && rect.top < containerBottom) ||
@@ -104,14 +82,12 @@
                 let direction = $this.messagesScrollTop - currentScrollTop >= 0 ? 'up' : 'down';
                 let visibleUnreadMessages = $this.getUnreadRows();
                 for (let m of visibleUnreadMessages) {
-                    console.log(m);
                     $this.messagesToMakeRead.addMessage({ id: m.getAttribute('id') });
                 }
 
                 $this.messagesScrollTop = currentScrollTop;
 
                 if (direction == 'down' && messagesContainer.clientHeight + currentScrollTop >= evt.target.scrollHeight) {
-                    console.log('Load next page');
                     $this.$refs.conversationMessagesList.loadNextPage();
                 }
             });
