@@ -1,12 +1,13 @@
 ﻿<template>
     <div class="user-info-bar" v-if="isUserInfoShown">
-        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active' && loaded">BANNED</span> <img v-if="isUnreadMessageNotificationShown" src="../../public/new-message.png" /><sup v-if="isUnreadMessageNotificationShown" class="unread-messages-count">({{unreadMessages}})</sup> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
+        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active' && loaded && !isAdmin">BANNED</span> <img v-if="isUnreadMessageNotificationShown" src="../../public/new-message.png" /><sup v-if="isUnreadMessageNotificationShown" class="unread-messages-count">({{unreadMessages}})</sup> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
     </div>
 </template>
 <script>
     export default {
         data: function () {
             return {
+                isAdmin: false,
                 userName: '',
                 status: '',
                 statuses: ['Active', 'Locked'],
@@ -23,21 +24,25 @@
         },
         mounted: function () {
             let userInfo = this.$authService.getUserInfo();
+            this.isAdmin = userInfo ? userInfo.isAdmin : false;
             if (userInfo && userInfo.name) {
                 this.userName = userInfo.name;
-                this.$userNotificationService.notify((status) => {
-                    console.log("New status code: " + status);
-                    this.status = this.statuses[status];
-                    if (this.status != 'Active') {
-                        this.$authService.lockUser();
-                    } else {
-                        this.$authService.unLockUser();
-                    }
-                });
+                if (!this.isAdmin) {
+                    // for usual user we apply these two subscriptions
+                    this.$userNotificationService.notify((status) => {
+                        console.log("New status code: " + status);
+                        this.status = this.statuses[status];
+                        if (this.status != 'Active') {
+                            this.$authService.lockUser();
+                        } else {
+                            this.$authService.unLockUser();
+                        }
+                    });
 
-                this.$userNotificationService.subscribeForUnreadConversation(() => {
-                    this.unreadMessages++;
-                });
+                    this.$userNotificationService.subscribeForUnreadConversation(() => {
+                        this.unreadMessages++;
+                    });
+                }
             }
 
             this.$apiClient.getAsync('api/profile/profile-info')
@@ -61,10 +66,12 @@
         },
 
         beforeDestroy: function () {
-            let channels = [this.$userNotificationService.UserStatusChanged, this.$userNotificationService.NewConversationMessage];
-            for (let channel of channels) {
-                this.$userNotificationService.unsubscribe(channel);
-            }            
+            if (!this.isAdmin) {
+                let channels = [this.$userNotificationService.UserStatusChanged, this.$userNotificationService.NewConversationMessage];
+                for (let channel of channels) {
+                    this.$userNotificationService.unsubscribe(channel);
+                }
+            }
         },
 
         computed: {
@@ -73,7 +80,7 @@
             },
             isUnreadMessageNotificationShown: function () {
                 console.log(this.$route.path);
-                return this.$route.path != "/profile" && this.unreadMessages > 0;
+                return this.$route.path != "/profile" && this.unreadMessages > 0 && !this.isAdmin;
             }
         }
     }
