@@ -1,6 +1,6 @@
 ﻿<template>
     <div class="user-info-bar" v-if="isUserInfoShown">
-        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active'">BANNED</span> <img v-if="unreadMessages > 0" src="../../public/new-message.png" /><sup v-if="unreadMessages > 0" class="unread-messages-count">({{unreadMessages}})</sup> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
+        Welcome, {{userName}}!<span class="badge badge-secondary banned" v-if="status != 'Active' && loaded">BANNED</span> <img v-if="isUnreadMessageNotificationShown" src="../../public/new-message.png" /><sup v-if="isUnreadMessageNotificationShown" class="unread-messages-count">({{unreadMessages}})</sup> | <a href="javascript:void(0)" class="sign-out-link" @click="signOff()">Sign out...</a>
     </div>
 </template>
 <script>
@@ -11,7 +11,8 @@
                 status: '',
                 statuses: ['Active', 'Locked'],
                 comment: '',
-                unreadMessages: 0
+                unreadMessages: 0,
+                loaded: false
             };
         },
         methods: {
@@ -33,15 +34,19 @@
                         this.$authService.unLockUser();
                     }
                 });
+
+                this.$userNotificationService.subscribeForUnreadConversation(() => {
+                    this.unreadMessages++;
+                });
             }
 
             this.$apiClient.getAsync('api/profile/profile-info')
                 .then((infoResponse) => {
+                    this.loaded = true;
                     let info = infoResponse.data;
-                    console.log(info);
                     this.status = this.statuses[info.status];
                     this.comment = info.comment;
-                    if (info.unreadMessages) {
+                    if (info.unreadMessages && this.$route.path != "/profile") {
                         this.unreadMessages = info.unreadMessages;
                     }
                     if (this.status != 'Active') {
@@ -56,13 +61,19 @@
         },
 
         beforeDestroy: function () {
-            let channel = this.$userNotificationService.UserStatusChanged;
-            this.$userNotificationService.unsubscribe(channel);
+            let channels = [this.$userNotificationService.UserStatusChanged, this.$userNotificationService.NewConversationMessage];
+            for (let channel of channels) {
+                this.$userNotificationService.unsubscribe(channel);
+            }            
         },
 
         computed: {
             isUserInfoShown: function () {
                 return this.$authService.isAuthenticated();
+            },
+            isUnreadMessageNotificationShown: function () {
+                console.log(this.$route.path);
+                return this.$route.path != "/profile" && this.unreadMessages > 0;
             }
         }
     }
