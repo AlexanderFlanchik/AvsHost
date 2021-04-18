@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="messages-list-container">
         <div v-if="rows && rows.length">
-            <div class="message-row-base" v-for="row in rows" :key="row" v-bind:class="{ 'message-row-own' : userId == row.authorID, 'message-row' : userId != row.authorID }" :id="row.id" :isViewed="(row.viewedBy.indexOf(userId) >= 0).toString()">
+            <div class="message-row-base" v-for="row in rows" :key="row" v-bind:class="{ 'message-row-own' : userId == row.authorID, 'message-row' : userId != row.authorID, 'new-message' : row.viewedBy.indexOf(userId) < 0 }" :id="row.id" :isViewed="(row.viewedBy.indexOf(userId) >= 0).toString()">
                 <div class="message-date-base" v-bind:class="{ 'message-date-own' : userId == row.authorID, 'message-date' : userId != row.authorID }" >{{formatDate(row.dateAdded)}}</div>
                 <div class="message-content">{{row.content}}</div>
             </div>
@@ -78,7 +78,7 @@
                             setTimeout(() => {
                                 console.log('firstLoadedCallback fired.');
                                 this.firstLoadedCallback && this.firstLoadedCallback();
-                            }, 50);
+                            }, 600);
                             this.firstLoaded = true;
                         }
                     });
@@ -91,15 +91,17 @@
 
             markAsViewed: async function (rowIds) {
                 return new Promise((resolve) => {
-                    let rowsToUpdate = this.rows.filter(r => rowIds.indexOf(r.id) >= 0);
-                    if (rowsToUpdate && rowsToUpdate.length) {
-                        for (var i = 0; i < rowsToUpdate.length; i++) {
-                            let r = rowsToUpdate[i];
-                            r.viewedBy.push(this.userId);
+                    setTimeout(() => {
+                        let rowsToUpdate = this.rows.filter(r => rowIds.indexOf(r.id) >= 0);
+                        if (rowsToUpdate && rowsToUpdate.length) {
+                            for (var i = 0; i < rowsToUpdate.length; i++) {
+                                let r = rowsToUpdate[i];
+                                r.viewedBy.push(this.userId);
+                            }
                         }
-                    }
 
-                    resolve(rowsToUpdate);
+                        resolve(rowsToUpdate);
+                    }, 500);
                 });
             },
 
@@ -168,5 +170,9 @@
         padding-top: 50px;
         color: navy;
         font-weight: bold;
+    }
+
+    .new-message {
+        border: 3px solid navy;
     }
 </style>

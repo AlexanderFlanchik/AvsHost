@@ -150,7 +150,7 @@
     .send-message-form-container {
         border-top-style: solid;
         border-top-color: navy;
-        margin-top: 5px;
+        margin-top: 3px;
         height: auto;
     }
 
