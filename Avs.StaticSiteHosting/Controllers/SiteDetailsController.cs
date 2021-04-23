@@ -7,6 +7,7 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,17 +17,17 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class SiteDetailsController : BaseController
+    public sealed class SiteDetailsController : BaseController
     {
         private readonly ISiteService _siteService;
         private readonly IContentManager _contentManager;
-        
-        public SiteDetailsController(ISiteService siteService, IContentManager contentManager)
+        private readonly IUserService _userService;
+
+        public SiteDetailsController(ISiteService siteService, IUserService userService, IContentManager contentManager)
         {
-            _siteService = siteService 
-                    ?? throw new ArgumentNullException(nameof(siteService));
-            _contentManager = contentManager
-                    ?? throw new ArgumentException(nameof(contentManager));
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
+            _contentManager = contentManager ?? throw new ArgumentException(nameof(contentManager));
         }
 
         [HttpGet]
@@ -65,7 +66,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
                        
         [HttpPost]
-        public async Task<IActionResult> CreateSite(SiteDetailsModel siteDetails, [FromServices] IUserService userService)
+        public async Task<IActionResult> CreateSite(SiteDetailsModel siteDetails, [FromServices] IEventLogsService eventLogsService)
         {
             var uploadSessionId = siteDetails.UploadSessionId;
             if (string.IsNullOrEmpty(uploadSessionId))
@@ -78,7 +79,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return Conflict("This site name is already in use.");
             }
 
-            var currentUser = await userService.GetUserByIdAsync(CurrentUserId).ConfigureAwait(false);
+            var currentUser = await _userService.GetUserByIdAsync(CurrentUserId).ConfigureAwait(false);
             if (currentUser == null)
             {
                 return BadRequest("Cannot find user by ID provided.");
@@ -98,14 +99,18 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var newSite = await _siteService.CreateSiteAsync(siteData).ConfigureAwait(false);
             await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId).ConfigureAwait(false);
 
+            await eventLogsService.InsertSiteEventAsync(newSite.Id, "Site Created", SiteEventType.Information,
+                $"Site '{newSite.Name}' was created successfully.");
+
             var routeValues = new { siteId = newSite.Id };
 
             return CreatedAtAction(nameof(GetSiteDetails), routeValues, newSite);
         }
 
         [HttpPut("{siteId}")]
-        public async Task<IActionResult> UpdateSite(string siteId, SiteDetailsModel siteDetails)
+        public async Task<IActionResult> UpdateSite(string siteId, SiteDetailsModel siteDetails, [FromServices] IEventLogsService eventLogsService)
         {
+            var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
             var siteToUpdate = await _siteService.GetSiteByIdAsync(siteId).ConfigureAwait(false);
             if (siteToUpdate == null)
             {
@@ -123,7 +128,22 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
 
             siteToUpdate.Name = siteDetails.SiteName;
-            siteToUpdate.IsActive = siteDetails.IsActive;
+            bool siteStateChanged = siteToUpdate.IsActive != siteDetails.IsActive;
+            if (siteStateChanged)
+            {                
+                siteToUpdate.IsActive = siteDetails.IsActive;
+                if (siteToUpdate.IsActive)
+                {
+                    await eventLogsService.InsertSiteEventAsync(siteToUpdate.Id, "Site Started.", SiteEventType.Information, 
+                        $"Site '{siteToUpdate.Name}' was started by {currentUser.Name}.");
+                }
+                else
+                {
+                    await eventLogsService.InsertSiteEventAsync(siteToUpdate.Id, "Site Stopped.", SiteEventType.Warning,
+                         $"Site '{siteToUpdate.Name}' was stopped by {currentUser.Name}.");
+                }
+            }
+            
             siteToUpdate.Description = siteDetails.Description;
             siteToUpdate.Mappings = siteDetails.ResourceMappings;
             siteToUpdate.LandingPage = siteDetails.LandingPage;

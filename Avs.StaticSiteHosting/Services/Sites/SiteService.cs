@@ -115,14 +115,8 @@ namespace Avs.StaticSiteHosting.Web.Services
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }
 
-        public async Task<bool> ToggleSiteStatusAsync(string siteId)
+        public async Task<bool> ToggleSiteStatusAsync(Site site)
         {
-            var site = await GetSiteByIdAsync(siteId).ConfigureAwait(false);
-            if (site == null)
-            {
-                throw new InvalidOperationException($"No site with ID = {siteId} found.");
-            }
-
             site.IsActive = !site.IsActive;
             await UpdateSiteAsync(site).ConfigureAwait(false);
 

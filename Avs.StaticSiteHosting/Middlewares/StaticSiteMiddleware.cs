@@ -11,6 +11,7 @@ using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Microsoft.AspNetCore.StaticFiles;
+using Avs.StaticSiteHosting.Web.Services.EventLog;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -19,6 +20,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     /// </summary>
     public class StaticSiteMiddleware
     {
+        private const string INVALID_SITE = "Invalid Site";
         public StaticSiteMiddleware(RequestDelegate next) {}
 
         public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ISiteService siteService, IContentManager contentManager)
@@ -39,24 +41,33 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             if (!siteInfo.IsActive)
             {
+                await AddErrorToEventLog(context, siteInfo.Id, "The site has been turned off.");
+                
                 throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
             }
 
             var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
             if (!Directory.Exists(siteContentPath))
             {
-                throw new StaticSiteProcessingException(404, "Invalid Site",  $"No content folder found for site named '{siteName}'");
+                var errMessage = $"No content folder found for site named '{siteName}'";
+                await AddErrorToEventLog(context, siteInfo.Id, errMessage);
+                
+                throw new StaticSiteProcessingException(404, INVALID_SITE, errMessage);
             }
 
             var siteOwner = siteInfo.CreatedBy;
             if (siteOwner.Status != UserStatus.Active)
             {
-                throw new StaticSiteProcessingException(400, "Invalid Site", "This content cannot be provided because its owner has been blocked.");
+                await AddErrorToEventLog(context, siteInfo.Id, "Site cannot be processed because of lock of its owner.");
+                
+                throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
 
             var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id).ConfigureAwait(false);
             if (contentItems == null || !contentItems.Any())
             {
+                await AddErrorToEventLog(context, siteInfo.Id, "Unable to find content for site.");
+                
                 throw new StaticSiteProcessingException(400, "Oops, no content", $"No content found for site named '{siteName}'");
             }
 
@@ -78,6 +89,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
             else
             {
+                await AddErrorToEventLog(context, siteInfo.Id, $"Resource with name '{fileName}' was not found.");
+                
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
             }
         }
@@ -107,6 +120,12 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
             
             return false;
+        }
+
+        private async Task AddErrorToEventLog(HttpContext context, string siteId, string errorMessage)
+        {
+            var eventLogService = (IEventLogsService)context.RequestServices.GetService(typeof(IEventLogsService));
+            await eventLogService.InsertSiteEventAsync(siteId, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
         }
     }
 

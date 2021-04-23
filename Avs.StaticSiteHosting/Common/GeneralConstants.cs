@@ -14,6 +14,7 @@
         public const string HELPRESOURCE_COLLECTION = "HelpResources";
         public const string CONVERSATION_COLLECTION = "Conversations";
         public const string CONVERSATION_MESSAGE_COLLECTION = "ConversationMessages";
+        public const string SITE_EVENTS_COLLECTION = "SiteEvents";
 
         #endregion
 

@@ -59,11 +59,11 @@ namespace Avs.StaticSiteHosting.Web.Services
         Task UpdateSiteAsync(Site siteToUpdate);
 
         /// <summary>
-        /// Toggles and return site status by site ID.
+        /// Toggles and return site status.
         /// </summary>
-        /// <param name="siteId">Site ID</param>
+        /// <param name="Site">Site refrence.</param>
         /// <returns></returns>
-        Task<bool> ToggleSiteStatusAsync(string siteId);
+        Task<bool> ToggleSiteStatusAsync(Site site);
 
         /// <summary>
         /// Deletes the site.
