@@ -13,6 +13,11 @@
                 </router-link>
             </li>
             <li class="navigation-menu-item">
+                <router-link to="/event-log" class="navigation-menu-item-link" active-class="link-active">
+                    Site Event Logs
+                </router-link>
+            </li>
+            <li class="navigation-menu-item">
                 <router-link to="/help" class="navigation-menu-item-link" active-class="link-active">Help</router-link>
             </li>
         </ul>

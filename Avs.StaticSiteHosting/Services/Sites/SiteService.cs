@@ -98,6 +98,24 @@ namespace Avs.StaticSiteHosting.Web.Services
             return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
         }
 
+        public async Task<SitesSearchResponse> SearchSitesByName(string name, string ownerId = null)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return new SitesSearchResponse(new Site[] { });
+            }
+
+            var sitesFilter = new FilterDefinitionBuilder<Site>().Where(s => s.Name.ToLowerInvariant().Contains(name.ToLowerInvariant()));
+            if (!string.IsNullOrEmpty(ownerId))
+            {
+                sitesFilter &= new FilterDefinitionBuilder<Site>().Eq(s => s.CreatedBy.Id, ownerId);
+            }
+
+            var sitesQuery = await _sites.FindAsync(sitesFilter, new FindOptions<Site> { Limit = 50 });
+           
+            return new SitesSearchResponse(await sitesQuery.ToListAsync());
+        }
+
         public async Task UpdateSiteAsync(Site siteToUpdate)
         {
             var siteId = siteToUpdate.Id;

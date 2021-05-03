@@ -43,6 +43,17 @@ namespace Avs.StaticSiteHosting.Web.Services.Identity
             return user.Roles.Any(r => r.Name == GeneralConstants.ADMIN_ROLE);
         }
 
+        public async Task<bool> IsAdminAsync(string userId)
+        {
+            var user = await GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return false;
+            }
+
+            return IsAdmin(user);
+        }
+
         public async Task UpdateUserAsync(User user)
         {
             var filter = new FilterDefinitionBuilder<User>().Where(u => u.Id == user.Id);

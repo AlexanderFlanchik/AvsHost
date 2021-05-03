@@ -15,17 +15,14 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     {
         [HttpPost]
         public async Task<IActionResult> GetEventLog(EventLogsQuery query, [FromServices] IUserService userService, [FromServices] IEventLogsService eventLogs)
-        {
-            var currentUser = await userService.GetUserByIdAsync(CurrentUserId);
-            if (currentUser is null)
-            {
-                return BadRequest("Invalid user ID passed.");
-            }
+        {           
+            query.CurrentUserId = await userService.IsAdminAsync(CurrentUserId) ? null : CurrentUserId;
 
-            bool isAdmin = userService.IsAdmin(currentUser);
-            query.CurrentUserId = !isAdmin ? CurrentUserId : null;
+            var (
+                totalEvents, 
+                siteEvents
+            ) = await eventLogs.GetEventLogsAsync(query);
 
-            var (totalEvents, siteEvents) = await eventLogs.GetEventLogsAsync(query);
             Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalEvents.ToString()));
 
             return Ok(siteEvents);

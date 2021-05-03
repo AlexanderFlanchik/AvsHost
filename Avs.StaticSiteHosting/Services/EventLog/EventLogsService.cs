@@ -25,16 +25,37 @@ namespace Avs.StaticSiteHosting.Web.Services.EventLog
 
         public async Task<(long, IEnumerable<SiteEventModel>)> GetEventLogsAsync(EventLogsQuery query)
         {
-            var userIdFilter = new FilterDefinitionBuilder<SiteEvent>().Empty;
+            var queryFilter = new FilterDefinitionBuilder<SiteEvent>().Empty;
             if (!string.IsNullOrEmpty(query.CurrentUserId))
             {
                 var sitesFilter = new FilterDefinitionBuilder<Site>().Eq(s => s.CreatedBy.Id, query.CurrentUserId);
-                userIdFilter = new FilterDefinitionBuilder<SiteEvent>().ElemMatch(se => se.Sites, sitesFilter);
+                var userIdFilter = new FilterDefinitionBuilder<SiteEvent>().ElemMatch(se => se.Sites, sitesFilter);
+                queryFilter &= userIdFilter;
+            }
+
+            if (query.DateFrom.HasValue)
+            {
+                queryFilter &= new FilterDefinitionBuilder<SiteEvent>().Gte(s => s.Timestamp, query.DateFrom.Value);
+            }
+
+            if (query.DateTo.HasValue)
+            {
+                queryFilter &= new FilterDefinitionBuilder<SiteEvent>().Lte(s => s.Timestamp, query.DateTo.Value);
+            }
+
+            if (query.Type.HasValue)
+            {
+                queryFilter &= new FilterDefinitionBuilder<SiteEvent>().Eq(s => s.Type, query.Type.Value);                
+            }
+
+            if (!string.IsNullOrEmpty(query.SiteId))
+            {
+                queryFilter &= new FilterDefinitionBuilder<SiteEvent>().Eq(s => s.SiteId, query.SiteId);
             }
 
             var aggr = _events.Aggregate()
                 .Lookup<Site, SiteEvent>(GeneralConstants.SITES_COLLECTION, "SiteId", "_id", "Sites")
-                .Match(userIdFilter);
+                .Match(queryFilter);
 
             var totalLogEvents = (await aggr.Count().FirstOrDefaultAsync())?.Count ?? 0;
             var events = await aggr.SortByDescending(t => t.Timestamp)

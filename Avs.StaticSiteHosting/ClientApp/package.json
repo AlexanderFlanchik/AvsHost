@@ -22,7 +22,8 @@
         "vue": "^2.6.12",
         "vue-fontawesome": "0.0.2",
         "vue-router": "^3.4.3",
-        "vue-select": "^3.11.2"
+        "vue-select": "^3.11.2",
+        "vue2-datepicker": "^3.9.0"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^4.5.9",

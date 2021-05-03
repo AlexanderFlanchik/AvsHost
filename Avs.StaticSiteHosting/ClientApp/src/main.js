@@ -17,6 +17,7 @@ import CreateOrUpdateSite from './components/CreateOrUpdateSite.vue';
 import Help from './components/Help.vue';
 import UserProfile from './components/UserProfile.vue';
 import Conversations from './components/Conversations.vue';
+import EventLog from './components/EventLog.vue';
 import ApiClient from './services/ApiClient';
 import { UserNotificationService } from './services/UserNotificationService';
 
@@ -41,7 +42,8 @@ const routes = [
     { path: '/conversations', component: Conversations },
     { path: '/sites/create', component: CreateOrUpdateSite },
     { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true },
-    { path: '/user-profile/:userId', component: UserProfile, props: true }
+    { path: '/user-profile/:userId', component: UserProfile, props: true },
+    { path: '/event-log', component: EventLog }
 ];
 
 const router = new VueRouter({ routes });

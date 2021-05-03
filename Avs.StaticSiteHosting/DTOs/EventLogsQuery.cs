@@ -9,7 +9,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         public string SiteId { get; set; }
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
-        public SiteEventType Type { get; set; }
+        public SiteEventType? Type { get; set; }
         public string CurrentUserId { get; set; }
 
         public EventLogsQuery()

@@ -47,5 +47,12 @@ namespace Avs.StaticSiteHosting.Web.Services.Identity
         /// <param name="user"></param>
         /// <returns></returns>
         bool IsAdmin(User user);
+
+        /// <summary>
+        /// Checks if the user with ID specified has Admin role.
+        /// </summary>
+        /// <param name="userId">ID of user</param>
+        /// <returns></returns>
+        Task<bool> IsAdminAsync(string userId);
     }
 }

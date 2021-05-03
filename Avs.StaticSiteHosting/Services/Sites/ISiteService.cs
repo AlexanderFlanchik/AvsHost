@@ -52,6 +52,14 @@ namespace Avs.StaticSiteHosting.Web.Services
         Task<Site> GetSiteByNameAsync(string siteName);
 
         /// <summary>
+        /// Search sites by site name specified.
+        /// </summary>
+        /// <param name="name">Site name</param>
+        /// <param name="ownerId">Owner ID (optional).</param>
+        /// <returns></returns>
+        Task<SitesSearchResponse> SearchSitesByName(string name, string ownerId = null);
+
+        /// <summary>
         /// Updates the existing site.
         /// </summary>
         /// <param name="siteToUpdate">Site reference to update.</param>
