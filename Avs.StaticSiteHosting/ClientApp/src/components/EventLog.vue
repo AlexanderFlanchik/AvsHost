@@ -9,10 +9,10 @@
         <div class="event-logs-content">
             <div class="dates-filter-container">
                 <div class="left w-250">
-                    Date from: &nbsp; <date-picker v-model="dateFrom" :disabled-date="disabledDateFromAfter" :editable="false" @input="dateFromSet"></date-picker>
+                    Date from: &nbsp; <date-picker v-model="dateFrom" :disabled-date="disabledDateFromAfter" valueType="format" :editable="false"></date-picker>
                 </div>
                 <div class="left w-250">
-                    Date to: &nbsp; <date-picker v-model="dateTo" :disabled-date="disabledDateToBefore" :editable="false" @input="dateToSet"></date-picker>
+                    Date to: &nbsp; <date-picker v-model="dateTo" :disabled-date="disabledDateToBefore" valueType="format" :editable="false"></date-picker>
                 </div>
                 <div class="button-bar">
                     <button class="btn btn-primary" @click="loadLogs">Search</button> &nbsp;
@@ -154,14 +154,6 @@
                 this.loadLogs();
             },
 
-            dateFromSet: function () {
-                console.log(this.dateFrom);
-            },
-
-            dateToSet: function () {
-                console.log(this.dateTo);
-            },
-
             clearSiteName: function () {
                 this.site = null;
                 this.siteId = null;
@@ -176,6 +168,7 @@
             onInput: function (value) {
                 if (value && value.id) {
                     this.siteId = value.id;
+                    this.page = 1;
                     this.loadLogs();
                 } 
             },
@@ -195,14 +188,23 @@
             },
 
             loadLogs: function () {
+                
                 let request = {
                     page: this.page,
-                    pageSize: this.pageSize,
-                    dateFrom: this.dateFrom,
-                    dateTo: this.dateTo,
+                    pageSize: this.pageSize,                    
                     siteId: this.siteId,
                     type:  this.type && this.type.value == "" ? null : this.type.value
                 };
+
+                if (this.dateFrom) {
+                    let df = new Date(this.dateFrom).setHours(0, 0, 0, 0);
+                    request.dateFrom = new Date(df);
+                }
+
+                if (this.dateTo) {
+                    let dt = new Date(this.dateTo).setHours(23, 59, 59, 999);
+                    request.dateTo = new Date(dt);
+                }
 
                 this.$apiClient.postAsync('api/eventlog', request)
                     .then((response) => {
@@ -212,6 +214,7 @@
                     });
             },
             typeChanged: function () {
+                this.page = 1;
                 this.loadLogs();
             }
         },
