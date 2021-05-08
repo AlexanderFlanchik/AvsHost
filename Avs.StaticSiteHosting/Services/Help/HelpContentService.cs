@@ -104,7 +104,8 @@ namespace Avs.StaticSiteHosting.Web.Services
                     { 
                         Id = sec.Id, 
                         Name = sec.Name,
-                        RolesAllowed = sec.RolesAllowed
+                        RolesAllowed = sec.RolesAllowed,
+                        IsRoot = sec.ParentSectionId == null
                     };
 
                 var children = childSections[sec.Id];

@@ -101,9 +101,6 @@ namespace Avs.StaticSiteHosting.Web.Services.AdminConversation
                 return 0;
             }
 
-            //var all = (await _conversationMessages.FindAsync(Builders<ConversationMessage>.Filter.Where(m => m.ConversationID == conversation.Id)))
-            //    .ToList().OrderBy(d => d.DateAdded).ToList();
-
             var filter = Builders<ConversationMessage>.Filter.Where(m => m.ConversationID == conversation.Id && !m.ViewedBy.Contains(authorId));
             var query = await _conversationMessages.FindAsync(filter);
             

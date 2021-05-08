@@ -17,5 +17,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         }
 
         public string[] RolesAllowed { get; set; }
+
+        public bool IsRoot { get; set; }
     }
 }
