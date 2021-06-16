@@ -12,6 +12,8 @@ using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Microsoft.AspNetCore.StaticFiles;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
+using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -21,10 +23,25 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     public class StaticSiteMiddleware
     {
         private const string INVALID_SITE = "Invalid Site";
-        public StaticSiteMiddleware(RequestDelegate next) {}
+        private readonly IOptions<StaticSiteOptions> _staticSiteOptions;
+        private readonly ISiteService _siteService;
+        private readonly IContentManager _contentManager;
+        private readonly ISiteStatisticsService _siteStatisticsService;
 
-        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ISiteService siteService, IContentManager contentManager)
+        public StaticSiteMiddleware(RequestDelegate next, 
+            IOptions<StaticSiteOptions> staticSiteOptions, 
+            ISiteService siteService, 
+            IContentManager contentManager,
+            ISiteStatisticsService siteStatisticsService)
         {
+            _staticSiteOptions = staticSiteOptions;
+            _siteService = siteService;
+            _contentManager = contentManager;
+            _siteStatisticsService = siteStatisticsService;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {            
             var routeValues = context.GetRouteData().Values;
             if (await HandleDashboardContent(context))
             {
@@ -33,7 +50,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             string siteName = (string)routeValues["sitename"], sitePath = (string)routeValues["sitepath"];
 
-            var siteInfo = await siteService.GetSiteByNameAsync(siteName).ConfigureAwait(false);
+            var siteInfo = await _siteService.GetSiteByNameAsync(siteName).ConfigureAwait(false);
             if (siteInfo == null)
             {
                 throw new StaticSiteProcessingException(404, "Oops, no such site!", $"No site with name '{siteName}' found.");
@@ -46,7 +63,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
             }
 
-            var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
+            var siteContentPath = Path.Combine(_staticSiteOptions.Value.ContentPath, siteName);
             if (!Directory.Exists(siteContentPath))
             {
                 var errMessage = $"No content folder found for site named '{siteName}'";
@@ -63,7 +80,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
 
-            var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id).ConfigureAwait(false);
+            var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id).ConfigureAwait(false);
             if (contentItems == null || !contentItems.Any())
             {
                 await AddErrorToEventLog(context, siteInfo.Id, "Unable to find content for site.");
@@ -82,6 +99,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
                 var fi = fileProvider.GetFileInfo(fileName);
 
+                await CheckIfSiteIsViewed(fi, siteInfo);
+
                 context.Response.ContentType = contentItem.ContentType;
 
                 await context.Response.SendFileAsync(fi).ConfigureAwait(false);
@@ -92,6 +111,15 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 await AddErrorToEventLog(context, siteInfo.Id, $"Resource with name '{fileName}' was not found.");
                 
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
+            }
+        }
+
+        private async ValueTask CheckIfSiteIsViewed(IFileInfo fi, Site siteInfo)
+        {
+            var landingPage = siteInfo.LandingPage;
+            if (!string.IsNullOrEmpty(landingPage) && fi.Name == landingPage)
+            {                
+                await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id);
             }
         }
 

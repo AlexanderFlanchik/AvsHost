@@ -44,7 +44,26 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// <returns></returns>
         Task UpdateContentItem(string contentItemId, string content);
 
+        /// <summary>
+        /// Deletes content using content item ID.
+        /// </summary>
+        /// <param name="contentItemId"></param>
+        /// <returns></returns>
         Task<bool> DeleteContentByIdAsync(string contentItemId);
+        
+        /// <summary>
+        /// Deletes a new uploaded file.
+        /// </summary>
+        /// <param name="fileName">File name to delete</param>
+        /// <param name="uploadSessionId">Upload session ID.</param>
+        /// <returns>True if deletion succeded, otherwise false.</returns>
         bool DeleteNewUploadedFile(string fileName, string uploadSessionId);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<IEnumerable<StorageUsedInfo>> GetUsedStorageAmountByUser(string userId);
     }
 }

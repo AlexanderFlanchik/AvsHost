@@ -6,6 +6,7 @@ using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
+using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -54,6 +55,8 @@ namespace Avs.StaticSiteHosting.Web
             services.AddScoped<IConversationMessagesService, ConversationMessagesService>();
 
             services.AddScoped<IEventLogsService, EventLogsService>();
+
+            services.AddScoped<ISiteStatisticsService, SiteStatisticsService>();
 
             services.AddTransient<ImageResizeService>();
 

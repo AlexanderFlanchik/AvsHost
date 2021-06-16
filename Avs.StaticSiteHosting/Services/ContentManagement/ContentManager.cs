@@ -15,11 +15,12 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
     {
         private readonly IMongoCollection<ContentItem> contentItems;
         private readonly StaticSiteOptions options;
-
-        public ContentManager(MongoEntityRepository entityRepository, IOptions<StaticSiteOptions> staticSiteOptions)
+        private readonly ISiteService _siteService;
+        public ContentManager(MongoEntityRepository entityRepository, IOptions<StaticSiteOptions> staticSiteOptions, ISiteService siteService)
         {
             contentItems = entityRepository.GetEntityCollection<ContentItem>(GeneralConstants.CONTENT_ITEMS_COLLECTION);
             options = staticSiteOptions.Value;
+            _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
         }
 
         public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
@@ -265,6 +266,35 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             }
 
             return true;
+        }
+
+        public async Task<IEnumerable<StorageUsedInfo>> GetUsedStorageAmountByUser(string userId)
+        {
+            var siteIds = await _siteService.GetSiteIdsByOwner(userId);
+            var siteIdsFilter = new FilterDefinitionBuilder<ContentItem>().In(s => s.Site.Id, siteIds);
+            var projection = Builders<ContentItem>.Projection.Expression(ci => 
+                new StorageUsedInfo 
+                    { 
+                        SiteId = ci.Site.Id, 
+                        SiteName = ci.Site.Name, 
+                        Bytes = (long)(ci.Size * 1024)
+                    }
+                );
+            
+            var lst = await contentItems.Find(siteIdsFilter).Project(projection).ToListAsync();
+            
+            // TODO: move aggregation to the query above
+            var result = lst
+                            .GroupBy(g => new { g.SiteId, g.SiteName })
+                            .Select(i => new StorageUsedInfo 
+                                            { 
+                                                SiteId = i.Key.SiteId, 
+                                                SiteName = i.Key.SiteName, 
+                                                Bytes = i.Sum(b => b.Bytes) 
+                                            }
+                            ).ToList();
+            
+            return result;
         }
     }
 }

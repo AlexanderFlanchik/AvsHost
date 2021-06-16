@@ -19,6 +19,15 @@ namespace Avs.StaticSiteHosting.Web.Services
             _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
         }
 
+        public async Task<IEnumerable<string>> GetSiteIdsByOwner(string ownerId)
+        {
+            var sitesFilter = new FilterDefinitionBuilder<Site>().Eq(s => s.CreatedBy.Id, ownerId);
+            var idProjection = Builders<Site>.Projection.Expression(s => s.Id);
+            var siteIds = await _sites.Find(sitesFilter).Project(idProjection).ToListAsync();
+
+            return siteIds;
+        }
+
         public async Task<IEnumerable<Site>> GetSitesAsync(SitesQuery query)
         {
             var findOptions = new FindOptions<Site>() { Limit = query.PageSize, Skip = query.PageSize * (query.Page - 1) };

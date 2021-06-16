@@ -1,6 +1,9 @@
 ﻿<template>
     <div class="nav-menu-container">
         <ul class="navigation-menu">
+            <li class="navigation-menu-item" v-if="!isAdmin">
+                <router-link to="/home" class="navigation-menu-item-link" active-class="link-active" exact>Home</router-link>
+            </li>
             <li class="navigation-menu-item">
                 <router-link to="/" class="navigation-menu-item-link" active-class="link-active" exact>Dashboard</router-link>
             </li>

@@ -35,15 +35,18 @@
     const Section = function (o) {
         const self = this;
         const clickHandlerFn = o.clickHandlerFn(); // fn (sId) => ...
-        
+
+        let sectionList = [];
+
         self.id = o.id;
         self.name = o.name;
         self.ordinalNo = o.ordinalNo;
         self.isRoot = o.isRoot;
         self.expanded = false;
         self.selected = false;
+
         self.setSectionList = function (lst) {
-            self.sectionList = lst;
+            sectionList = lst;
         };
         
         self.clickHandler = function () {
@@ -52,8 +55,8 @@
                 return;
             }
 
-            for (let i = 0; i < self.sectionList.length; i++) {
-                let sc = self.sectionList[i];
+            for (let i = 0; i < sectionList.length; i++) {
+                let sc = sectionList[i];
                 sc.selected = sc.id == self.id;
             }
         };
