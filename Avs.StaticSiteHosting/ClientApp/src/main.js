@@ -34,7 +34,8 @@ Vue.prototype.$apiClient = new ApiClient(authService);
 Vue.prototype.$userNotificationService = new UserNotificationService(authService);
 
 const routes = [
-    { path: '/', component: Dashboard },
+    { path: '/', component: HomePage },
+    { path: '/dashboard', component: Dashboard },
     { path: '/login', component: Login, props: true },
     { path: '/register', component: Register },
     { path: '/registered', component: Registered },
@@ -44,8 +45,7 @@ const routes = [
     { path: '/sites/create', component: CreateOrUpdateSite },
     { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true },
     { path: '/user-profile/:userId', component: UserProfile, props: true },
-    { path: '/event-log', component: EventLog },
-    { path: '/home', component: HomePage }
+    { path: '/event-log', component: EventLog }    
 ];
 
 const router = new VueRouter({ routes });

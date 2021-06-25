@@ -2,10 +2,10 @@
     <div class="nav-menu-container">
         <ul class="navigation-menu">
             <li class="navigation-menu-item" v-if="!isAdmin">
-                <router-link to="/home" class="navigation-menu-item-link" active-class="link-active" exact>Home</router-link>
+                <router-link to="/" class="navigation-menu-item-link" active-class="link-active" exact>Home</router-link>
             </li>
             <li class="navigation-menu-item">
-                <router-link to="/" class="navigation-menu-item-link" active-class="link-active" exact>Dashboard</router-link>
+                <router-link to="/dashboard" class="navigation-menu-item-link" active-class="link-active" exact>Dashboard</router-link>
             </li>
             <li class="navigation-menu-item">
                 <router-link to ="/profile" class="navigation-menu-item-link" active-class="link-active">My Profile</router-link>
