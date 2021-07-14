@@ -11,5 +11,6 @@ namespace Avs.StaticSiteHosting.Web.Models.SiteStatistics
 
         public DateTime ViewedTimestamp { get; set; }
         public string SiteId { get; set; }
+        public string Visitor { get; set; } // The person IP how viewed the site
     }
 }

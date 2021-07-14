@@ -23,6 +23,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     public class StaticSiteMiddleware
     {
         private const string INVALID_SITE = "Invalid Site";
+        private const string LOCAL_IP = "::1";
+
         private readonly IOptions<StaticSiteOptions> _staticSiteOptions;
         private readonly ISiteService _siteService;
         private readonly IContentManager _contentManager;
@@ -99,7 +101,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
                 var fi = fileProvider.GetFileInfo(fileName);
 
-                await CheckIfSiteIsViewed(fi, siteInfo);
+                await CheckIfSiteIsViewed(fi, siteInfo, context);
 
                 context.Response.ContentType = contentItem.ContentType;
 
@@ -114,12 +116,13 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
         }
 
-        private async ValueTask CheckIfSiteIsViewed(IFileInfo fi, Site siteInfo)
+        private async ValueTask CheckIfSiteIsViewed(IFileInfo fi, Site siteInfo, HttpContext context)
         {
             var landingPage = siteInfo.LandingPage;
             if (!string.IsNullOrEmpty(landingPage) && fi.Name == landingPage)
-            {                
-                await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id);
+            {
+                var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
+                await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id, visitor);
             }
         }
 

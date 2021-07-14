@@ -8,7 +8,7 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
 {
     public interface ISiteStatisticsService
     {
-        Task MarkSiteAsViewed(string siteId);
+        Task MarkSiteAsViewed(string siteId, string visitor);
         Task<int> GetTotalSiteVisits(string ownerId);
     }
 
@@ -42,15 +42,15 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
             return (int)count;
         }
 
-        public async Task MarkSiteAsViewed(string siteId)
+        public async Task MarkSiteAsViewed(string siteId, string visitor)
         {
             var now = DateTime.UtcNow;
             var df = now.AddMinutes(-1);
 
             var filterById = new FilterDefinitionBuilder<ViewedSiteInfo>().Eq(f => f.SiteId, siteId);
             var filterByDate = new FilterDefinitionBuilder<ViewedSiteInfo>().Gte(f => f.ViewedTimestamp, df);
-            
-            var viewedEntriesQuery = await _viewedSiteInfos.FindAsync(filterById & filterByDate);
+            var filterByVisitor = new FilterDefinitionBuilder<ViewedSiteInfo>().Eq(f => f.Visitor, visitor);
+            var viewedEntriesQuery = await _viewedSiteInfos.FindAsync(filterById & filterByDate & filterByVisitor);
             var alreadyExists = await viewedEntriesQuery.AnyAsync();
 
             if (!alreadyExists)
@@ -59,7 +59,8 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
                     new ViewedSiteInfo 
                         { 
                             SiteId = siteId, 
-                            ViewedTimestamp = now 
+                            ViewedTimestamp = now,
+                            Visitor = visitor
                         }
                 );
             }
