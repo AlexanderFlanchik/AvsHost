@@ -1,7 +1,10 @@
-﻿using Avs.StaticSiteHosting.Web.Models;
+﻿using Avs.StaticSiteHosting.Web.DTOs;
+using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Models.SiteStatistics;
 using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
@@ -10,17 +13,20 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
     {
         Task MarkSiteAsViewed(string siteId, string visitor);
         Task<int> GetTotalSiteVisits(string ownerId);
+        Task<IEnumerable<ViewedSiteInfoModel>> GetLatestSiteVisits(string ownerId, int take = 5);
     }
 
     public class SiteStatisticsService : ISiteStatisticsService
     {
         private readonly IMongoCollection<ViewedSiteInfo> _viewedSiteInfos;
         private readonly ISiteService _siteService;
+        private readonly IMongoCollection<Site> _sites;
 
         public SiteStatisticsService(MongoEntityRepository entityRepository, ISiteService siteService)
         {
             _viewedSiteInfos = entityRepository.GetEntityCollection<ViewedSiteInfo>(GeneralConstants.SITE_VIEWED_INFO_COLLECTION);
             _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
+            _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
         }
 
         public async Task<int> GetTotalSiteVisits(string ownerId)
@@ -64,6 +70,34 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
                         }
                 );
             }
-        }       
+        }
+
+        public async Task<IEnumerable<ViewedSiteInfoModel>> GetLatestSiteVisits(string ownerId, int take = 5)
+        {
+            var sitesFilter = new FilterDefinitionBuilder<Site>().Eq(o => o.CreatedBy.Id, ownerId);
+            var sitesProjection = new ProjectionDefinitionBuilder<Site>().Expression(s => s.Id);
+            var siteIds = await _sites.Find(sitesFilter).Project(sitesProjection).ToListAsync();
+
+            var dateStart = DateTime.UtcNow.AddHours(-24);
+            var filter = Builders<ViewedSiteInfo>.Filter.In(s => s.SiteId, siteIds)
+                    & Builders<ViewedSiteInfo>.Filter.Gte(vs => vs.ViewedTimestamp, dateStart);
+
+            var aggr = _viewedSiteInfos.Aggregate()
+                    .Lookup<Site, ViewedSiteInfo>(GeneralConstants.SITES_COLLECTION, "SiteId", "_id", "Sites")
+                    .Match(filter)
+                    .SortByDescending(s => s.ViewedTimestamp)
+                    .Limit(take);
+
+            var results = (await aggr.ToListAsync())
+                    .Select(vi =>
+                        new ViewedSiteInfoModel
+                        {
+                            SiteId = vi.SiteId,
+                            SiteName = vi.Sites.FirstOrDefault()?.Name,
+                            Visit = vi.ViewedTimestamp
+                        });
+
+            return results;
+        }
     }
 }

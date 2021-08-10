@@ -58,7 +58,7 @@ namespace Avs.StaticSiteHosting.Web.Services.EventLog
                 .Match(queryFilter);
 
             var totalLogEvents = (await aggr.Count().FirstOrDefaultAsync())?.Count ?? 0;
-            var events = await aggr.SortByDescending(t => t.Timestamp)
+            var events = await aggr.SortByDescending(t => t.Timestamp)                
                 .Skip((query.Page - 1) * query.PageSize)
                 .Limit(query.PageSize)
                 .ToListAsync();
@@ -67,6 +67,7 @@ namespace Avs.StaticSiteHosting.Web.Services.EventLog
                 new SiteEventModel 
                 { 
                     EventId = e.Id, 
+                    SiteId = e.Sites.FirstOrDefault()?.Id,
                     SiteName = e.Sites.FirstOrDefault()?.Name, 
                     Details = e.Details, 
                     Timestamp = e.Timestamp, 

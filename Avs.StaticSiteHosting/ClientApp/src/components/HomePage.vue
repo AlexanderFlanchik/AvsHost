@@ -24,7 +24,14 @@
                <div class="statistics-container">
                  <div class="cell-left error-info-cell">
                     <span v-if="errors > 0" class="errors-title">Sites errors: <strong>{{errors}}</strong></span>
+                    <span v-if="errors > 0">
+                        <b-icon icon="caret-right-fill" v-if="!errorsListExpanded" @click="expandErrors"></b-icon>
+                        <b-icon icon="caret-down-fill" v-if="errorsListExpanded" @click="collapseErrors"></b-icon>
+                    </span>
                     <span v-if="errors == 0" class="no-errors-title">No errors!</span>
+                    <div v-if="errors > 0 && errorsListExpanded">
+                        <ErrorSitesList/>
+                    </div>
                  </div>
                  <div class="cell-left visits-info-cell">
                     <span class="visits-info">Your sites were visited <strong>{{visits}}</strong> times.</span>
@@ -38,12 +45,14 @@
     import UserInfo from '@/components/UserInfo.vue';
     import NavigationMenu from '@/components/NavigationMenu.vue';
     import PieChart from '@/components/PieChart.vue';
+    import ErrorSitesList from '@/components/ErrorSitesList.vue';
 
     export default {
         data: function () {
             return {
                 errors: 0,
-                visits: 0
+                visits: 0,
+                errorsListExpanded: false,                
             };
         },
 
@@ -93,10 +102,21 @@
                 }).catch(err => console.log(err));
         },
 
+        methods: {
+            expandErrors: function () {
+                this.errorsListExpanded = true;
+            },
+
+            collapseErrors: function () {
+                this.errorsListExpanded = false;
+            }
+        },
+
         components: {
             UserInfo,
             NavigationMenu,
-            PieChart
+            PieChart,
+            ErrorSitesList
         }
     }
 </script>

@@ -111,7 +111,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 if (newStatus == UserStatus.Locked)
                 {
-                    user.LastLocked = DateTime.Now;
+                    user.LastLocked = DateTime.UtcNow;
                     user.LocksAmount++;
                     _logger.LogInformation($"User with ID = {userId} is banned by administrator at {user.LastLocked}.");
                 }
