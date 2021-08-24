@@ -82,13 +82,22 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
             var filter = Builders<ViewedSiteInfo>.Filter.In(s => s.SiteId, siteIds)
                     & Builders<ViewedSiteInfo>.Filter.Gte(vs => vs.ViewedTimestamp, dateStart);
 
-            var aggr = _viewedSiteInfos.Aggregate()
-                    .Lookup<Site, ViewedSiteInfo>(GeneralConstants.SITES_COLLECTION, "SiteId", "_id", "Sites")
+            var aggr = _viewedSiteInfos.Aggregate()                    
+                    .Lookup<Site, ViewedSiteInfo>(GeneralConstants.SITES_COLLECTION, "SiteId", "_id", "Sites")                    
                     .Match(filter)
+                    .Group(
+                            v => v.SiteId, 
+                            v => new ViewedSiteInfo 
+                                    { 
+                                        SiteId = v.Key, 
+                                        Sites = v.First().Sites,
+                                        ViewedTimestamp = v.Max(d => d.ViewedTimestamp)
+                                    }
+                    )
                     .SortByDescending(s => s.ViewedTimestamp)
                     .Limit(take);
-
-            var results = (await aggr.ToListAsync())
+      
+            var resultsList = (await aggr.ToListAsync())
                     .Select(vi =>
                         new ViewedSiteInfoModel
                         {
@@ -97,7 +106,7 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
                             Visit = vi.ViewedTimestamp
                         });
 
-            return results;
+            return resultsList;
         }
     }
 }

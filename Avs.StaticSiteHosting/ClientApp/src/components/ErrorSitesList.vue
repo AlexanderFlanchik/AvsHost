@@ -1,6 +1,6 @@
 ﻿<template>
     <div>
-        <div>
+        <div style="width: 95%">
             <div class="swe-header">
                 Sites with Errors
             </div>
@@ -21,9 +21,9 @@
                 </table>
             </div>
             <div class="error-sites-container">
-                <table class="error-sites-table">
+                <table class="table table-striped error-sites-table">
                     <tbody>
-                        <tr v-for="site in sites" :key="site" class="error-site-row">
+                        <tr v-for="site in sites" :key="site">
                             <td class="w-200">{{site.siteName}}</td>
                             <td class="w-220">{{formatDate(site.timestamp)}}</td>
                             <td>
@@ -75,6 +75,7 @@
     }
     .ref-left {
         text-align: right;
+        margin-right: 5px;
     }
     .w-200 {
         width: 200px;
@@ -87,14 +88,12 @@
         overflow-y: auto;
     }
     .error-sites-table {        
-        width: 100%;
+        width: 95%;
+        margin-right: 5px;
     }
     .error-sites-header > th {
         background-color: navy;
         color: white;
         font-weight: bold;
-    }
-    .error-site-row {
-        background-color: white;
-    }
+    }   
 </style>

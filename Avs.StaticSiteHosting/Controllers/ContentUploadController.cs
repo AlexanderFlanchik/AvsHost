@@ -40,6 +40,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var tempContentPath = staticSiteOptions.TempContentPath;
             string uploadFolderPath = Path.Combine(tempContentPath, uploadSessionId);
 
+            // Check destination path
             if (!string.IsNullOrEmpty(destinationPath))
             {
                 if (destinationPath.StartsWith('\\') || destinationPath.StartsWith('/'))
@@ -52,7 +53,13 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             try
             {
+                // Create folder and upload file
                 Directory.CreateDirectory(uploadFolderPath);
+                var newFilepath = Path.Combine(uploadFolderPath, contentFile.FileName);
+                var fi = new FileInfo(newFilepath);
+
+                using var fiStream = fi.OpenWrite();
+                await contentFile.CopyToAsync(fiStream).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -62,23 +69,10 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 }
 
                 _logger.LogError(ex.Message);
+                
                 return Problem($"Unable to upload {contentFile.FileName}. Server error.");
             }
-
-            try
-            {
-                var newFilepath = Path.Combine(uploadFolderPath, contentFile.FileName);
-                var fi = new FileInfo(newFilepath);
-
-                using var fiStream = fi.OpenWrite();                
-                await contentFile.CopyToAsync(fiStream).ConfigureAwait(false);                
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return Problem($"Unable to upload {contentFile.FileName}. Server error.");
-            }
-
+           
             return Ok();
         }
 

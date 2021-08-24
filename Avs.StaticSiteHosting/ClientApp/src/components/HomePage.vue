@@ -34,7 +34,17 @@
                     </div>
                  </div>
                  <div class="cell-left visits-info-cell">
-                    <span class="visits-info">Your sites were visited <strong>{{visits}}</strong> times.</span>
+                     <div>
+                         <span class="visits-info">Your sites were visited <strong>{{visits}}</strong> times.</span>
+                         <span v-if="errors > 0">
+                             Show latest visits &nbsp;
+                             <b-icon icon="caret-right-fill" v-if="!lastVisitsExpaned" @click="expandVisits"></b-icon>
+                             <b-icon icon="caret-down-fill" v-if="lastVisitsExpaned" @click="collapseVisits"></b-icon>
+                         </span>
+                     </div>
+                     <div v-if="visits > 0 && lastVisitsExpaned">
+                         <LastSiteVisits />
+                     </div>
                  </div>
                </div>
             </div>            
@@ -46,13 +56,15 @@
     import NavigationMenu from '@/components/NavigationMenu.vue';
     import PieChart from '@/components/PieChart.vue';
     import ErrorSitesList from '@/components/ErrorSitesList.vue';
+    import LastSiteVisits from '@/components/LastSiteVisits.vue';
 
     export default {
         data: function () {
             return {
                 errors: 0,
                 visits: 0,
-                errorsListExpanded: false,                
+                errorsListExpanded: false,
+                lastVisitsExpaned: false
             };
         },
 
@@ -106,9 +118,14 @@
             expandErrors: function () {
                 this.errorsListExpanded = true;
             },
-
             collapseErrors: function () {
                 this.errorsListExpanded = false;
+            },
+            expandVisits: function () {
+                this.lastVisitsExpaned = true;
+            },
+            collapseVisits: function () {
+                this.lastVisitsExpaned = false;
             }
         },
 
@@ -116,7 +133,8 @@
             UserInfo,
             NavigationMenu,
             PieChart,
-            ErrorSitesList
+            ErrorSitesList,
+            LastSiteVisits
         }
     }
 </script>
