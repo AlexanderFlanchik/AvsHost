@@ -36,7 +36,7 @@
                  <div class="cell-left visits-info-cell">
                      <div>
                          <span class="visits-info">Your sites were visited <strong>{{visits}}</strong> times.</span>
-                         <span v-if="errors > 0">
+                         <span v-if="visits > 0">
                              Show latest visits &nbsp;
                              <b-icon icon="caret-right-fill" v-if="!lastVisitsExpaned" @click="expandVisits"></b-icon>
                              <b-icon icon="caret-down-fill" v-if="lastVisitsExpaned" @click="collapseVisits"></b-icon>
@@ -168,7 +168,7 @@
     }
 
     .error-info-cell {
-        padding-left: 10px;
+        padding-left: 50px;
         padding-top: 10px;
     }
 

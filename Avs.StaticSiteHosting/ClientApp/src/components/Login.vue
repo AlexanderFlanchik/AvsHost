@@ -6,7 +6,7 @@
                     <h1>Welcome to Static Site Hosting!</h1>
                     <div class="error-bar" v-if="errors.length">
                         <ul>
-                            <li v-for="error in errors">
+                            <li v-for="error in errors" :key="error">
                                 {{error}}
                             </li>
                         </ul>

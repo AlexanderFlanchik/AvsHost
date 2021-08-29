@@ -13,7 +13,7 @@
         </table>
         <table class="table table-striped last-visits-table">
             <tbody>
-                <tr v-for="row in visits" :key="row">
+                <tr v-for="row in visits" :key="row.siteName">
                     <td class="w-120">{{row.siteName}}</td>
                     <td class="w-220">{{formatDate(row.visit)}}</td>
                 </tr>
