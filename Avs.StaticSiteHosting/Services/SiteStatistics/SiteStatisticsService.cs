@@ -101,7 +101,7 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
                     .Select(vi =>
                         new ViewedSiteInfoModel
                         {
-                            SiteId = vi.SiteId,
+                            SiteId = vi.Sites.FirstOrDefault()?.Id,
                             SiteName = vi.Sites.FirstOrDefault()?.Name,
                             Visit = vi.ViewedTimestamp
                         });
