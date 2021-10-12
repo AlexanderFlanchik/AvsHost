@@ -69,6 +69,13 @@
         },
 
         mounted: function () {
+            let userInfo = this.$authService.getUserInfo();
+            if (userInfo && userInfo.isAdmin) {
+                // Prevent admin from home page view
+                this.$router.replace('/dashboard');
+                return;
+            }
+
             this.$apiClient.getAsync('api/home')
                 .then((response) => {
                     let vm = response.data;
