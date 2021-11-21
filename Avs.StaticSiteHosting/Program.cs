@@ -69,10 +69,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnMessageReceived = context =>
             {
                 var accessToken = context.Request.Query[GeneralConstants.GET_ACCESS_TOKEN_NAME_SIGNALR]; // For SignalR
-                            if (string.IsNullOrEmpty(accessToken))
+                if (string.IsNullOrEmpty(accessToken))
                 {
                     accessToken = context.Request.Query[GeneralConstants.GET_ACCESS_TOKEN_NAME]; // For authorized GET REST methods
-                            }
+                }
 
                 if (!string.IsNullOrEmpty(accessToken))
                 {
