@@ -23,7 +23,7 @@
                </div>
                <div class="statistics-container">
                  <div class="cell-left error-info-cell">
-                    <span v-if="errors > 0" class="errors-title">Sites errors: <strong>{{errors}}</strong></span>
+                    <span v-if="errors > 0" class="errors-title">Total errors: <strong>{{errors}}</strong></span>
                     <span v-if="errors > 0">
                         <b-icon icon="caret-right-fill" v-if="!errorsListExpanded" @click="expandErrors"></b-icon>
                         <b-icon icon="caret-down-fill" v-if="errorsListExpanded" @click="collapseErrors"></b-icon>
