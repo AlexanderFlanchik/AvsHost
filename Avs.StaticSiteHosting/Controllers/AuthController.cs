@@ -90,35 +90,25 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var email = registerRequest.Email;
 
             var alreadyExistedUser = await _userService.CheckUserExistsAsync(userName, email);
-
             if (alreadyExistedUser)
             {
                 return Conflict("User already exists.");
             }
 
-            var newUser = new User { Email = email, Name = userName };
-            newUser.Password = passwordHasher.HashPassword(registerRequest.Password);
-            newUser.Status = UserStatus.Active;
+            var newUser = new User() 
+                { 
+                    Email = email, 
+                    Name = userName,
+                    Password = passwordHasher.HashPassword(registerRequest.Password),
+                    Status = UserStatus.Active
+                };
+            
+            var userRole = await _roleService.GetRoleByNameAsync(GeneralConstants.DEFAULT_USER_ROLE);            
+            newUser.Roles = new[] { userRole };
 
-            try
-            {
-                var userRole = await _roleService.GetRoleByNameAsync(GeneralConstants.DEFAULT_USER_ROLE);
-                if (userRole == null)
-                {
-                    throw new InvalidOperationException($"'{GeneralConstants.DEFAULT_USER_ROLE}' not found.");
-                }
+            await _userService.CreateUserAsync(newUser);
 
-                newUser.Roles = new[] { userRole };
-
-                await _userService.CreateUserAsync(newUser);
-
-                _logger.LogInformation($"Registered: {newUser.Name}.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unable to register a new user.");
-                return Problem($"Cannot create a new user due to server error.");
-            }
+            _logger.LogInformation($"Registered: {newUser.Name}.");
 
             return Ok();
         }
