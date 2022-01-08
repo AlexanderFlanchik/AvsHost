@@ -67,12 +67,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
             _logger.LogInformation($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
 
-            var tokenResponse = new
-                {
-                    token = encodedToken,
-                    expires_at = expiresAt,
-                    userInfo = new { user.Name, user.Email, isAdmin = _userService.IsAdmin(user) }
-                };
+            var userInfo = new { user.Name, user.Email, isAdmin = _userService.IsAdmin(user) };
+            var tokenResponse = new { token = encodedToken, expires_at = expiresAt, userInfo };
 
             return Ok(tokenResponse);
         }                
