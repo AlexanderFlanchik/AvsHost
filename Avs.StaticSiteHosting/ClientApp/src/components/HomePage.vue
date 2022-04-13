@@ -50,7 +50,7 @@
             </div>            
         </div>
         <div class="home-page-content" v-if="!areSites">
-            <div class="no-sites-message">You does not have sites yet.</div>
+            <div class="no-sites-message">You do not have sites yet.</div>
         </div>
     </div>
 </template>
