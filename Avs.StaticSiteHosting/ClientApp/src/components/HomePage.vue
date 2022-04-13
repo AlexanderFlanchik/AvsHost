@@ -6,7 +6,7 @@
         </div>
         <UserInfo />
         <NavigationMenu />
-        <div class="home-page-content">
+        <div class="home-page-content" v-if="areSites">
             <div class="charts-container">
                 <div>
                     <div class="cell-left chart-cell">
@@ -49,6 +49,9 @@
                </div>
             </div>            
         </div>
+        <div class="home-page-content" v-if="!areSites">
+            <div class="no-sites-message">You does not have sites yet.</div>
+        </div>
     </div>
 </template>
 <script>
@@ -61,6 +64,7 @@
     export default {
         data: function () {
             return {
+                areSites: false,
                 errors: 0,
                 visits: 0,
                 errorsListExpanded: false,
@@ -79,6 +83,7 @@
             this.$apiClient.getAsync('api/home')
                 .then((response) => {
                     let vm = response.data;
+                    vm.areSites = vm.totalSites > 0;
                     let inactiveSites = vm.totalSites - vm.activeSites;
                     if (vm.totalSites) {
                         let sitesData = [
@@ -204,5 +209,15 @@
 
     .statistics-container {      
         height: calc(100vh - 645px);
+    }
+
+    .no-sites-message {
+        width: 100%;
+        min-height: 200px;
+        text-align: center;
+        color: navy;
+        font-size: 32pt;
+        font-weight: bold;
+        font-family: Garamond;
     }
 </style>
