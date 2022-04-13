@@ -1,38 +1,35 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj": {}
+    "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj": {}
   },
   "projects": {
-    "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj": {
+    "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
+        "projectUniqueName": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
         "projectName": "Avs.StaticSiteHosting.DataMigrator",
-        "projectPath": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
-        "packagesPath": "C:\\Users\\alexs\\.nuget\\packages\\",
-        "outputPath": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting.DataMigrator\\obj\\",
+        "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
+        "packagesPath": "C:\\Users\\Alex\\.nuget\\packages\\",
+        "outputPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\alexs\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Alex\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net5.0"
+          "net6.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net5.0": {
-            "targetAlias": "net5.0",
+          "net6.0": {
+            "targetAlias": "net6.0",
             "projectReferences": {
-              "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj": {
-                "projectPath": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj"
+              "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj": {
+                "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj"
               }
             }
           }
@@ -44,8 +41,8 @@
         }
       },
       "frameworks": {
-        "net5.0": {
-          "targetAlias": "net5.0",
+        "net6.0": {
+          "targetAlias": "net6.0",
           "imports": [
             "net461",
             "net462",
@@ -57,43 +54,37 @@
           "assetTargetFallback": true,
           "warn": true,
           "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj": {
+    "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj",
+        "projectUniqueName": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj",
         "projectName": "Avs.StaticSiteHosting.Web",
-        "projectPath": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj",
-        "packagesPath": "C:\\Users\\alexs\\.nuget\\packages\\",
-        "outputPath": "F:\\Projects\\AvsHost\\src\\Avs.StaticSiteHosting\\obj\\",
+        "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\Avs.StaticSiteHosting.Web.csproj",
+        "packagesPath": "C:\\Users\\Alex\\.nuget\\packages\\",
+        "outputPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\alexs\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Alex\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net5.0"
+          "net6.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net5.0": {
-            "targetAlias": "net5.0",
+          "net6.0": {
+            "targetAlias": "net6.0",
             "projectReferences": {}
           }
         },
@@ -104,8 +95,8 @@
         }
       },
       "frameworks": {
-        "net5.0": {
-          "targetAlias": "net5.0",
+        "net6.0": {
+          "targetAlias": "net6.0",
           "dependencies": {
             "BCrypt.Net-Next": {
               "target": "Package",
@@ -113,45 +104,45 @@
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[5.0.1, )"
+              "version": "[6.0.0, )"
             },
             "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
               "target": "Package",
-              "version": "[5.0.1, )"
+              "version": "[6.0.0, )"
             },
             "Microsoft.AspNetCore.SpaServices": {
               "target": "Package",
-              "version": "[3.1.10, )"
+              "version": "[3.1.21, )"
             },
             "Microsoft.AspNetCore.SpaServices.Extensions": {
               "target": "Package",
-              "version": "[5.0.1, )"
+              "version": "[6.0.0, )"
             },
             "Microsoft.TypeScript.MSBuild": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[4.1.2, )"
+              "version": "[4.6.4, )"
             },
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
-              "version": "[5.0.1, )"
+              "version": "[6.0.0, )"
             },
             "MongoDB.Bson": {
               "target": "Package",
-              "version": "[2.11.5, )"
+              "version": "[2.13.2, )"
             },
             "MongoDB.Driver": {
               "target": "Package",
-              "version": "[2.11.5, )"
+              "version": "[2.13.2, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[12.0.3, )"
+              "version": "[13.0.1, )"
             },
             "SixLabors.ImageSharp": {
               "target": "Package",
-              "version": "[1.0.2, )"
+              "version": "[1.0.4, )"
             }
           },
           "imports": [
@@ -172,7 +163,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     }
