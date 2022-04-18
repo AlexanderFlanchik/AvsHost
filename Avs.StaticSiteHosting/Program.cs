@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
+using Avs.StaticSiteHosting.Web.Services.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<StaticSiteOptions>(builder.Configuration.GetSection("StaticSiteOptions"));
@@ -48,6 +49,7 @@ builder.Services.AddScoped<IEventLogsService, EventLogsService>();
 
 builder.Services.AddScoped<ISiteStatisticsService, SiteStatisticsService>();
 builder.Services.AddScoped<IErrorSitesListService, ErrorSitesListService>();
+builder.Services.AddScoped<ISettingsManager, SettingsManager>();
 
 builder.Services.AddTransient<ImageResizeService>();
 

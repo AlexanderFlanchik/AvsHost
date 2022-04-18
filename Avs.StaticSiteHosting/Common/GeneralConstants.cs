@@ -16,6 +16,7 @@
         public const string CONVERSATION_MESSAGE_COLLECTION = "ConversationMessages";
         public const string SITE_EVENTS_COLLECTION = "SiteEvents";
         public const string SITE_VIEWED_INFO_COLLECTION = "ViewedSiteInfos";
+        public const string APP_SETTINGS_COLLECTION = "AppSettings";
 
         #endregion
 
