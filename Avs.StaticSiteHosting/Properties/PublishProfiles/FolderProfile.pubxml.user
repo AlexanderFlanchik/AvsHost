@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Projects\AvsHost\Avs.StaticSiteHosting\bin\Release\net6.0\publish\</_PublishTargetUrl>
+    <History>True|2022-04-30T19:29:05.7374178Z;</History>
+  </PropertyGroup>
+</Project>

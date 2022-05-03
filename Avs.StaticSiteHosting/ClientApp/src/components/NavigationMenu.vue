@@ -7,6 +7,9 @@
             <li class="navigation-menu-item">
                 <router-link to="/dashboard" class="navigation-menu-item-link" active-class="link-active" exact>Dashboard</router-link>
             </li>
+            <li class="navigation-menu-item" v-if="isAdmin">
+                <router-link to="/settings" class="navigation-menu-item-link" active-class="link-active" exact>Settings</router-link>
+            </li>
             <li class="navigation-menu-item">
                 <router-link to ="/profile" class="navigation-menu-item-link" active-class="link-active">My Profile</router-link>
             </li>

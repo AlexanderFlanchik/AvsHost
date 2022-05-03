@@ -83,9 +83,10 @@
             this.$apiClient.getAsync('api/home')
                 .then((response) => {
                     let vm = response.data;
-                    vm.areSites = vm.totalSites > 0;
+                    this.areSites = vm.totalSites > 0;
                     let inactiveSites = vm.totalSites - vm.activeSites;
                     if (vm.totalSites) {
+                        console.log('Sites found: ' + vm.totalSites);
                         let sitesData = [
                             {
                                 name: 'Active',
@@ -97,8 +98,8 @@
                                 y: inactiveSites / vm.totalSites
                             }
                         ];
-
-                        this.$refs.sitesChart.loadData(sitesData);
+                        
+                        this.$nextTick(() => this.$refs.sitesChart.loadData(sitesData));
                     }
 
                     let totalContentBytes = vm.totalContentSize;
@@ -117,7 +118,8 @@
 
                             storageData.push(o);
                         }
-                        this.$refs.storageUsedChart.loadData(storageData);
+
+                        this.$nextTick(() => this.$refs.storageUsedChart.loadData(storageData));
                     }
 
                     this.errors = vm.errors;

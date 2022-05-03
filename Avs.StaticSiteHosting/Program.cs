@@ -38,6 +38,7 @@ builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 
 builder.Services.AddScoped<ISiteService, SiteService>();
 builder.Services.AddScoped<IContentManager, ContentManager>();
+builder.Services.AddSingleton<ICloudStorageProvider, CloudStorageProvider>();
 
 builder.Services.AddScoped<IHelpContentService, HelpContentService>();
 builder.Services.AddScoped<IHelpResourceService, HelpResourceService>();

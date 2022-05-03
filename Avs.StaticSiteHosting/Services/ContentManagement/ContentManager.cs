@@ -1,26 +1,44 @@
-﻿using Avs.StaticSiteHosting.Web.DTOs;
+﻿using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
+using Avs.StaticSiteHosting.Web.Common;
+using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
+using Avs.StaticSiteHosting.Web.Services.Settings;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 {
     public class ContentManager : IContentManager
     {
+        private readonly ILogger<ContentManager> _logger;
         private readonly IMongoCollection<ContentItem> contentItems;
         private readonly StaticSiteOptions options;
         private readonly ISiteService _siteService;
-        public ContentManager(MongoEntityRepository entityRepository, IOptions<StaticSiteOptions> staticSiteOptions, ISiteService siteService)
+        private readonly ISettingsManager _settingsManager;
+
+        public ContentManager(
+            MongoEntityRepository entityRepository, 
+            IOptions<StaticSiteOptions> staticSiteOptions, 
+            ISiteService siteService,
+            ISettingsManager settingsManager,
+            ILogger<ContentManager> logger)
         {
             contentItems = entityRepository.GetEntityCollection<ContentItem>(GeneralConstants.CONTENT_ITEMS_COLLECTION);
             options = staticSiteOptions.Value;
             _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
+            _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
+            _logger = logger;
         }
 
         public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
@@ -60,6 +78,15 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             GetFilesFromFolder(uploadFolder);
             FileExtensionContentTypeProvider ctpProvider = new FileExtensionContentTypeProvider();
 
+            var cloudStorageEnabled = false;
+            CloudStorageSettings cloudStorageSettings = null;
+            var cloudStorageSettingsEntry = await _settingsManager.GetAsync(CloudStorageSettings.SettingsName);
+            if (!string.IsNullOrEmpty(cloudStorageSettingsEntry?.Value))
+            {
+                cloudStorageSettings = JsonConvert.DeserializeObject<CloudStorageSettings>(cloudStorageSettingsEntry?.Value);
+                cloudStorageEnabled = cloudStorageSettings.Enabled;
+            }
+
             foreach (var file in fileList)
             {
                 var fileInfo = new FileInfo(file);
@@ -82,6 +109,38 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 }
 
                 fileInfo.CopyTo(destinationPath);
+                if (cloudStorageEnabled && cloudStorageSettings is not null)
+                {
+                    var putObjectRequest = new PutObjectRequest()
+                    {
+                        BucketName = cloudStorageSettings.BucketName,
+                        Key = $"{site.CreatedBy.Name}/{site.Name}/{fileInfo.Name}",
+                        InputStream = fileInfo.OpenRead(),
+                        AutoCloseStream = true
+                    };
+
+                    try
+                    {
+                        using var client = new AmazonS3Client(cloudStorageSettings.AccessKey, 
+                                                              cloudStorageSettings.Secret, 
+                                                              RegionEndpoint.GetBySystemName(cloudStorageSettings.Region));
+
+                        var response = await client.PutObjectAsync(putObjectRequest);
+                        if (response.HttpStatusCode == HttpStatusCode.OK)
+                        {
+                            _logger.LogInformation("The file '{0}' successfully saved to cloud storage", fileInfo.Name);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("Unable to save '{0}' to cloud storage. The service responded with code '{1}'", 
+                                fileInfo.Name, (int)response.HttpStatusCode);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Unable to save '{0}' to cloud storage because of exception", fileInfo.Name);
+                    }
+                }    
 
                 var contentItemFound = contentInfos.FirstOrDefault(ci => ci.FullName == destinationPath);
                 if (contentItemFound == null)
@@ -130,7 +189,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             } 
             catch (Exception ex) 
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Unable to store content.");
             }
         }        
 

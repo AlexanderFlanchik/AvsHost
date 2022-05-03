@@ -20,3 +20,4 @@
 /Avs.StaticSiteHosting/node_modules/*
 /Avs.StaticSiteHosting/bin/Debug/net6.0
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net6.0
+/Avs.StaticSiteHosting/bin/Release/net6.0

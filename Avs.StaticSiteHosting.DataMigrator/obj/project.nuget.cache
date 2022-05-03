@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "guYAtx/3UH/ZsJBs7E/J7ImHsFkKF8JIpsmbr1adXpG8xUKE+GghSd83E98C03Rr5U+1k0SATOgnbiaFWFybcw==",
+  "dgSpecHash": "t6CjgVNBbFduzU1HtukgWkVN27Cl+9LqrLj4JjJOuE4mb1g14+tvyEbaAvL6rM17lNzgpd5J3q+XEd8DIyZSWQ==",
   "success": true,
   "projectFilePath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Alex\\.nuget\\packages\\awssdk.core\\3.7.10.11\\awssdk.core.3.7.10.11.nupkg.sha512",
+    "C:\\Users\\Alex\\.nuget\\packages\\awssdk.s3\\3.7.8.23\\awssdk.s3.3.7.8.23.nupkg.sha512",
     "C:\\Users\\Alex\\.nuget\\packages\\bcrypt.net-next\\4.0.2\\bcrypt.net-next.4.0.2.nupkg.sha512",
     "C:\\Users\\Alex\\.nuget\\packages\\dnsclient\\1.4.0\\dnsclient.1.4.0.nupkg.sha512",
     "C:\\Users\\Alex\\.nuget\\packages\\humanizer.core\\2.2.0\\humanizer.core.2.2.0.nupkg.sha512",
