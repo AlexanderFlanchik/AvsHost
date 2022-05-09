@@ -7,11 +7,13 @@ using Newtonsoft.Json;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services.Settings;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AppSettingsController : ControllerBase
     {
         private readonly ISettingsManager _settingsManager;
@@ -28,12 +30,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var settings = new AppSettingsResponse()
             {
                 CloudRegions = AWSHelper.GetAWSRegions()
-                  .Select(r => new SelectListItem 
-                               {
-                                   Text = r.Value, 
-                                   Value = r.Key 
-                               }
-                  ).ToArray()
+                  .Select(r => new SelectListItem { Text = r.Value, Value = r.Key })
+                  .ToArray()
             };
 
             if (!string.IsNullOrEmpty(cloudSettingsJson))
