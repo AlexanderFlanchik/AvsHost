@@ -2,9 +2,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Avs.StaticSiteHosting.Web.Common;
-using Avs.StaticSiteHosting.Web.Services.Settings;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -18,28 +16,26 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
     public class CloudStorageProvider : ICloudStorageProvider
     {
-        private readonly ISettingsManager _settingsManager;
+        private readonly CloudStorageSettings _cloudStorageSettings;
         private readonly ILogger<CloudStorageProvider> _logger;
         
-        public CloudStorageProvider(ISettingsManager settingsManager, ILogger<CloudStorageProvider> logger)
+        public CloudStorageProvider(CloudStorageSettings cloudStorageSettings, ILogger<CloudStorageProvider> logger)
         {
-            _settingsManager = settingsManager;
+            _cloudStorageSettings = cloudStorageSettings ?? throw new ArgumentNullException(nameof(cloudStorageSettings));
             _logger = logger;
         }
 
         public async Task<Stream> GetCloudContent(string user, string siteName, string contentName)
         {
-            var cloudSettingsEntry = await _settingsManager.GetAsync(CloudStorageSettings.SettingsName);
-            if (cloudSettingsEntry == null)
-            {
-                throw new InvalidOperationException("Cloud settings is not configured.");
-            }
+            using var s3Client = new AmazonS3Client(
+                                        _cloudStorageSettings.AccessKey, 
+                                        _cloudStorageSettings.Secret, 
+                                        RegionEndpoint.GetBySystemName(_cloudStorageSettings.Region)
+                                 );
 
-            var cloudSettings = JsonConvert.DeserializeObject<CloudStorageSettings>(cloudSettingsEntry.Value);
-            using var s3Client = new AmazonS3Client(cloudSettings.AccessKey, cloudSettings.Secret, RegionEndpoint.GetBySystemName(cloudSettings.Region));
             var getContentRequest = new GetObjectRequest()
             {
-                BucketName = cloudSettings.BucketName,
+                BucketName = _cloudStorageSettings.BucketName,
                 Key = $"{user}/{siteName}/{contentName}"
             };
 

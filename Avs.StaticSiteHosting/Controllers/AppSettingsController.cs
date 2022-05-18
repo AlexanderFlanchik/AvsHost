@@ -17,27 +17,25 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     public class AppSettingsController : ControllerBase
     {
         private readonly ISettingsManager _settingsManager;
+        private readonly CloudStorageSettings _storageSettings;
 
-        public AppSettingsController(ISettingsManager settingsManager)
+        public AppSettingsController(ISettingsManager settingsManager, CloudStorageSettings storageSettings)
         {
             _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
+            _storageSettings = storageSettings ?? throw new ArgumentNullException(nameof(storageSettings));
         }
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var cloudSettingsJson = (await _settingsManager.GetAsync(CloudStorageSettings.SettingsName))?.Value;
             var settings = new AppSettingsResponse()
             {
                 CloudRegions = AWSHelper.GetAWSRegions()
                   .Select(r => new SelectListItem { Text = r.Value, Value = r.Key })
-                  .ToArray()
-            };
+                  .ToArray(),
 
-            if (!string.IsNullOrEmpty(cloudSettingsJson))
-            {
-                settings.CloudStorage = JsonConvert.DeserializeObject<CloudStorageSettings>(cloudSettingsJson);
-            }
+                CloudStorage = _storageSettings
+            };
 
             return Ok(settings);
         }
@@ -54,6 +52,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var cloudSettingsJson = JsonConvert.SerializeObject(cloudSettings);
 
             await _settingsManager.UpdateOrAddAsync(CloudStorageSettings.SettingsName, cloudSettingsJson, "Cloud Storage settings");
+
+            _storageSettings.CopyFrom(cloudSettings);
 
             return NoContent();
         }

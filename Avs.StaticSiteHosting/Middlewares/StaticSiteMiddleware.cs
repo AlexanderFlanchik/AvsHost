@@ -35,8 +35,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
         private readonly IContentManager _contentManager;
         private readonly ISiteStatisticsService _siteStatisticsService;
         private readonly ICloudStorageProvider _cloudStorageProvider;
-        private readonly ISettingsManager _settingsManager;
         private readonly IEventLogsService _eventLogsService;
+        private readonly CloudStorageSettings _cloudStorageSettings;
 
         public StaticSiteMiddleware(RequestDelegate next, 
             ILogger<StaticSiteMiddleware> logger,
@@ -45,8 +45,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             IContentManager contentManager,
             ISiteStatisticsService siteStatisticsService,
             ICloudStorageProvider cloudStorageProvider,
-            ISettingsManager settingsManager,
-            IEventLogsService eventLogsService)
+            IEventLogsService eventLogsService,
+            CloudStorageSettings cloudStorageSettings)
         {
             _logger = logger;
             _staticSiteOptions = staticSiteOptions;
@@ -54,8 +54,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             _contentManager = contentManager;
             _siteStatisticsService = siteStatisticsService;
             _cloudStorageProvider = cloudStorageProvider;
-            _settingsManager = settingsManager;
             _eventLogsService = eventLogsService;
+            _cloudStorageSettings = cloudStorageSettings;
         }
 
         public async Task Invoke(HttpContext context)
@@ -119,15 +119,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 
                 if (!fi.Exists)
                 {
-                    // TODO: add caching for settings
-                    var cloudSettingsEntry = await _settingsManager.GetAsync(CloudStorageSettings.SettingsName);
-                    if (cloudSettingsEntry is null)
-                    {
-                        await NoCloudContentError();
-                    }
-
-                    var cloudSettings = JsonConvert.DeserializeObject<CloudStorageSettings>(cloudSettingsEntry.Value);
-                    if (!cloudSettings.Enabled)
+                    if (!_cloudStorageSettings.Enabled)
                     {
                         await NoCloudContentError();
                     }

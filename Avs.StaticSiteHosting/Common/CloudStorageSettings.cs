@@ -6,10 +6,20 @@
     public class CloudStorageSettings
     {
         public const string SettingsName = nameof(CloudStorageSettings);
+        
         public bool Enabled { get; set; }
         public string BucketName { get; set; }
         public string Region { get; set; }
         public string AccessKey { get; set; }
         public string Secret { get; set; }
+
+        public void CopyFrom(CloudStorageSettings source)
+        {
+            Enabled = source.Enabled;
+            BucketName = source.BucketName;
+            Region = source.Region;
+            AccessKey = source.AccessKey;
+            Secret = source.Secret;
+        }
     }
 }

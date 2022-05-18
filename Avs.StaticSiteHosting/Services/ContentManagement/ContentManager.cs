@@ -4,12 +4,10 @@ using Amazon.S3.Model;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
-using Avs.StaticSiteHosting.Web.Services.Settings;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,20 +23,20 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         private readonly IMongoCollection<ContentItem> contentItems;
         private readonly StaticSiteOptions options;
         private readonly ISiteService _siteService;
-        private readonly ISettingsManager _settingsManager;
+        private readonly CloudStorageSettings _cloudStorageSettings;
 
         public ContentManager(
             MongoEntityRepository entityRepository, 
             IOptions<StaticSiteOptions> staticSiteOptions, 
             ISiteService siteService,
-            ISettingsManager settingsManager,
-            ILogger<ContentManager> logger)
+            ILogger<ContentManager> logger,
+            CloudStorageSettings cloudStorageSettings)
         {
             contentItems = entityRepository.GetEntityCollection<ContentItem>(GeneralConstants.CONTENT_ITEMS_COLLECTION);
             options = staticSiteOptions.Value;
             _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
-            _settingsManager = settingsManager ?? throw new ArgumentNullException(nameof(settingsManager));
             _logger = logger;
+            _cloudStorageSettings = cloudStorageSettings ?? throw new ArgumentNullException(nameof(cloudStorageSettings));
         }
 
         public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
@@ -78,15 +76,6 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             GetFilesFromFolder(uploadFolder);
             FileExtensionContentTypeProvider ctpProvider = new FileExtensionContentTypeProvider();
 
-            var cloudStorageEnabled = false;
-            CloudStorageSettings cloudStorageSettings = null;
-            var cloudStorageSettingsEntry = await _settingsManager.GetAsync(CloudStorageSettings.SettingsName);
-            if (!string.IsNullOrEmpty(cloudStorageSettingsEntry?.Value))
-            {
-                cloudStorageSettings = JsonConvert.DeserializeObject<CloudStorageSettings>(cloudStorageSettingsEntry?.Value);
-                cloudStorageEnabled = cloudStorageSettings.Enabled;
-            }
-
             foreach (var file in fileList)
             {
                 var fileInfo = new FileInfo(file);
@@ -109,11 +98,11 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 }
 
                 fileInfo.CopyTo(destinationPath);
-                if (cloudStorageEnabled && cloudStorageSettings is not null)
+                if (_cloudStorageSettings.Enabled)
                 {
                     var putObjectRequest = new PutObjectRequest()
                     {
-                        BucketName = cloudStorageSettings.BucketName,
+                        BucketName = _cloudStorageSettings.BucketName,
                         Key = $"{site.CreatedBy.Name}/{site.Name}/{fileInfo.Name}",
                         InputStream = fileInfo.OpenRead(),
                         AutoCloseStream = true
@@ -121,9 +110,9 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
                     try
                     {
-                        using var client = new AmazonS3Client(cloudStorageSettings.AccessKey, 
-                                                              cloudStorageSettings.Secret, 
-                                                              RegionEndpoint.GetBySystemName(cloudStorageSettings.Region));
+                        using var client = new AmazonS3Client(_cloudStorageSettings.AccessKey,
+                                                              _cloudStorageSettings.Secret, 
+                                                              RegionEndpoint.GetBySystemName(_cloudStorageSettings.Region));
 
                         var response = await client.PutObjectAsync(putObjectRequest);
                         if (response.HttpStatusCode == HttpStatusCode.OK)

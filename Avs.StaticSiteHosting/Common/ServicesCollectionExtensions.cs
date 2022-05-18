@@ -32,6 +32,8 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
             services.AddScoped<ISettingsManager, SettingsManager>();
+            services.AddSingleton<CloudStorageSettings>();
+            services.AddHostedService<CloudStorageSettingsWorker>();
 
             return services;
         }
