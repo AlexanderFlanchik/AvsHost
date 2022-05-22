@@ -4,20 +4,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
-using Microsoft.AspNetCore.StaticFiles;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
-using Microsoft.Extensions.Logging;
-using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Common;
-using Newtonsoft.Json;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {

@@ -45,12 +45,9 @@ app.UseDashboard();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapStaticSite("/{sitename:required}/{**sitepath}");
-    endpoints.MapControllers();
-    endpoints.MapHub<UserNotificationHub>("/user-notification");
-});
+app.MapStaticSite("/{sitename:required}/{**sitepath}");
+app.MapControllers();
+app.MapHub<UserNotificationHub>("/user-notification");
 
 var staticSiteOptions = (IOptions<StaticSiteOptions>)app.Services.GetService(typeof(IOptions<StaticSiteOptions>));
 if (staticSiteOptions == null || staticSiteOptions.Value == null || string.IsNullOrEmpty(staticSiteOptions.Value.ContentPath))
