@@ -162,29 +162,25 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("content-get")]
         public async Task<IActionResult> GetContent([Required] string contentItemId, int? maxWidth, [FromServices] ImageResizeService resizeService)
         {
-            var (contentType, fullName) = await _contentManager.GetContentFileAsync(contentItemId);
+            var (
+                fileName, 
+                contentType, 
+                contentStream
+            ) = await _contentManager.GetContentFileAsync(contentItemId);
             contentType ??= "application/octet-stream";
             
-            if (string.IsNullOrEmpty(fullName))
+            if (contentStream is null)
             {
                 return NotFound();
             }
-
-            FileInfo fileInfo = new FileInfo(fullName);
-            if (!fileInfo.Exists)
-            {
-                return NotFound();
-            }
-            
-            Response.Headers.Add("content-disposition", $"attachment;filename={fileInfo.Name}");
-
-            var fileStream = fileInfo.OpenRead();
+           
+            Response.Headers.Add("content-disposition", $"attachment;filename={fileName}");
 
             if (maxWidth.HasValue) // its graphic content, possible we need to resize it to fit max width.
             {
                 try
                 {
-                    var resizedImageStream = await resizeService.GetResizedImageStreamAsync(fileStream, contentType, maxWidth.Value);
+                    var resizedImageStream = await resizeService.GetResizedImageStreamAsync(contentStream, contentType, maxWidth.Value);
                     
                     return File(resizedImageStream, contentType);
                 }
@@ -194,11 +190,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 }
                 finally
                 {
-                    fileStream.Dispose();
+                    contentStream.Dispose();
                 }
             }
 
-            return File(fileStream, contentType);
+            return File(contentStream, contentType);
         }
 
         [HttpPut]

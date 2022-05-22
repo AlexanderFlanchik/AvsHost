@@ -1,6 +1,7 @@
 ﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
@@ -34,7 +35,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// </summary>
         /// <param name="contentItemId">Content item ID</param>
         /// <returns></returns>
-        Task<(string, string)> GetContentFileAsync(string contentItemId);
+        Task<(string, string, Stream)> GetContentFileAsync(string contentItemId);
 
         /// <summary>
         /// Updates content stored in the site data storage and corresponding record in db.

@@ -29,7 +29,12 @@ var app = builder.Build();
 
 if (!builder.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler($"/{GeneralConstants.ERROR_ROUTE}");
+    app.UseExceptionHandler(
+        new ExceptionHandlerOptions() 
+        { 
+            AllowStatusCode404Response = true, 
+            ExceptionHandlingPath = $"/{GeneralConstants.ERROR_ROUTE}" 
+        });
 }
 
 app.UseRouting();

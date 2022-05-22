@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Common;
 using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -125,7 +126,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                     }
 
                     // file does not exist in the application local storage, check it in the cloud bucket
-                    using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteName, fi.Name);
+                    using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteName, fileName);
                     if (cloudStream is null)
                     {
                         await NoCloudContentError();
@@ -133,6 +134,16 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
                     context.Response.ContentType = contentItem.ContentType;
                     await cloudStream.CopyToAsync(context.Response.Body);
+
+                    context.RequestServices.GetService<CloudStorageSyncWorker>()
+                        .Add(
+                            new SyncContentTask 
+                            { 
+                                ContentName = fileName,
+                                FullFileName = fi.PhysicalPath,
+                                UserName = siteInfo.CreatedBy.Name,
+                                SiteName = siteInfo.Name
+                            });
 
                     return;
 

@@ -4,8 +4,8 @@
             <span>{{title}}</span>
         </div>
         <div class="site-form-header">
-            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button> &nbsp;
-            <button class="btn btn-primary" @click="cancel">Cancel</button>
+            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button>
+            <button class="btn btn-primary" @click="cancel" id="cancelBtn">Cancel</button>
             <span class="validation-error" v-if="processError && processError.length">{{processError}}</span>
         </div>
         <div class="site-form-holder">
@@ -728,5 +728,9 @@
 
     .dlg-btn-container-right {
         text-align: right;
+    }
+
+    #cancelBtn {
+        margin-left: 2px;
     }
 </style>
