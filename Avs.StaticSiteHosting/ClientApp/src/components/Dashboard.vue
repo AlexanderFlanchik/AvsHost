@@ -23,7 +23,7 @@
                         <b-form-select v-model="pageSize" :options="pageSizes" @change="pageSizeChanged" size="sm" class="page-size-select"></b-form-select>                      
                     </td>
                     <td class="new-site-link-container">
-                        <router-link to="/sites/create" v-if="!isAdmin">Add a new site...</router-link>
+                       <a href="#" @click="createNewSite">Add a new site...</a>
                     </td>
                 </tr>
             </table>
@@ -64,7 +64,7 @@
                             </td>
                             <td>
                                 <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
-                                <span v-if="!isAdmin"><router-link :to="{ path: '/sites/update/' + site.id }">Update</router-link> | </span>
+                                <span v-if="!isAdmin"><a href="#" @click="updateSite(site.id)">Update</a> | </span>
                                 <span><a href="javascript:void(0)" @click="deleteSite(site.id)">Delete</a></span>
                                 <span v-if="!isAdmin && site.landingPage"><span> | </span><a v-bind:href="'/' + site.name + '/' + site.landingPage" target="_blank">Browse</a></span>
                             </td>
@@ -79,10 +79,13 @@
     </div>
 </template>
 
-<script>
-    import UserInfo from '@/components/UserInfo.vue';
-    import NavigationMenu from '@/components/NavigationMenu.vue';
+<script lang="ts">
+    import UserInfo from '../components/UserInfo.vue';
+    import NavigationMenu from '../components/NavigationMenu.vue';
+    import { SiteContextManager } from '../services/SiteContextManager';
+    
     const moment = require('moment');
+    const stateManager = new SiteContextManager();
 
     const Site = function (siteData) {
         const self = this;
@@ -188,6 +191,22 @@
                 }
 
                 this.loadSiteData();
+            },
+
+            createNewSite: function () {
+                this.clearSiteContext();
+
+                this.$router.push({ name: 'create-site' });
+            },
+
+            updateSite: function (siteId) {
+                this.clearSiteContext();
+
+                this.$router.push({ path: '/sites/update/' + siteId });
+            },
+
+            clearSiteContext: function () {
+                stateManager.delete();
             }
         },
         components: {

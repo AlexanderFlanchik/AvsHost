@@ -26,8 +26,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     {
         private const string INVALID_SITE = "Invalid Site";
         private const string LOCAL_IP = "::1";
-        private const string APPLICATION_OCTET_STREAM = "application/octet-stream";
-        
+                
         private readonly ILogger<StaticSiteMiddleware> _logger;
         private readonly IOptions<StaticSiteOptions> _staticSiteOptions;
         private readonly ISiteService _siteService;
@@ -189,14 +188,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var fi = fileProvider.GetFileInfo(filePath);
             if (fi.Exists)
             {
-                var ctpProvider = new FileExtensionContentTypeProvider();
-                string contentType;
-                if (!ctpProvider.TryGetContentType(fi.Name, out contentType))
-                {
-                    contentType = APPLICATION_OCTET_STREAM;
-                }
-                
-                context.Response.ContentType = contentType;
+                context.Response.ContentType = _contentManager.GetContentType(fi.Name);
                 await context.Response.SendFileAsync(fi);
                 
                 return true;

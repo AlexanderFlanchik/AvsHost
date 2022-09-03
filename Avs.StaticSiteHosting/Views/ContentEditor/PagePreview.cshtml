@@ -1,0 +1,52 @@
+﻿@model Avs.StaticSiteHosting.Web.DTOs.PagePreviewViewModel
+
+@{
+    var body = @Model.HtmlTree.Body;
+    var head = @Model.HtmlTree.Head;
+    var bodyAttributes = string.Join(" ", body.Attributes.Select(a => $"{a.Key}=\"{a.Value}\"").ToArray());
+}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>head.Title</title>
+        @foreach (var metadata in head.Metadatas)
+        {
+            if (!string.IsNullOrEmpty(metadata.Charset))
+            {
+                <meta charset="@metadata.Charset">
+            }
+            else
+            {
+                <meta name="@metadata.Name" content="@metadata.Content">
+            }
+        }
+        @if (head.Styles.Any())
+        {
+            <style>
+                @foreach (var style in head.Styles)
+                {
+                    @Html.Raw(style)
+                }
+            </style>
+        }
+        @foreach (var script in head.Scripts)
+        {
+            if (!string.IsNullOrEmpty(script.Body))
+            {
+                <script>@Html.Raw(script.Body)</script>
+            }
+            else
+            {
+                <script type="@script.Type" src="@script.Src"></script>    
+            }
+        }
+        @foreach (var link in head.Links)
+        {
+            <link rel="@link.Rel" href="@link.Href" type="@link.Type">
+        }
+    </head>
+    <!body @bodyAttributes>
+        @Html.Raw(body.InnerHtml)
+    </!body>
+</html>

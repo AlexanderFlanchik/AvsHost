@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@fortawesome/vue-fontawesome": "^2.0.8",
+    "uuid": "^8.3.2"
+  }
+}

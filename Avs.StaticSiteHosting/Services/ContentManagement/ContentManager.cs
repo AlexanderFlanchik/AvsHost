@@ -1,6 +1,8 @@
-﻿using Amazon;
-using Amazon.S3;
-using Amazon.S3.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
@@ -8,11 +10,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 {
@@ -249,35 +246,38 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             return (fileInfo.Name, contentItem.ContentType, stream);
         }
 
-        public async Task UpdateContentItem(string contentItemId, string content)
+        public async Task<long> UpdateContentItem(string contentItemId, string content)
         {
             var ciCursor = await contentItems.FindAsync(i => i.Id == contentItemId).ConfigureAwait(false);
             var contentItem = await ciCursor.FirstOrDefaultAsync().ConfigureAwait(false);
 
             if (contentItem == null)
             {
-                return;
+                return 0;
             }
 
 
             var contentFile = new FileInfo(contentItem.FullName);
             if (!contentFile.Exists)
             {
-                return;
+                return 0;
             }
 
             await File.WriteAllTextAsync(contentFile.FullName, content).ConfigureAwait(false);
+            var fileInfo = new FileInfo(contentFile.FullName);
             if (_cloudStorageSettings.Enabled)
             {
                 var site = contentItem.Site;
-                var fileInfo = new FileInfo(contentFile.FullName);
 
                 await _cloudStorageProvider.UploadContentToCloud(site.CreatedBy.Name, site.Name, fileInfo.Name, fileInfo.OpenRead());
             }
 
             await contentItems.UpdateOneAsync(
                     new FilterDefinitionBuilder<ContentItem>().Where(i => i.Id == contentItem.Id),
-                    new UpdateDefinitionBuilder<ContentItem>().Set(c => c.UpdateDate, DateTime.UtcNow));
+                    new UpdateDefinitionBuilder<ContentItem>().Set(c => c.UpdateDate, DateTime.UtcNow)
+                                                                .Set(c => c.Size, Math.Round((decimal) fileInfo.Length / 1024, 2)));
+
+            return contentFile.Length;
         }
 
         public async Task<bool> DeleteContentByIdAsync(string contentItemId)
@@ -353,6 +353,33 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                             ).ToList();
 
             return result;
+        }
+
+        public string GetContentType(string contentFileName)
+        {
+            const string APPLICATION_OCTET_STREAM = "application/octet-stream";
+
+            var ctpProvider = new FileExtensionContentTypeProvider();
+
+            string contentType;
+            if (!ctpProvider.TryGetContentType(contentFileName, out contentType))
+            {
+                contentType = APPLICATION_OCTET_STREAM;
+            }
+
+            return contentType;
+        }
+
+        public long GetNewFileSize(string contentFileName, string uploadSessionId)
+        {
+            var uploadFolder = Path.Combine(options.TempContentPath, uploadSessionId);
+            var fi = new FileInfo(Path.Combine(uploadFolder, contentFileName));
+            if (!fi.Exists)
+            {
+                return 0;
+            }
+
+            return fi.Length;
         }
     }
 }

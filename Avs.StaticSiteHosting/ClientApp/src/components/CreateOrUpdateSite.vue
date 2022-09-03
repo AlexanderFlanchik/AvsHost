@@ -128,8 +128,11 @@
                 <div v-if="upload.errorMessage" class="upload-error-holder">
                     {{upload.errorMessage}}
                 </div>
+                <div class="editor-buttons-container">
+                        <button class="btn btn-primary" @click="newHtmlPage">New HTML Page</button>
+                </div>
                 <div class="uploaded-content-holder">
-                    <span class="form-title">Uploaded content</span>           
+                    <span class="form-title">Site content</span>           
                     <div v-if="uploaded.length > 0">
                         <table class="table table-striped">
                             <thead>
@@ -152,8 +155,9 @@
                                     <td>{{file.updateDate}}</td>
                                     <td>
                                         <span v-if="!file.isNew"><a :href="downloadLink(file)">Download</a> | </span>
-                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit</a> | </span>
+                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit Content</a> | </span>
                                         <span v-if="file.isViewable"><a href="javascript:void(0)" @click="() => view(file)">View</a> | </span>
+                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => openPageEditor(file)">Open in editor</a> | </span>
                                         <span><a href="javascript:void(0)" @click="() => deleteContentItem(file)">Remove</a></span>
                                     </td>
                                 </tr>
@@ -161,7 +165,7 @@
                         </table> 
                     </div>    
                     <div class="no-content-message" v-if="uploaded.length === 0">
-                        No content files found. Upload some content to continue.
+                        No content files found. Upload or create some content to continue.
                     </div>
                 </div>
                 <b-modal ref="view-content-dlg" hide-footer size="xl" :title="viewContent.fileName">
@@ -185,38 +189,13 @@
         </div> 
     </div>
 </template>
-<script>
+<script lang="ts">
     const moment = require('moment');
+    import { formatDate } from '../common/DateFormatter';
+    import { ContentFile } from '../common/ContentFile';
+    import { SiteContextManager } from '../services/SiteContextManager';
 
-    const ContentFile = function (fileData) {
-        const self = this;
-        self.id = fileData.id;
-        self.name = fileData.fileName;
-        self.destinationPath = fileData.destinationPath;
-        self.isNew = typeof fileData.isNew == 'undefined' ? false : fileData.isNew;
-        self.size = fileData.size;
-        self.isEditable = fileData.isEditable;
-        self.isViewable = fileData.isViewable;
-        self.uploadedAt = formatDate(fileData.uploadedAt);
-        self.updateDate = formatDate(fileData.updateDate);
-
-        self.fullName = function () {
-            if (!self.destinationPath) {
-                return self.name;
-            }
-
-            var delimeter = '/';
-            if (self.destinationPath.indexOf('\\') > 0) {
-                delimeter = '\\';
-            }
-
-            return self.destinationPath + delimeter + self.name;
-        };
-
-        function formatDate(d) {
-            return d ? moment(d).format('MM/DD/YYYY hh:mm:ss A') : '-';
-        }
-    };
+    const stateManager = new SiteContextManager();
 
     export default {
         data: function () {
@@ -286,41 +265,80 @@
             this.siteId = this.$route.params.siteId;
             this.title = this.siteId ? "Edit Site" : "Create New Site";
 
+            const cachedSite = stateManager.get();
+            const getSiteDataFromCache = () => {
+                this.siteId = cachedSite.siteId;
+                this.siteName = cachedSite.siteName;
+                this.description = cachedSite.description;
+                this.isActive = cachedSite.isActive;
+                this.landingPage = cachedSite.landingPage;
+                this.resourceMappings = cachedSite.resourceMappings;
+                this.uploaded = cachedSite.uploadedFiles.map(
+                    f => new ContentFile(
+                            f.id,
+                            f.name,
+                            f.destinationPath,
+                            f.isNew,
+                            f.size,
+                            f.isEditable,
+                            f.isViewable,
+                            formatDate(f.uploadedAt),
+                            formatDate(f.updateDate)
+                    ));
+            };
+                       
             if (this.siteId) {
                 // edit existing site, load site data
-                try {
-                    let siteResponse = await this.$apiClient.getAsync(`api/sitedetails/${this.siteId}`);
-                    let data = siteResponse.data;
+                if (cachedSite && cachedSite.siteId == this.siteId) {
+                    getSiteDataFromCache();
+                }
+                else {
+                    try {
+                        let siteResponse = await this.$apiClient.getAsync(`api/sitedetails/${this.siteId}`);
+                        let data = siteResponse.data;
 
-                    this.siteName = data.siteName;
-                    this.description = data.description;
-                    this.isActive = data.isActive;
-                    this.landingPage = data.landingPage;
+                        this.siteName = data.siteName;
+                        this.description = data.description;
+                        this.isActive = data.isActive;
+                        this.landingPage = data.landingPage;
 
-                    let lst = [];
-                    let uploaded = data.uploaded;
-                    for (let u of uploaded) {
-                        u.isNew = false;
-                        let uploadedFile = new ContentFile(u);                        
-                        lst.push(uploadedFile);
-                    }
-                    this.uploaded = lst;
+                        let lst = [];
+                        let uploaded = data.uploaded;
+                        for (let u of uploaded) {
+                            u.isNew = false;
+                            let uploadedFile = new ContentFile(
+                                u.id,
+                                u.fileName,
+                                u.destinationPath,
+                                typeof u.isNew == 'undefined' ? false : u.isNew,
+                                u.size,
+                                u.isEditable,
+                                u.isViewable,
+                                formatDate(u.uploadedAt),
+                                formatDate(u.updateDate)
+                            );
+                            lst.push(uploadedFile);
+                        }
+                        this.uploaded = lst;
 
-                    this.resourceMappings = [];
-                    let mappings = data.resourceMappings;
-                    if (mappings) {
-                        let keys = Object.keys(mappings);
-                        for (let key of keys) {
-                            this.resourceMappings.push({ name: key, value: mappings[key] });
+                        this.resourceMappings = [];
+                        let mappings = data.resourceMappings;
+                        if (mappings) {
+                            let keys = Object.keys(mappings);
+                            for (let key of keys) {
+                                this.resourceMappings.push({ name: key, value: mappings[key] });
+                            }
                         }
                     }
-
-                    console.log(this.resourceMappings);
+                    catch (e) {
+                        console.log(e);
+                    }
                 }
-                catch (e) {
-                    console.log(e);
+            } else {
+                if (cachedSite && !cachedSite.siteId) {
+                    getSiteDataFromCache();
                 }
-            }            
+            }
         },
 
         methods: {
@@ -385,13 +403,16 @@
 
                     if (!this.uploaded.find(u => u.name == file.name && u.destinationPath == this.upload.destinationPath)) {
                         let cf = new ContentFile(
-                                {
-                                    fileName: file.name,
-                                    size: Math.round(10 * file.size / 1024) / 10,
-                                    uploadedAt: new Date(),
-                                    destinationPath: this.upload.destinationPath,
-                                    isNew: true
-                                });
+                                    null,
+                                    file.name,
+                                    this.upload.destinationPath,
+                                    true,
+                                    file.size,
+                                    false,
+                                    false,
+                                    formatDate(new Date()),
+                                    null
+                                );
                             
                         this.uploaded.push(cf);
                     }
@@ -538,6 +559,56 @@
                 } catch {
                     alert(`Unable to delete ${file.name}. Server error or the file does not exist.`);
                 }
+            },
+            getUploadSessionId: async function () {
+                let sessionId = this.upload.uploadSessionId;
+                if (!sessionId) {
+                    let sessionResponse = await this.$apiClient.getAsync('api/contentupload/session');
+                    this.upload.uploadSessionId = sessionResponse.headers['upload-session-id'];
+                    sessionId = this.upload.uploadSessionId;
+                }
+                return sessionId;
+            },
+
+            newHtmlPage: async function() {
+                let sessionId = await this.getUploadSessionId();
+
+                stateManager.save({
+                    uploadSessionId: sessionId,
+                    siteName: this.siteName,
+                    siteId: this.siteId,
+                    description: this.description,
+                    isActive: this.isActive,
+                    landingPage: this.landingPage,
+                    resourceMappings: this.resourceMappings,
+                    uploadedFiles: this.uploaded
+                });
+
+                this.$router.push({ name: 'page-editor', params: { uploadSessionId: sessionId, siteId: this.siteId  } });
+            },
+            openPageEditor: async function (file) {
+                let sessionId = await this.getUploadSessionId();
+
+                stateManager.save({
+                    uploadSessionId: sessionId,
+                    siteName: this.siteName,
+                    siteId: this.siteId,
+                    description: this.description,
+                    isActive: this.isActive,
+                    landingPage: this.landingPage,
+                    resourceMappings: this.resourceMappings,
+                    uploadedFiles: this.uploaded
+                });
+
+                this.$router.push({ 
+                    name: 'page-editor', 
+                    params:  { 
+                        siteId: this.siteId, 
+                        contentId: file.id,
+                        contentName: file.name,
+                        contentDestinationPath: file.destinationPath, 
+                        uploadSessionId: this.upload.uploadSessionId 
+                    }});
             }
         },
         computed: {
@@ -677,6 +748,12 @@
         clear: both;
         color: red;
         font-weight: bold;
+    }
+
+    .editor-buttons-container {
+        clear: both;
+        padding-top: 55px;
+        padding-right: 5px;
     }
 
     .uploaded-content-holder {

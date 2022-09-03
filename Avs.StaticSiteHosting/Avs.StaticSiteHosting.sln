@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Web", "Avs.StaticSiteHosting.Web.csproj", "{97039819-F88A-49DF-865E-A010AB387739}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.DataMigrator", "..\Avs.StaticSiteHosting.DataMigrator\Avs.StaticSiteHosting.DataMigrator.csproj", "{15350D8F-0A21-4F15-949C-60678C9631D8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.ContentCreator", "..\Avs.StaticSiteHosting.ContentCreator\Avs.StaticSiteHosting.ContentCreator.csproj", "{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{15350D8F-0A21-4F15-949C-60678C9631D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15350D8F-0A21-4F15-949C-60678C9631D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15350D8F-0A21-4F15-949C-60678C9631D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

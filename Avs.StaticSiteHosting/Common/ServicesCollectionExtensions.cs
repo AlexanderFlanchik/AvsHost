@@ -31,7 +31,7 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbConnection"));
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();
-            services.AddScoped<ISettingsManager, SettingsManager>();
+            services.AddSingleton<ISettingsManager, SettingsManager>();
 
             services.AddSingleton<CloudStorageSettings>();
             services.AddHostedService<CloudStorageSettingsWorker>();
@@ -60,6 +60,8 @@ namespace Avs.StaticSiteHosting.Web.Common
         {
             services.AddScoped<ISiteService, SiteService>();
             services.AddScoped<IContentManager, ContentManager>();
+            services.AddScoped<IContentUploadService, ContentUploadService>();
+            services.AddScoped<IPagePreviewService, PagePreviewService>();
             services.AddSingleton<ICloudStorageProvider, CloudStorageProvider>();
             services.AddTransient<ImageResizeService>();
 
@@ -93,6 +95,15 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddScoped<ISiteStatisticsService, SiteStatisticsService>();
             services.AddScoped<IErrorSitesListService, ErrorSitesListService>();
 
+            return services;
+        }
+    }
+
+    public static class ContentEditorExtensions
+    {
+        public static IServiceCollection AddContentEditor(this IServiceCollection services)
+        {
+            services.AddScoped<IPageRenderingService, PageRenderingService>();
             return services;
         }
     }

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,9 +18,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     {
         private readonly StaticSiteOptions staticSiteOptions;
         private readonly ILogger<ContentUploadController> _logger;
-        public ContentUploadController(IOptions<StaticSiteOptions> staticSiteOptions, ILogger<ContentUploadController> logger)
+        private readonly IContentUploadService _contentUploadService;
+
+        public ContentUploadController(IContentUploadService contentUploadService, IOptions<StaticSiteOptions> staticSiteOptions, ILogger<ContentUploadController> logger)
         {
             this.staticSiteOptions = staticSiteOptions.Value;
+            _contentUploadService = contentUploadService;
             _logger = logger;
         }
 
@@ -37,29 +41,15 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> UploadContent([Required] string uploadSessionId, string destinationPath, [Required] IFormFile contentFile)
         { 
-            var tempContentPath = staticSiteOptions.TempContentPath;
-            string uploadFolderPath = Path.Combine(tempContentPath, uploadSessionId);
-
-            // Check destination path
-            if (!string.IsNullOrEmpty(destinationPath))
+            if (!_contentUploadService.ValidateDestinationPath(destinationPath))
             {
-                if (destinationPath.StartsWith('\\') || destinationPath.StartsWith('/'))
-                {
-                    return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
-                }
-
-                uploadFolderPath = Path.Combine(uploadFolderPath, destinationPath);
+                return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
             }
-
+           
             try
             {
                 // Create folder and upload file
-                Directory.CreateDirectory(uploadFolderPath);
-                var newFilepath = Path.Combine(uploadFolderPath, contentFile.FileName);
-                var fi = new FileInfo(newFilepath);
-
-                using var fiStream = fi.OpenWrite();
-                await contentFile.CopyToAsync(fiStream).ConfigureAwait(false);
+                await _contentUploadService.UploadContent(uploadSessionId, contentFile.FileName, destinationPath, contentFile.OpenReadStream());
             }
             catch (Exception ex)
             {

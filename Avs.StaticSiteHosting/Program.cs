@@ -4,13 +4,21 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Avs.StaticSiteHosting.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
+using Avs.StaticSiteHosting.ContentCreator;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSession(options => {
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddSignalRServices();
@@ -24,6 +32,7 @@ builder.Services.AddEventsAndLogs();
 builder.Services.AddDashboardAuthentication();
 
 builder.Services.AddControllersWithViews().AddNewtonsoftJson();
+builder.Services.AddContentEditor();
 
 var app = builder.Build();
 
@@ -38,7 +47,7 @@ if (!builder.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
+app.UseSession();
 app.UseDashboard();
 
 // Auth is only required for dashboard Web API

@@ -39,13 +39,21 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="ClientApp\src\common\ContentFile.ts" />
+    <None Remove="ClientApp\src\common\DateFormatter.ts" />
     <None Remove="ClientApp\src\components\Register.vue" />
     <None Remove="ClientApp\src\components\Registered.vue" />
+    <None Remove="ClientApp\src\content-creation\html-elements.ts" />
     <None Remove="ClientApp\src\ConversationMessage.ts" />
     <None Remove="ClientApp\src\services\ApiClient.ts" />
     <None Remove="ClientApp\src\services\AuthService.ts" />
     <None Remove="ClientApp\src\services\MarkReadMessagesQueue.ts" />
+    <None Remove="ClientApp\src\services\siteContextManager.ts" />
     <None Remove="ClientApp\src\services\UserNotificationService.ts" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Avs.StaticSiteHosting.ContentCreator\Avs.StaticSiteHosting.ContentCreator.csproj" />
   </ItemGroup>
   
   <ItemGroup>

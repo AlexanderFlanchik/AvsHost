@@ -47,6 +47,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var topic = await _helpService.GetTopicBySectionId(helpSectionId, ordinalNo);
             if (topic == null)
             {
+                logger.LogWarning($"No help topic found for help section ID = '{helpSectionId}' and topic number = {ordinalNo}");
+
                 return new EmptyResult();
             }
 

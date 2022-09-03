@@ -43,7 +43,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// <param name="contentItemId">Content item ID</param>
         /// <param name="content">Content</param>
         /// <returns></returns>
-        Task UpdateContentItem(string contentItemId, string content);
+        Task<long> UpdateContentItem(string contentItemId, string content);
 
         /// <summary>
         /// Deletes content using content item ID.
@@ -66,5 +66,20 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<IEnumerable<StorageUsedInfo>> GetUsedStorageAmountByUser(string userId);
+
+        /// <summary>
+        /// Returns a content type if it can be extracted from a file name, "application/octet-stream" otherwise
+        /// </summary>
+        /// <param name="contentFileName">Content file name</param>
+        /// <returns>A content type as string.</returns>
+        string GetContentType(string contentFileName);
+
+        /// <summary>
+        /// Get a size of a file just uploaded.
+        /// </summary>
+        /// <param name="contentFileName">File name.</param>
+        /// <param name="uploadSessionId">Upload session ID.</param>
+        /// <returns>File size in bytes.</returns>
+        long GetNewFileSize(string contentFileName, string uploadSessionId);
     }
 }

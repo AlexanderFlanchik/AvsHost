@@ -34,7 +34,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("token")]
         public async Task<IActionResult> GetAccessToken(LoginRequestModel loginModel, [FromServices] PasswordHasher pwdHasher)
         {
-            string login = loginModel.Login, password = loginModel.Password;
+            var login = loginModel.Login;
+            var password = loginModel.Password;
             var user = await _userService.GetUserByLoginAsync(login);
             
             if (user == null)
@@ -67,10 +68,19 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
             _logger.LogInformation($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
 
-            var userInfo = new { user.Name, user.Email, isAdmin = _userService.IsAdmin(user) };
-            var tokenResponse = new { token = encodedToken, expires_at = expiresAt, userInfo };
+            var response = new
+            {
+                token = encodedToken,
+                expires_at = expiresAt,
+                userInfo = new
+                {
+                    user.Name,
+                    user.Email,
+                    isAdmin = _userService.IsAdmin(user)
+                }
+            };
 
-            return Ok(tokenResponse);
+            return Ok(response);
         }                
 
         [HttpGet]

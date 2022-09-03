@@ -28,6 +28,12 @@
     font-weight: bold;
 }
 
+.pointer-lnk {
+    cursor: pointer;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
 .general-page-title {
     font-size: 34pt;
     font-family: Garamond;

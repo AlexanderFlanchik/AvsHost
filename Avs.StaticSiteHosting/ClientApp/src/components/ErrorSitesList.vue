@@ -27,7 +27,7 @@
                             <td class="w-200">{{site.siteName}}</td>
                             <td class="w-220">{{formatDate(site.timestamp)}}</td>
                             <td>
-                                <router-link :to="{ path: '/sites/update/' + site.siteId }">Edit..</router-link>
+                                <a href="#" @click="editSite(site.siteId)">Edit..</a>
                             </td>
                         </tr>
                     </tbody>
@@ -64,6 +64,12 @@
 
             formatDate: function (date) {
                 return date && moment(date).format('MM/DD/YYYY hh:mm:ss A');
+            },
+
+            editSite: async function (siteId) {
+                await this.$apiClient.postAsync('api/sitedetails/clear-site-context');
+
+                this.$router.push({ path: '/sites/update/' + siteId });
             }
         }
     }

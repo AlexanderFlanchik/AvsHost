@@ -19,5 +19,9 @@
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net5.0
 /Avs.StaticSiteHosting/node_modules/*
 /Avs.StaticSiteHosting/bin/Debug/net6.0
+/Avs.StaticSiteHosting.DataMigrator/obj
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net6.0
 /Avs.StaticSiteHosting/bin/Release/net6.0
+/Avs.StaticSiteHosting/.vs/ProjectEvaluation
+/Avs.StaticSiteHosting.ContentCreator/bin/Debug/net6.0
+/Avs.StaticSiteHosting.ContentCreator/obj
