@@ -190,7 +190,7 @@
     </div>
 </template>
 <script lang="ts">
-    const moment = require('moment');
+    import * as moment from 'moment';
     import { formatDate } from '../common/DateFormatter';
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';

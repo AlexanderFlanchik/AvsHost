@@ -1,0 +1,90 @@
+[
+  {
+    "tag": "div",
+    "displayName": "Block"
+  },
+  {
+    "tag": "p",
+    "displayName":  "Paragraph"
+  },
+  {
+    "tag": "span",
+    "displayName": "Span"
+  },
+  {
+    "tag": "label",
+    "displayName": "Label"
+  },
+  {
+    "tag": "ul",
+    "displayName": "Unordered List"
+  },
+  {
+    "tag": "ol",
+    "displayName": "Ordered List"
+  },
+  {
+    "tag": "li",
+    "displayName": "List Item"
+  },
+  {
+    "tag": "h1",
+    "displayName": "Header 1"
+  },
+  {
+    "tag": "h2",
+    "displayName": "Header 2"
+  },
+  {
+    "tag": "h3",
+    "displayName": "Header 3"
+  },
+  {
+    "tag": "h4",
+    "displayName": "Header 4"
+  },
+  {
+    "tag": "img",
+    "displayName": "Image"
+  },
+  {
+    "tag": "a",
+    "displayName": "Link"
+  },
+  {
+    "tag": "dl",
+    "displayName" : "Description List"
+  },
+  {
+    "tag": "dt",
+    "displayName": "Description list term name"
+  },
+  {
+    "tag": "dd",
+    "displayName": "Description list term value"
+  },
+  {
+    "tag": "table",
+    "displayName": "Table"
+  },
+  {
+    "tag": "tbody",
+    "displayName": "Table body"
+  },
+  {
+    "tag": "thead",
+    "displayName": "Table head"
+  },
+  {
+    "tag": "tr",
+    "displayName": "Table row"
+  },
+  {
+    "tag": "td",
+    "displayName": "Table cell"
+  },
+  {
+    "tag": "th",
+    "displayName": "Table header cell"
+  }
+]

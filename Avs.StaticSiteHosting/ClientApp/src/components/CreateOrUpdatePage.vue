@@ -37,17 +37,25 @@
                 </div>
             </div>
         </div>
-        <b-modal size="xl" ref="edit-element-modal" hide-footer title="Edit HTML Element">
+        <b-modal size="xl" ref="edit-element-modal" hide-footer :title="elementEditor.getEditorTitle">
             <div>
                 <div v-if="elementEditor.error">
                     <span class="validation-error">{{elementEditor.error}}</span>
                 </div>
-                <div>
+                <div v-if="!elementEditor.isNewElement">
                     <span>Element: </span>
                     <span><strong>{{elementEditor.tag}}</strong></span>
                     <span v-if="elementEditor.elementId">
                        ({{elementEditor.elementId}})
                     </span>
+                </div>
+                <div v-if="elementEditor.isNewElement">
+                    <span>Element: </span>
+                    <select v-model="elementEditor.tag">
+                        <option v-for="at in elementEditor.tagsAvailable" :key="at" :value="at.tag">
+                            {{at.displayName}} ({{at.tag}})
+                        </option>
+                    </select>
                 </div>
                 <div>
                     <span>Attributes: </span>
@@ -120,11 +128,14 @@
     import { v4 as uuid } from 'uuid';
     import { SiteContextManager } from '../services/SiteContextManager';
     import { ContentFile } from '../common/ContentFile';
+    import getAvailableTags from '../content-creation/TagsProvider';
     
     const marginLeft1 = '10px';
     const marginLeft2 = '20px';
     const editIconSrc = '../icons8-edit-16.png';
     const removeIconSrc = '../icons8-remove-16.png';
+    const addNewIconSrc = '../icons8-add-16.png';
+
     const siteContextManager = new SiteContextManager();
 
     export default {
@@ -138,15 +149,37 @@
                 previewSessionId: null,
                 htmlTree: null,
                 elementEditor: {
+                    isNewElement: false,
                     innerCode: null,
                     elementId: null,
+                    parentElementInnerCode: null,
                     tag: '',
+                    tagsAvailable: [],
                     attributes: [],
                     cssClasses: [],
                     error: null,
                     innerHtml: '',
-                    outerHtml: '',
+                    outerHtml: function () {
+                        if (!this.tag) {
+                            return '';
+                        }
+
+                        let attrs = this.attributes.map(a => `${a.name}="${a.value}"`);
+                        if (this.cssClasses.length) {
+                            attrs.push({ name: 'class', value: this.cssClasses.join(' ') });
+                        }
+
+                        let attr = this.attributes.map(a => `${a.name}="${a.value}"`).join(' ');
+
+                        if (this.tag != 'img' && this.tag != 'br' && this.innerHtml) {
+                            return attr.length ? `<${this.tag} ${attr}>${this.innerHtml}</${this.tag}>` : `<${this.tag}>${this.innerHtml}</${this.tag}>`;
+                        } else {
+                            return attr.length ? `<${this.tag} ${attr} />` : `<${this.tag} />`;
+                        }
+                    },
+                    getEditorTitle: '',
                     onOpen: function() {
+                        this.getEditorTitle = this.isNewElement ? "Add New Element" : "Edit Element";
                         this.attributes = [];
                         this.cssClasses = [];
                     },
@@ -164,7 +197,7 @@
                     },
                     validateInnerHtml : function() {
                         let parser = new DOMParser();
-                        let result = parser.parseFromString(this.outerHtml, 'application/xml');
+                        let result = parser.parseFromString(this.outerHtml(), 'application/xml');
                         let errorNode = result.querySelector('parsererror');
                         if (errorNode) {
                             return { isValid: false, errorMessage: errorNode.textContent };
@@ -281,7 +314,7 @@
 
                         let body = this.htmlTree.body;
                         body.innerHtml = frameBody.innerHTML;
-                        body.outerHtml = frameBody.outerHTML;
+                        
                         let attributes = frameBody.attributes;
                         for (let attr of attributes) {
                             body.attributes.set(attr.name, attr.value);
@@ -333,7 +366,7 @@
                     e.parent = element;
                     e.tag = o.nodeName.toLowerCase();
                     e.innerHtml = o.innerHTML;
-                    e.outerHtml = o.outerHTML;
+                   
                     let attributes = o.attributes || [];
                     for (let attr of attributes) {
                         e.attributes.set(attr.name, attr.value);
@@ -432,16 +465,13 @@
                            
                 let innerCode = this.elementEditor.innerCode;
                 let element = this.htmlTree.body.getElementByInnerCode(innerCode);
-                if (this.elementEditor.innerHtml) {
-                    this.elementEditor.outerHtml = `<${element.tag}>${this.elementEditor.innerHtml}</${element.tag}>`;
-                }
-
+                
                 let previousOuterHtml = element.outerHtml;
                 if (!element) {
                     this.$refs['edit-element-modal'].hide();
                     return;
                 }
-                            
+                
                 let parseContentResult = this.elementEditor.validateInnerHtml();
                 if (!parseContentResult.isValid) {
                     this.elementEditor.error = parseContentResult.errorMessage;
@@ -464,13 +494,7 @@
                     element.id = null;
                 }
 
-                let attributes = this.elementEditor.attributes.map(a => `${a.name}="${a.value}"`).join(' ');
-                let elementOuterHtml = `<${element.tag} ${attributes}` + (classes.length ? ` class="${classes}"` : '')
-                    + `>${elementInnerHtml}</${element.tag}>`;
-
                 element.innerHtml = elementInnerHtml;
-                element.outerHtml = elementOuterHtml;
-                            
                 element.attributes = new Map();
                 for (let attr of this.elementEditor.attributes) {
                     element.attributes.set(attr.name, attr.value);
@@ -481,23 +505,18 @@
                 }
                
                 // parse element new children
-                element.children = [];
-                let elementDoc = parseContentResult.htmlDocument.children[0];
-                if (elementDoc) {
-                    this.parseChildren(element, elementDoc.children);
-                }
-                     
+                this.elementParseChildren(element, parseContentResult);
+                                     
                 // Update element HTML content in all parent innerHtml & outerHtml refs
                 let parentElement = element.parent;
                 while (parentElement) {
                     let parentInnerHtml = parentElement.innerHtml;
-                    let parentOuterHtml = parentElement.outerHtml;
-                            
-                    parentElement.innerHtml = parentInnerHtml.replace(previousOuterHtml, elementOuterHtml);
-                    parentElement.outerHtml = parentOuterHtml.replace(previousOuterHtml, elementOuterHtml);
+
+                    console.log('replacing ' + previousOuterHtml  + ' with ' + element.outerHtml + ' in ' + parentElement.innerHtml);                          
+                    parentElement.innerHtml = parentInnerHtml.replace(previousOuterHtml, element.outerHtml);
                     parentElement = parentElement.parent;
                 }
-
+                
                 this.elementEditor.error = null;
                 document.getElementById('html-tree').innerHTML = '';
                 this.renderHtmlTree();  // re-create the tree
@@ -505,14 +524,112 @@
 
                 this.$refs['edit-element-modal'].hide();
             },
+            elementParseChildren: function(element, parseContentResult) {
+                element.children = [];
+                let elementDoc = parseContentResult.htmlDocument.children[0];
+                if (elementDoc) {
+                    this.parseChildren(element, elementDoc.children);
+                }
+            },
+            elementEditorAddNewOk: async function () {
+                // 1. Create element in the HTML Tree object
+                // 2. re-create the tree
+                // 3. Update page preview
+                if (!this.elementEditor.tag) {
+                    this.elementEditor.error = 'Please select a tag for new element.';
+                    return;
+                }
+
+                let newElement = new GenericElement();
+                newElement.tag = this.elementEditor.tag;
+                
+                const getParentElement = () => this.htmlTree.body.getElementByInnerCode(this.elementEditor.parentElementInnerCode);
+                newElement.parent = getParentElement();
+                newElement.innerCode = uuid();
+
+                let attributes = this.elementEditor.attributes || [];
+                let elementIdAttr = attributes.find(a => a.name.toLowerCase() == 'id');
+                if (elementIdAttr) {
+                    newElement.id = elementIdAttr.value;
+                }
+
+                newElement.attributes = new Map();
+                for (let a of attributes) {
+                    newElement.attributes.set(a.name, a.value);
+                }
+
+                let classes = this.elementEditor.cssClasses.join(' ');
+                if (classes) {
+                    newElement.attributes.set('class', classes);
+                }
+
+                let parseContentResult = this.elementEditor.validateInnerHtml();
+                if (!parseContentResult.isValid) {
+                    this.elementEditor.error = parseContentResult.errorMessage;
+                    return;
+                }
+
+                newElement.innerHtml = this.elementEditor.innerHtml;
+                
+                // parse element new children
+                this.elementParseChildren(newElement, parseContentResult);
+
+                // Update element HTML content in all parent innerHtml refs
+                let parentElement = newElement.parent;
+                let isFirstParent = true;
+                let oldHtml, newHtml;
+                let element = parentElement;
+                while (element) {
+                    if (isFirstParent) {
+                        oldHtml = element.outerHtml;
+                        element.innerHtml = `${element.innerHtml}${newElement.outerHtml}`;
+                        newHtml = element.outerHtml;
+                        isFirstParent = false;
+                    } else {
+                        element.innerHtml = element.innerHtml.replace(oldHtml, newHtml);
+                    }
+
+                    element = element.parent;
+                }
+                
+                parentElement = getParentElement();
+                if (parentElement) {
+                    parentElement.children.push(newElement);
+                }
+
+                this.elementEditor.error = null;
+                document.getElementById('html-tree').innerHTML = '';
+                this.renderHtmlTree();  // re-create the tree
+                await this.applyUiChanges();    // Update page preview
+
+                this.$refs["edit-element-modal"].hide();
+            },
+
+            addNewElementClick: async function (element) {
+                this.elementEditor.isNewElement = true;
+                this.elementEditor.onOpen();
+                this.elementEditor.parentElementInnerCode = element ? element.innerCode : null;
+                this.elementEditor.innerHtml = '';
+
+                let tagsAvailable = getAvailableTags(element.tag);
+                let tgsResponse = await fetch('TagNames.json');
+                let tgsJson = await tgsResponse.json();
+                let allTags = tgsJson || [];
+                this.elementEditor.tagsAvailable = allTags.filter(t => tagsAvailable.indexOf(t.tag) >= 0);
+
+                this.elementEditor.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
+                this.elementEditor.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
+                this.elementEditor.ok = async () => await this.elementEditorAddNewOk();
+                this.$refs["edit-element-modal"].show();
+            },
 
             editClick: function(element) {
+                this.elementEditor.isNewElement = false;
                 this.elementEditor.onOpen();
                 this.elementEditor.innerCode = element.innerCode;
                 this.elementEditor.tag = element.tag;
                 this.elementEditor.elementId = element.id;
                 this.elementEditor.innerHtml = element.innerHtml;
-                this.elementEditor.outerHtml = element.outerHtml;
 
                 let attributes = element.attributes;
                 for (let attribute of attributes) {
@@ -532,7 +649,7 @@
                 this.elementEditor.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
                 this.elementEditor.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
                 this.elementEditor.ok = async () => await this.elementEditorOk();
-
+               
                 this.$refs["edit-element-modal"].show();
             },
 
@@ -547,10 +664,8 @@
                         
                     while (parentElement) {
                         let parentInnerHtml = parentElement.innerHtml;
-                        let parentOuterHtml = parentElement.outerHtml;
                             
                         parentElement.innerHtml = parentInnerHtml.replace(elementHtml, '');
-                        parentElement.outerHtml = parentOuterHtml.replace(elementHtml, '');
                         parentElement = parentElement.parent;
                     }
 
@@ -593,7 +708,7 @@
                 deleteLnk.appendChild(deleteIcon);
                 deleteIcon.setAttribute('class', 'pointer-lnk');
                 deleteIcon.onclick = async () => await this.deleteClick(element);
-
+                
                 elementLi.setAttribute('name', element.innerCode);
                     
                 let elementAttributes = element.attributes;
@@ -610,10 +725,24 @@
                 elementLi.style.marginLeft = newMargin;
                 span.textContent = elementText;
                 elementLi.appendChild(span);
-                elementLi.appendChild(editLnk);
+                if (element.tag != 'br') {
+                    elementLi.appendChild(editLnk);
+                }
                 if (element.tag != 'body') {
                     elementLi.appendChild(deleteLnk);
                 }
+                
+                let availableTags = getAvailableTags(element.tag);
+                if (availableTags.length) {
+                    let addNewLnk = document.createElement('a');
+                    let addNewIcon = document.createElement('img');
+                    addNewIcon.src = addNewIconSrc;
+                    addNewLnk.appendChild(addNewIcon);
+                    addNewIcon.setAttribute('class', 'pointer-lnk');
+                    addNewIcon.onclick = async () => await this.addNewElementClick(element);
+                    elementLi.appendChild(addNewLnk);
+                }
+
                 document.getElementById('html-tree').appendChild(elementLi);
 
                 let elementChildren = element.children || [];

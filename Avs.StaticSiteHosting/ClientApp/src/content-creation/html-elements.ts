@@ -52,7 +52,21 @@ export class GenericElement {
     attributes: Map<String, String>;
     children: Array<GenericElement>;
     innerHtml: String;
-    outerHtml: String;
+
+    get outerHtml(): String {
+        let attrs = [];
+        this.attributes.forEach((val: String, key: String) => {
+            attrs.push({ name: key, value: val });
+        });
+
+        let attr = attrs.map(a => `${a.name}="${a.value}"`).join(' ');
+
+        if (this.tag != 'img' && this.tag != 'br' && this.innerHtml) {
+            return attr.length ? `<${this.tag} ${attr}>${this.innerHtml}</${this.tag}>` : `<${this.tag}>${this.innerHtml}</${this.tag}>`;
+        } else {
+            return attr.length ? `<${this.tag} ${attr} />` : `<${this.tag}/>`;
+        }
+    }
     
     constructor() {
         this.attributes = new Map<String, String>();

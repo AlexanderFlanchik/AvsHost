@@ -1,5 +1,5 @@
 "use strict";
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenericElement = exports.Link = exports.Metadata = exports.Script = exports.Head = exports.Html = void 0;
 var uuid_1 = require("uuid");
 var Html = /** @class */ (function () {
@@ -45,6 +45,23 @@ var GenericElement = /** @class */ (function () {
         this.children = new Array();
         this.innerCode = (0, uuid_1.v4)();
     }
+    Object.defineProperty(GenericElement.prototype, "outerHtml", {
+        get: function () {
+            var attrs = [];
+            this.attributes.forEach(function (val, key) {
+                attrs.push({ name: key, value: val });
+            });
+            var attr = attrs.map(function (a) { return "".concat(a.name, "=\"").concat(a.value, "\""); }).join(' ');
+            if (this.tag != 'img' && this.tag != 'br' && this.innerHtml) {
+                return attr.length ? "<".concat(this.tag, " ").concat(attr, ">").concat(this.innerHtml, "</").concat(this.tag, ">") : "<".concat(this.tag, ">").concat(this.innerHtml, "</").concat(this.tag, ">");
+            }
+            else {
+                return attr.length ? "<".concat(this.tag, " ").concat(attr, " />") : "<".concat(this.tag, "/>");
+            }
+        },
+        enumerable: false,
+        configurable: true
+    });
     GenericElement.prototype.getElementByInnerCode = function (innerCode) {
         if (this.innerCode == innerCode) {
             return this;
