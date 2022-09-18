@@ -85,11 +85,13 @@
                 <div>
                     <span>Inner content:</span>
                     <br/>
-                    <b-form-textarea v-model="elementEditor.innerHtml" rows="10" cols="10" @change="() => elementEditor.error = null"></b-form-textarea>
+                    <b-form-textarea class="resource-content-area" v-model="elementEditor.innerHtml" rows="10" cols="10" @change="() => elementEditor.error = null"></b-form-textarea>
                 </div>
             </div>
-            <button class="btn btn-primary" @click="() => elementEditor.ok()">OK</button>
-            <button class="btn btn-default" @click="() => this.$refs['edit-element-modal'].hide()">Cancel</button>
+            <div class="modal-btn-holder">
+                <button class="btn btn-primary" @click="() => elementEditor.ok()">OK</button>
+                <button class="btn btn-default" @click="() => this.$refs['edit-element-modal'].hide()">Cancel</button>
+            </div>
         </b-modal>
         
         <b-modal ref="add-attribute-modal" hide-footer title="Add New Attribute">
@@ -104,8 +106,10 @@
                 <span>Value:</span> <br />
                 <b-form-input v-model="elementEditor.addNewAttributeDlg.value" @change="() => this.elementEditor.addNewAttributeDlg.error = null"></b-form-input>
             </div>
-            <button class="btn btn-primary" @click="() => this.elementEditor.addNewAttributeDlg.ok()">OK</button>
-            <button class="btn btn-default" @click="() => this.$refs['add-attribute-modal'].hide()">Cancel</button>
+            <div class="modal-btn-holder">
+                <button class="btn btn-primary" @click="() => this.elementEditor.addNewAttributeDlg.ok()">OK</button>
+                <button class="btn btn-default" @click="() => this.$refs['add-attribute-modal'].hide()">Cancel</button>
+            </div>
         </b-modal>
         
         <b-modal ref="add-css-class-modal" hide-footer title="Add CSS Class">
@@ -116,8 +120,38 @@
                 <span>Name:</span> <br />
                 <b-form-input v-model="elementEditor.addNewCssClassDlg.name" @change="() => this.elementEditor.addNewCssClassDlg.error = null"></b-form-input>
             </div>
-            <button class="btn btn-primary" @click="() => this.elementEditor.addNewCssClassDlg.ok()">OK</button>
-            <button class="btn btn-default" @click="() => this.$refs['add-css-class-modal'].hide()">Cancel</button>
+            <div class="modal-btn-holder">
+                <button class="btn btn-primary" @click="() => this.elementEditor.addNewCssClassDlg.ok()">OK</button>
+                <button class="btn btn-default" @click="() => this.$refs['add-css-class-modal'].hide()">Cancel</button>
+            </div>
+        </b-modal>
+        <b-modal  size="xl" ref="add-script-content-modal" hide-footer title="Add Script or Stylesheet">
+            <div>
+                <b-form-group label="Resource type" v-slot="{ ariaDescribedby }">
+                    <b-form-radio-group id="contentResourceType" v-model="contentResourceEditor.contentResourceType" :aria-describedby="ariaDescribedby" name="scriptTypeList">
+                        <b-form-radio value="js">JavaScript</b-form-radio>
+                        <b-form-radio value="css">Cascade Stylesheet (CSS)</b-form-radio>
+                    </b-form-radio-group>
+                </b-form-group>
+            </div>
+            <div>
+                <b-form-group label="Resource content" stacked>
+                    <b-form-radio-group v-model="contentResourceEditor.fromFile">
+                        <b-form-radio value="true">From file</b-form-radio> <br/>
+                        <select class="resource-files-select" v-model="contentResourceEditor.contentFile" :disabled="contentResourceEditor.fromFile != 'true'">
+                            <option v-for="file in contentResourceEditor.contentList" :key="file" :value="file">
+                                {{file.contentFilePath}}
+                            </option>
+                        </select> <br/>
+                        <b-form-radio value="false">From content:</b-form-radio> <br/>
+                        <b-form-textarea class="resource-content-area" v-model="content" :disabled="contentResourceEditor.fromFile == 'true'"></b-form-textarea>
+                    </b-form-radio-group>
+                </b-form-group>
+            </div>
+            <div class="modal-btn-holder">
+                <button class="btn btn-primary">OK</button>
+                <button class="btn btn-default" @click="() => this.$refs['add-script-content-modal'].hide()">Cancel</button>
+            </div>
         </b-modal>
     </div>
 </template>
@@ -135,6 +169,8 @@
     const editIconSrc = '../icons8-edit-16.png';
     const removeIconSrc = '../icons8-remove-16.png';
     const addNewIconSrc = '../icons8-add-16.png';
+    const addScriptOrStylesheetSrc = '../icons8-document-16.png';
+    const contentFilePlaceHolder = '--Please select a file--';
 
     const siteContextManager = new SiteContextManager();
 
@@ -216,6 +252,14 @@
                         ok: () => { }
                     }
                 },
+                contentResourceEditor: {
+                    element: null,
+                    contentResourceType: 'js',
+                    fromFile: 'true',
+                    contentFile: null,
+                    content: '',
+                    contentList: []
+                }
             };
         },
         mounted: async function () {
@@ -414,6 +458,36 @@
                 this.generatePagePreview();
             },
 
+            addScriptOrStylesheetClick: async function(element) {
+                this.contentResourceEditor.element = element;
+                let filesUrl = 'api/ResourceContent';
+                let queryParameterSet =  false;
+                if (this.siteId) {
+                    filesUrl += `?siteId=${this.siteId}`;
+                    queryParameterSet = true;
+                }
+
+                if (this.uploadSessionId) {
+                    filesUrl += (queryParameterSet ? '&' : '?') + `uploadSessionId=${this.uploadSessionId}`;
+                    queryParameterSet = true;
+                }
+
+                let contentResourceType = this.contentResourceEditor.contentResourceType;
+                filesUrl += (queryParameterSet ? '&' : '?') + `contentExtension=${contentResourceType}`;
+                try {
+                    let filesResponse = await this.$apiClient.getAsync(filesUrl);
+                    if (filesResponse.status == 200) {
+                        this.contentResourceEditor.contentList = filesResponse.data;
+                    }
+                } catch {
+                    // no-op
+                }
+
+                this.contentResourceEditor.contentList.unshift({ id: null, contentFilePath: contentFilePlaceHolder });
+                this.contentResourceEditor.contentFile = this.contentResourceEditor.contentList[0];
+                this.$refs['add-script-content-modal'].show();
+            },
+
             elementEditor_newAttributeDlgOk: function() {
                 let name = this.elementEditor.addNewAttributeDlg.name;
                 if (!name) {
@@ -512,7 +586,6 @@
                 while (parentElement) {
                     let parentInnerHtml = parentElement.innerHtml;
 
-                    console.log('replacing ' + previousOuterHtml  + ' with ' + element.outerHtml + ' in ' + parentElement.innerHtml);                          
                     parentElement.innerHtml = parentInnerHtml.replace(previousOuterHtml, element.outerHtml);
                     parentElement = parentElement.parent;
                 }
@@ -760,7 +833,19 @@
                 
                 let head = this.htmlTree.head;
                 let headLi = document.createElement('li');
-                headLi.textContent = 'head'+ (head.title ? ` (title="${head.title}")` : '');
+                let headSpan = document.createElement('span');
+                headSpan.textContent ='head'+ (head.title ? ` (title="${head.title}")` : '');
+                headLi.appendChild(headSpan);
+                
+                let addScriptOrCssLink = document.createElement('a');
+                let addScriptOrCssIcon = document.createElement('img');
+                addScriptOrCssIcon.setAttribute('class', 'pointer-lnk');
+                addScriptOrCssIcon.title = 'Add a new JS script or cascade stylesheet';
+                addScriptOrCssIcon.src = addScriptOrStylesheetSrc;
+                addScriptOrCssLink.appendChild(addScriptOrCssIcon);
+                addScriptOrCssLink.onclick = async () => await this.addScriptOrStylesheetClick({ tag: 'head'});
+                headLi.appendChild(addScriptOrCssLink);
+
                 headLi.style.marginLeft = marginLeft1;
                 treeContainer.appendChild(headLi);
 
@@ -972,5 +1057,13 @@
     color: red;
     font-weight: bold;
     margin-left: 5px;
+}
+
+.resource-files-select {
+    width: -webkit-fill-available;
+}
+
+.resource-content-area {
+    height: 400px;
 }
 </style>

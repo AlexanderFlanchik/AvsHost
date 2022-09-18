@@ -381,5 +381,52 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
             return fi.Length;
         }
+
+        public IEnumerable<string> GetNewUploadedFiles(string uploadSessionId, string contentFileExtension)
+        {
+            var uploadFolder = Path.Combine(options.TempContentPath, uploadSessionId);
+            var filesList = new List<string>();
+
+            GetFiles(uploadFolder, null);
+
+            void GetFiles(string directory, string parent)
+            {
+                var directoryInfo = new DirectoryInfo(directory);
+                if (!directoryInfo.Exists)
+                {
+                    return;
+                }
+
+                var parentPathSegments = new List<string>();
+                if (parent is not null)
+                {
+                    var parentDirectory = new DirectoryInfo(parent);
+                    while (parentDirectory is not null && parentDirectory.FullName != uploadFolder)
+                    {
+                        parentPathSegments.Add(parentDirectory.Name);
+                        parentDirectory = parentDirectory.Parent;
+                    }
+                }
+
+                if (directory != uploadFolder)
+                {
+                    parentPathSegments.Add(directoryInfo.Name);
+                }
+
+                var parentPath = string.Join('/', parentPathSegments.ToArray());
+                var files = directoryInfo.GetFiles().Where(f => f.Extension == $".{contentFileExtension}")
+                    .Select(f => string.IsNullOrEmpty(parentPath) ? f.Name : $"{parentPath}/{f.Name}").ToList();
+                
+                filesList.AddRange(files);
+                               
+                var directories = new DirectoryInfo(directory).GetDirectories();
+                foreach (var d in directories)
+                {
+                    GetFiles(d.FullName, directoryInfo.FullName);
+                }
+            }
+
+            return filesList;
+        }
     }
 }

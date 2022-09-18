@@ -57,9 +57,11 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         {
             var newFilePath = GetNewFilePath(uploadSessionId, destinationPath, fileName);
             var fi = new FileInfo(newFilePath);
+            using var fiStream = fi.OpenWrite();
+
             using (content)
             {
-                await content.CopyToAsync(fi.OpenWrite());
+                await content.CopyToAsync(fiStream);
             }
         }
 
@@ -73,11 +75,13 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         private string GetNewFilePath(string uploadSessionId, string destinationPath, string fileName)
         {
             var tempContentPath = _staticSiteOptions.TempContentPath;
-            string uploadFolderPath = Path.Combine(tempContentPath, destinationPath, uploadSessionId);
             destinationPath ??= string.Empty;
+            destinationPath = destinationPath.Replace('/', '\\');
 
+            string uploadFolderPath = Path.Combine(tempContentPath, uploadSessionId, destinationPath);
+           
             Directory.CreateDirectory(uploadFolderPath);
-            var newFilepath = Path.Combine(uploadFolderPath, destinationPath, fileName);
+            var newFilepath = Path.Combine(uploadFolderPath, fileName);
             
             return newFilepath;
         }

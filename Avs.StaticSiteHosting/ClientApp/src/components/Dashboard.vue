@@ -84,7 +84,7 @@
     import NavigationMenu from '../components/NavigationMenu.vue';
     import { SiteContextManager } from '../services/SiteContextManager';
     
-    const moment = require('moment');
+    import * as moment from 'moment';
     const stateManager = new SiteContextManager();
 
     const Site = function (siteData) {

@@ -81,5 +81,13 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// <param name="uploadSessionId">Upload session ID.</param>
         /// <returns>File size in bytes.</returns>
         long GetNewFileSize(string contentFileName, string uploadSessionId);
+
+        /// <summary>
+        /// Get just uploaded (but not saved) file names with the extension specified.
+        /// </summary>
+        /// <param name="uploadSessionId">Upload session ID</param>
+        /// <param name="contentFileExtension">File extension</param>
+        /// <returns>List of file names</returns>
+        IEnumerable<string> GetNewUploadedFiles(string uploadSessionId, string contentFileExtension);
     }
 }

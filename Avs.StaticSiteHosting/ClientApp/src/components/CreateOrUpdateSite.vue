@@ -520,7 +520,6 @@
             },
             updateContent: async function () {
                 let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${this.editContent.id}`, { content: this.editContent.content });
-                console.log(updateResponse);
                 if (updateResponse.status == 200) {
                     let updatedItem = this.uploaded.find(i => i.id == this.editContent.id);
                     if (updatedItem) {
@@ -548,8 +547,7 @@
                 }
 
                 let response = await this.$apiClient.deleteAsync(deleteUrl);
-                console.log(response);
-
+              
                 try {
                     if (response.status == 200) {
                         let itemDeleted = this.uploaded.find(i => i.name == file.name);
