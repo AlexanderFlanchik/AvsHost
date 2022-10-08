@@ -13,7 +13,6 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
         public Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             var path = context.Request.GetEncodedPathAndQuery();
-            Console.WriteLine(path);
             if (!IsResourceContentPreviewRequest(path))
             {
                 return next.Invoke(context);
