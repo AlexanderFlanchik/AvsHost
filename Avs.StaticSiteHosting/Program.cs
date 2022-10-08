@@ -10,7 +10,6 @@ using Avs.StaticSiteHosting.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
-using Avs.StaticSiteHosting.ContentCreator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +32,7 @@ builder.Services.AddDashboardAuthentication();
 
 builder.Services.AddControllersWithViews().AddNewtonsoftJson();
 builder.Services.AddContentEditor();
+builder.Services.AddScoped<ResourcePreviewContentMiddleware>();
 
 var app = builder.Build();
 
@@ -46,7 +46,9 @@ if (!builder.Environment.IsDevelopment())
         });
 }
 
+app.UseMiddleware<ResourcePreviewContentMiddleware>();
 app.UseRouting();
+
 app.UseSession();
 app.UseDashboard();
 

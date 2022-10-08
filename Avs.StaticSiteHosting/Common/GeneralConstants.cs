@@ -35,5 +35,8 @@
         public const string GET_ACCESS_TOKEN_NAME = "__accessToken";
         public const string GET_ACCESS_TOKEN_NAME_SIGNALR = "access_token";
         public const string SITE_CONTEXT_KEY = "Site_Context_Data";
+
+        public const string NEW_RESOURCE_PATTERN = "%25NEW_RESOURCE%25";
+        public const string EXIST_RESOURCE_PATTERN = "%25EXIST_RESOURCE%25";
     }
 }

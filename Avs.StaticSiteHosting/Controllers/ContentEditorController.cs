@@ -42,6 +42,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             _contentUploadService = contentUploadService;
         }
 
+        [Route("/{contentPath}")]
+        public IActionResult ProxyContent(string contentPath)
+        {
+            return Ok();
+        }
+
         [HttpGet]
         [Route("render-content")]
         public async Task<IActionResult> RenderContent([Required] string contentItemId)

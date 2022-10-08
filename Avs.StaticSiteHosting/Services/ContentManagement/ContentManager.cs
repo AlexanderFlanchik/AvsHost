@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
@@ -101,11 +103,12 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 fileInfo.CopyTo(destinationPath);
                 if (_cloudStorageSettings.Enabled)
                 {
+                    using var fileStream = fileInfo.OpenRead();
                     await _cloudStorageProvider.UploadContentToCloud(
                             site.CreatedBy.Name, 
                             site.Name, 
-                            Path.Combine(segmentsPath, fileInfo.Name), 
-                            fileInfo.OpenRead()
+                            Path.Combine(segmentsPath, fileInfo.Name),
+                            fileStream
                     );
                 }
 
@@ -262,14 +265,17 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             {
                 return 0;
             }
+            
+            var site = contentItem.Site;
+            ReplaceResourcePlaceholders(ref content, site.Name);
 
             await File.WriteAllTextAsync(contentFile.FullName, content).ConfigureAwait(false);
+            
             var fileInfo = new FileInfo(contentFile.FullName);
             if (_cloudStorageSettings.Enabled)
             {
-                var site = contentItem.Site;
-
-                await _cloudStorageProvider.UploadContentToCloud(site.CreatedBy.Name, site.Name, fileInfo.Name, fileInfo.OpenRead());
+                using var fileStream = fileInfo.OpenRead();
+                await _cloudStorageProvider.UploadContentToCloud(site.CreatedBy.Name, site.Name, fileInfo.Name, fileStream);
             }
 
             await contentItems.UpdateOneAsync(
@@ -427,6 +433,18 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             }
 
             return filesList;
+        }
+
+        private void ReplaceResourcePlaceholders(ref string content, string siteName)
+        {          
+            var matches = Regex.Matches(content, @"""/(%NEW_RESOURCE%|%EXIST_RESOURCE%)\/\S*\?\S*""");
+            foreach (Match match in matches)
+            {
+                var foundLink = match.Value;
+                var newLink = Regex.Replace(foundLink, "(%NEW_RESOURCE%|%EXIST_RESOURCE%)", HttpUtility.UrlEncode(siteName));
+                newLink = Regex.Replace(newLink, @"\?\S*", "\"");
+                content = content.Replace(foundLink, newLink);
+            }
         }
     }
 }

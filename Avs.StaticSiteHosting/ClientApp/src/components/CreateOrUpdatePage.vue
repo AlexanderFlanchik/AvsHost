@@ -126,6 +126,9 @@
             </div>
         </b-modal>
         <b-modal  size="xl" ref="add-script-content-modal" hide-footer title="Add Script or Stylesheet">
+            <div v-if="contentResourceEditor.error">
+                <span class="validation-error">{{contentResourceEditor.error}}</span>
+            </div>
             <div>
                 <b-form-group label="Resource type" v-slot="{ ariaDescribedby }">
                     <b-form-radio-group id="contentResourceType" v-model="contentResourceEditor.contentResourceType" :aria-describedby="ariaDescribedby" name="scriptTypeList">
@@ -149,7 +152,7 @@
                 </b-form-group>
             </div>
             <div class="modal-btn-holder">
-                <button class="btn btn-primary">OK</button>
+                <button class="btn btn-primary" @click="() => this.contentResourceEditor.ok()">OK</button>
                 <button class="btn btn-default" @click="() => this.$refs['add-script-content-modal'].hide()">Cancel</button>
             </div>
         </b-modal>
@@ -171,6 +174,8 @@
     const addNewIconSrc = '../icons8-add-16.png';
     const addScriptOrStylesheetSrc = '../icons8-document-16.png';
     const contentFilePlaceHolder = '--Please select a file--';
+    const newResourcePlaceHolder = '%NEW_RESOURCE%';
+    const existResourcePlaceHolder = '%EXIST_RESOURCE%';
 
     const siteContextManager = new SiteContextManager();
 
@@ -254,11 +259,18 @@
                 },
                 contentResourceEditor: {
                     element: null,
+                    error: null,
                     contentResourceType: 'js',
                     fromFile: 'true',
                     contentFile: null,
                     content: '',
-                    contentList: []
+                    contentList: [],
+                    onOpen: function() {
+                        this.error = null;
+                        this.content = null;
+                        this.fromFile = 'true';
+                        this.contentResourceType = "js";
+                    }
                 }
             };
         },
@@ -458,8 +470,16 @@
                 this.generatePagePreview();
             },
 
+            updatePageState: async function() {
+                document.getElementById('html-tree').innerHTML = '';
+                this.renderHtmlTree();  // re-create the tree
+                await this.applyUiChanges();    // Update page preview
+            },
+
             addScriptOrStylesheetClick: async function(element) {
                 this.contentResourceEditor.element = element;
+                this.contentResourceEditor.onOpen();
+
                 let filesUrl = 'api/ResourceContent';
                 let queryParameterSet =  false;
                 if (this.siteId) {
@@ -481,11 +501,110 @@
                     }
                 } catch {
                     // no-op
+                    this.contentResourceEditor.error = 'Unable to get files list from the server due to server error.';
                 }
 
                 this.contentResourceEditor.contentList.unshift({ id: null, contentFilePath: contentFilePlaceHolder });
                 this.contentResourceEditor.contentFile = this.contentResourceEditor.contentList[0];
+                this.contentResourceEditor.ok = this.contentResourceEditor_Ok;
                 this.$refs['add-script-content-modal'].show();
+            },
+
+            contentResourceEditor_Ok: async function() {
+                let head = this.htmlTree.head;
+                let body = this.htmlTree.body;
+                let tag = this.contentResourceEditor.element.tag;
+                let fromFile = this.contentResourceEditor.fromFile === 'true';
+                
+                // Validation
+                if (fromFile) {
+                   let selectedFile = this.contentResourceEditor.contentFile;
+                   if (!selectedFile || selectedFile.contentFilePath === contentFilePlaceHolder) {
+                     // no script or css selected
+                     this.contentResourceEditor.error = 'Please select a file to continue.';
+                     return;
+                   }
+                } else {
+                    let content = this.contentResourceEditor.content;
+                    if (!content) {
+                        this.contentResourceEditor.error = 'The content is required.';
+                        return;
+                    }
+                }     
+                
+                const getContentSrc = (contentResourceType) => {
+                    let selectedFile = this.contentResourceEditor.contentFile;
+                    let contentPath = selectedFile.contentFilePath;
+                    let exists;
+                    if (tag == 'head') {
+                        exists = contentResourceType == 'js' ?
+                            head.scripts.find(s => s.src.endsWith(contentPath)) :
+                            head.links.find(l => l.href.endsWith(contentPath)); 
+                    } else {
+                        // attaching script to body section (for scripts only)
+                        exists = body.children.find(e => 
+                            e.tag === 'script' && e.attributes.get('src') && 
+                            e.attributes.get('src').endsWith(contentPath));
+                    }
+
+                    if (exists) {
+                        return null;
+                    }
+
+                    let isNew = !selectedFile.contentId;
+                    let resourceUrl = isNew ? `${newResourcePlaceHolder}/${contentPath}?uploadSessionId=${this.uploadSessionId}`
+                        : `${existResourcePlaceHolder}/${contentPath}?siteId=${this.siteId}`;
+                        
+                    return `/${resourceUrl}&__accessToken=${this.$authService.getToken()}`;
+                };
+
+                let contentResourceType = this.contentResourceEditor.contentResourceType;
+                if (contentResourceType === 'js') {
+                    let script = new Script();
+                    script.type = 'text/javascript';
+                    if (fromFile) {
+                        let src = getContentSrc(contentResourceType);
+                        if (!src) {
+                            this.contentResourceEditor.error = 'This script already exists.';
+                            return;
+                        }
+                        script.src = src;
+                    } else {
+                        script.body = this.contentResourceEditor.content;
+                    }
+                    if (tag === 'head') {
+                        head.scripts.push(script);
+                    } else {
+                        // attach script to the end of body section
+                        let scriptElement = new GenericElement();
+                        scriptElement.tag = 'script';
+                        if (fromFile) {
+                            scriptElement.attributes.set('src', script.src);
+                        }
+                    }
+                } else {
+                    if (fromFile) {
+                        let link = new Link();
+                        let src = getContentSrc(contentResourceType);
+                        if (!src) {
+                            this.contentResourceEditor.error = 'This stylesheet already exists.';
+                            return;
+                        }
+                        link.type = "text/css";
+                        link.rel = "stylesheet";
+                        link.href = src;
+                        head.links.push(link);
+                    } else {
+                        head.styles.push(this.contentResourceEditor.content);                       
+                    }
+                }
+
+                this.contentResourceEditor.error = null;
+                
+                // update HTML tree & page preview
+                await this.updatePageState();
+
+                this.$refs['add-script-content-modal'].hide();
             },
 
             elementEditor_newAttributeDlgOk: function() {
@@ -521,7 +640,7 @@
                 let names = name.split(' ');
                 for (let nm of names) {
                     let cssClass = this.elementEditor.cssClasses.find(c => c == nm);
-                    if (!cssClass){
+                    if (!cssClass) {
                         this.elementEditor.cssClasses.push(nm);
                     }
                 }
@@ -591,9 +710,7 @@
                 }
                 
                 this.elementEditor.error = null;
-                document.getElementById('html-tree').innerHTML = '';
-                this.renderHtmlTree();  // re-create the tree
-                await this.applyUiChanges();    // Update page preview
+                await this.updatePageState();
 
                 this.$refs['edit-element-modal'].hide();
             },
@@ -671,9 +788,7 @@
                 }
 
                 this.elementEditor.error = null;
-                document.getElementById('html-tree').innerHTML = '';
-                this.renderHtmlTree();  // re-create the tree
-                await this.applyUiChanges();    // Update page preview
+                await this.updatePageState();
 
                 this.$refs["edit-element-modal"].hide();
             },
@@ -728,40 +843,40 @@
 
             deleteClick: async function(element) {
                 if (!confirm('Are you sure to delete this element from your page?')) {
+                    return;
+                }
+                       
+                deleteElement(element);
+                let elementHtml = element.outerHtml;
+                let parentElement = element.parent;
+                        
+                while (parentElement) {
+                    let parentInnerHtml = parentElement.innerHtml;
+                            
+                    parentElement.innerHtml = parentInnerHtml.replace(elementHtml, '');
+                    parentElement = parentElement.parent;
+                }
+
+                await this.applyUiChanges();
+
+                function deleteElement(e) {
+                    let parent = e.parent;
+                    if (!parent) {
                         return;
                     }
-                       
-                    deleteElement(element);
-                    let elementHtml = element.outerHtml;
-                    let parentElement = element.parent;
-                        
-                    while (parentElement) {
-                        let parentInnerHtml = parentElement.innerHtml;
-                            
-                        parentElement.innerHtml = parentInnerHtml.replace(elementHtml, '');
-                        parentElement = parentElement.parent;
+
+                    let idx = parent.children.indexOf(e);
+                    parent.children.slice(idx, 1);
+
+                    let htmlElement = document.getElementsByName(e.innerCode)[0];
+                    if (htmlElement) {
+                        htmlElement.remove();
                     }
-
-                    await this.applyUiChanges();
-
-                    function deleteElement(e) {
-                        let parent = e.parent;
-                        if (!parent) {
-                            return;
-                        }
-
-                        let idx = parent.children.indexOf(e);
-                        parent.children.slice(idx, 1);
-
-                        let htmlElement = document.getElementsByName(e.innerCode)[0];
-                        if (htmlElement) {
-                            htmlElement.remove();
-                        }
                            
-                        for (let ch of e.children) {
-                            deleteElement(ch);
-                        }
+                    for (let ch of e.children) {
+                        deleteElement(ch);
                     }
+                }
             },
 
             renderElementTree: function(element, parentMarginLeft) {

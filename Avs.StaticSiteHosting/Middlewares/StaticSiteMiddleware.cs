@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,7 +65,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             string siteName = (string)routeValues["sitename"], sitePath = (string)routeValues["sitepath"];
 
-            var siteInfo = await _siteService.GetSiteByNameAsync(siteName).ConfigureAwait(false);
+            var siteInfo = await _siteService.GetSiteByNameAsync(siteName);
             if (siteInfo == null)
             {
                 throw new StaticSiteProcessingException(404, "Oops, no such site!", $"No site with name '{siteName}' found.");
@@ -96,7 +95,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
 
-            var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id).ConfigureAwait(false);
+            var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id);
             if (contentItems == null || !contentItems.Any())
             {
                 await AddErrorToEventLog(siteInfo.Id, "Unable to find content for site.");
@@ -156,7 +155,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
                 context.Response.ContentType = contentItem.ContentType;
 
-                await context.Response.SendFileAsync(fi).ConfigureAwait(false);
+                await context.Response.SendFileAsync(fi);
                 _logger.LogInformation($"Content sent: {fileName}");
             }
             else
