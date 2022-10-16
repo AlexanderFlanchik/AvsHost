@@ -273,6 +273,7 @@
                 this.isActive = cachedSite.isActive;
                 this.landingPage = cachedSite.landingPage;
                 this.resourceMappings = cachedSite.resourceMappings;
+                this.upload.uploadSessionId = cachedSite.uploadSessionId;
                 this.uploaded = cachedSite.uploadedFiles.map(
                     f => new ContentFile(
                             f.id,
