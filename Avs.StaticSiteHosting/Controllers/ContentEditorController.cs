@@ -193,22 +193,9 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 }
 
                 await _contentUploadService.UploadContent(uploadSessionId, fileName, destinationPath, content);
-                var siteContextData = HttpContext.Session.GetString(GeneralConstants.SITE_CONTEXT_KEY);
-                if (!string.IsNullOrEmpty(siteContextData))
-                {
-                    SiteContextModel model = JsonConvert.DeserializeObject<SiteContextModel>(siteContextData);
-                    var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(fileName, uploadSessionId) / 1024, 2);
-                    model.UploadedFiles.Add(new ContentItemModel
-                    {
-                        FileName = fileName,
-                        DestinationPath = savePageModel.DestinationPath,
-                        Size = contentSize,
-                        ContentType = _contentManager.GetContentType(fileName)
-                    });
-
-                    HttpContext.Session.SetString(GeneralConstants.SITE_CONTEXT_KEY, JsonConvert.SerializeObject(model));
-                    result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);
-                }
+                var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(fileName, uploadSessionId) / 1024, 2);
+                
+                result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);
                 
                 _logger.LogInformation("New content file '{0}' has been saved successfully.", savePageModel.FileName);
             }

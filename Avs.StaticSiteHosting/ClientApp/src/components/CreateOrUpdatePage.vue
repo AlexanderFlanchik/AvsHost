@@ -1004,7 +1004,12 @@
                     for (let i = 0; i < head.scripts.length; i++) {
                         let script = head.scripts[i];
                         let scriptLi = document.createElement('li');
-                        scriptLi.textContent = 'script' + (script.src ? ` (src="${script.src}")` : '');
+                        let scriptDescription = "";
+                        if (script.src) {
+                            scriptDescription = script.src.indexOf(newResourcePlaceHolder) >= 0 ? "(NEW)" :
+                                `(src="${script.src}")`;
+                        }
+                        scriptLi.textContent = `script${scriptDescription}`;
                         scriptLi.style.marginLeft = marginLeft2;
                         treeContainer.appendChild(scriptLi);
                     }
@@ -1049,6 +1054,7 @@
                 let response = await this.$apiClient.postAsync(`api/contenteditor/save`, saveData);
                 if (response.status != 200) {
                     // Error during save, show error message
+                    console.log(response);
                     alert('Unable to save your changes. Make sure that HTML is valid and try again or contact us.');
                 } else {
                     let context = siteContextManager.get();
