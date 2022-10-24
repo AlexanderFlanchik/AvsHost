@@ -74,7 +74,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 
                 if (!fileInfo.Exists)
                 {
-                    await ProcessCloudContent(context, siteInfo, contentItem, fileInfo, siteName, fileName);
+                    await ProcessCloudContent(context, siteInfo, contentItem, fileInfo);
                     return;
                 }
 
@@ -152,7 +152,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             return (contentItem, fileName);
         }
 
-        private async Task ProcessCloudContent(HttpContext context, Site siteInfo, ContentItemModel contentItem, IFileInfo fileInfo, string siteName, string fileName)
+        private async Task ProcessCloudContent(HttpContext context, Site siteInfo, ContentItemModel contentItem, IFileInfo fileInfo)
         {
             if (!_cloudStorageSettings.Enabled)
             {
@@ -160,7 +160,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
 
             // file does not exist in the application local storage, check it in the cloud bucket
-            using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteName, fileName);
+            using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteInfo.Name, fileInfo.Name);
             if (cloudStream is null)
             {
                 await NoCloudContentError();
@@ -173,7 +173,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 .Add(
                     new SyncContentTask
                     {
-                        ContentName = fileName,
+                        ContentName = fileInfo.Name,
                         FullFileName = fileInfo.PhysicalPath,
                         UserName = siteInfo.CreatedBy.Name,
                         SiteName = siteInfo.Name
@@ -181,9 +181,10 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             async Task NoCloudContentError()
             {
-                await AddErrorToEventLog(siteInfo.Id, $"No content {fileInfo.Name} for site {siteName}.");
+                var errorMessage = $"No content {fileInfo.Name} for site {siteInfo.Name}.";
+                await AddErrorToEventLog(siteInfo.Id, errorMessage);
 
-                throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
+                throw new StaticSiteProcessingException(404, "Oops, no content", errorMessage);
             }
         }
 
