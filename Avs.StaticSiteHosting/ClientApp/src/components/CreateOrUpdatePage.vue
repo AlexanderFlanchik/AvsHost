@@ -772,7 +772,7 @@
                 while (element) {
                     if (isFirstParent) {
                         oldHtml = element.outerHtml;
-                        element.innerHtml = `${element.innerHtml}${newElement.outerHtml}`;
+                        element.innerHtml = `${element.innerHtml || ""}${newElement.outerHtml}`;
                         newHtml = element.outerHtml;
                         isFirstParent = false;
                     } else {

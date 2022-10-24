@@ -15,6 +15,7 @@ using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
 using Avs.StaticSiteHosting.Web.Common;
+using Avs.StaticSiteHosting.Web.DTOs;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -25,9 +26,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     {
         private const string INVALID_SITE = "Invalid Site";
         private const string LOCAL_IP = "::1";
-                
-        private readonly ILogger<StaticSiteMiddleware> _logger;
-        private readonly IOptions<StaticSiteOptions> _staticSiteOptions;
+        
         private readonly ISiteService _siteService;
         private readonly IContentManager _contentManager;
         private readonly ISiteStatisticsService _siteStatisticsService;
@@ -36,8 +35,6 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
         private readonly CloudStorageSettings _cloudStorageSettings;
 
         public StaticSiteMiddleware(RequestDelegate next, 
-            ILogger<StaticSiteMiddleware> logger,
-            IOptions<StaticSiteOptions> staticSiteOptions, 
             ISiteService siteService, 
             IContentManager contentManager,
             ISiteStatisticsService siteStatisticsService,
@@ -45,9 +42,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             IEventLogsService eventLogsService,
             CloudStorageSettings cloudStorageSettings)
         {
-            _logger = logger;
-            _staticSiteOptions = staticSiteOptions;
-            _siteService = siteService;
+             _siteService = siteService;
             _contentManager = contentManager;
             _siteStatisticsService = siteStatisticsService;
             _cloudStorageProvider = cloudStorageProvider;
@@ -55,7 +50,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             _cloudStorageSettings = cloudStorageSettings;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ILogger<StaticSiteMiddleware> logger)
         {            
             var routeValues = context.GetRouteData().Values;
             if (await HandleDashboardContent(context))
@@ -63,8 +58,46 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 return;
             }
 
-            string siteName = (string)routeValues["sitename"], sitePath = (string)routeValues["sitepath"];
+            var siteName = (string)routeValues["sitename"];
+            var sitePath = (string)routeValues["sitepath"];
 
+            var siteInfo = await GetSiteAsync(siteName);
+            var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
+
+            await CheckContentPathAndSiteStatus(siteContentPath, siteInfo);
+
+            var (contentItem, fileName) = await GetContentItem(siteInfo, siteName, sitePath);
+            if (contentItem is not null)
+            {
+                var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
+                var fileInfo = fileProvider.GetFileInfo(fileName);
+                
+                if (!fileInfo.Exists)
+                {
+                    await ProcessCloudContent(context, siteInfo, contentItem, fileInfo, siteName, fileName);
+                    return;
+                }
+
+                await CheckIfSiteIsViewed(fileInfo, siteInfo, context);
+
+                context.Response.ContentType = contentItem.ContentType;
+
+                await context.Response.SendFileAsync(fileInfo);
+
+                logger.LogInformation($"Content sent: {fileName}");
+            }
+            else
+            {
+                await AddErrorToEventLog(siteInfo.Id, $"Resource with name '{fileName}' was not found.");
+                
+                throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
+            }
+        }
+
+        #region Private Methods
+
+        private async Task<Site> GetSiteAsync(string siteName)
+        {
             var siteInfo = await _siteService.GetSiteByNameAsync(siteName);
             if (siteInfo == null)
             {
@@ -74,16 +107,20 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             if (!siteInfo.IsActive)
             {
                 await AddErrorToEventLog(siteInfo.Id, "The site has been turned off.");
-                
+
                 throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
             }
 
-            var siteContentPath = Path.Combine(_staticSiteOptions.Value.ContentPath, siteName);
+            return siteInfo;
+        }
+
+        private async ValueTask CheckContentPathAndSiteStatus(string siteContentPath, Site siteInfo)
+        {
             if (!Directory.Exists(siteContentPath))
             {
-                var errMessage = $"No content folder found for site named '{siteName}'";
+                var errMessage = $"No content folder found for site named '{siteInfo.Name}'";
                 await AddErrorToEventLog(siteInfo.Id, errMessage);
-                
+
                 throw new StaticSiteProcessingException(404, INVALID_SITE, errMessage);
             }
 
@@ -91,78 +128,62 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             if (siteOwner.Status != UserStatus.Active)
             {
                 await AddErrorToEventLog(siteInfo.Id, "Site cannot be processed because of lock of its owner.");
-                
+
                 throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
+        }
 
+        private async Task<(ContentItemModel item, string fileName)> GetContentItem(Site siteInfo, string siteName, string sitePath)
+        {
             var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id);
             if (contentItems == null || !contentItems.Any())
             {
                 await AddErrorToEventLog(siteInfo.Id, "Unable to find content for site.");
-                
+
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
             }
 
             var mappedSitePath = siteInfo.Mappings?.FirstOrDefault(m => m.Key == sitePath).Value;
             var fileName = mappedSitePath != null ? mappedSitePath : sitePath;
             var contentItem = contentItems.FirstOrDefault(ci => 
-                  ci.FileName == fileName || $"{ci.DestinationPath.Replace('\\', '/')}/{ci.FileName}" == fileName
+                ci.FileName == fileName || $"{ci.DestinationPath.Replace('\\', '/')}/{ci.FileName}" == fileName
              );
 
-            if (contentItem != null)
+            return (contentItem, fileName);
+        }
+
+        private async Task ProcessCloudContent(HttpContext context, Site siteInfo, ContentItemModel contentItem, IFileInfo fileInfo, string siteName, string fileName)
+        {
+            if (!_cloudStorageSettings.Enabled)
             {
-                var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
-                var fi = fileProvider.GetFileInfo(fileName);
-                
-                if (!fi.Exists)
-                {
-                    if (!_cloudStorageSettings.Enabled)
-                    {
-                        await NoCloudContentError();
-                    }
-
-                    // file does not exist in the application local storage, check it in the cloud bucket
-                    using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteName, fileName);
-                    if (cloudStream is null)
-                    {
-                        await NoCloudContentError();
-                    }
-
-                    context.Response.ContentType = contentItem.ContentType;
-                    await cloudStream.CopyToAsync(context.Response.Body);
-
-                    context.RequestServices.GetService<CloudStorageSyncWorker>()
-                        .Add(
-                            new SyncContentTask 
-                            { 
-                                ContentName = fileName,
-                                FullFileName = fi.PhysicalPath,
-                                UserName = siteInfo.CreatedBy.Name,
-                                SiteName = siteInfo.Name
-                            });
-
-                    return;
-
-                    async Task NoCloudContentError()
-                    {
-                        await AddErrorToEventLog(siteInfo.Id, $"No content {fi.Name} for site {siteName}.");
-
-                        throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
-                    }
-                }
-
-                await CheckIfSiteIsViewed(fi, siteInfo, context);
-
-                context.Response.ContentType = contentItem.ContentType;
-
-                await context.Response.SendFileAsync(fi);
-                _logger.LogInformation($"Content sent: {fileName}");
+                await NoCloudContentError();
             }
-            else
+
+            // file does not exist in the application local storage, check it in the cloud bucket
+            using var cloudStream = await _cloudStorageProvider.GetCloudContent(siteInfo.CreatedBy.Name, siteName, fileName);
+            if (cloudStream is null)
             {
-                await AddErrorToEventLog(siteInfo.Id, $"Resource with name '{fileName}' was not found.");
-                
-                throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
+                await NoCloudContentError();
+            }
+
+            context.Response.ContentType = contentItem.ContentType;
+            await cloudStream.CopyToAsync(context.Response.Body);
+
+            context.RequestServices.GetService<CloudStorageSyncWorker>()
+                .Add(
+                    new SyncContentTask
+                    {
+                        ContentName = fileName,
+                        FullFileName = fileInfo.PhysicalPath,
+                        UserName = siteInfo.CreatedBy.Name,
+                        SiteName = siteInfo.Name
+                    });
+
+            async Task NoCloudContentError()
+            {
+                await AddErrorToEventLog(siteInfo.Id, $"No content {fileInfo.Name} for site {siteName}.");
+
+                throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
             }
         }
 
@@ -198,6 +219,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
         private Task AddErrorToEventLog(string siteId, string errorMessage)
                 => _eventLogsService.InsertSiteEventAsync(siteId, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
+
+        #endregion
     }
 
     public static class StaticSiteMiddlewareExtentions
