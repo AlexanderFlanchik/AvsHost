@@ -42,7 +42,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     .Select(i => 
                         new ResourceContentSearchModel(
                             i.Id, 
-                            string.IsNullOrEmpty(i.DestinationPath) ? i.FileName : $"{i.DestinationPath}/{i.FileName}"
+                            string.IsNullOrEmpty(i.DestinationPath) ? i.FileName : $"{i.DestinationPath}/{i.FileName}".Replace('\\', '/')
                          )
                     ).ToArray();
 

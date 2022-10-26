@@ -503,7 +503,13 @@
                     // no-op
                     this.contentResourceEditor.error = 'Unable to get files list from the server due to server error.';
                 }
-
+                
+                // filter resources which have already been added to the page
+                this.contentResourceEditor.contentList = this.contentResourceEditor.contentList.filter(
+                        i => !this.htmlTree.head.scripts.find(s => s.src && s.src.indexOf(i.contentFilePath) >= 0) && 
+                                !this.htmlTree.head.links.find(l => l.href.indexOf(i.contentFilePath) >= 0) && 
+                                this.htmlTree.body.outerHtml.indexOf(i.contentFilePath) < 0);
+        
                 this.contentResourceEditor.contentList.unshift({ id: null, contentFilePath: contentFilePlaceHolder });
                 this.contentResourceEditor.contentFile = this.contentResourceEditor.contentList[0];
                 this.contentResourceEditor.ok = this.contentResourceEditor_Ok;
