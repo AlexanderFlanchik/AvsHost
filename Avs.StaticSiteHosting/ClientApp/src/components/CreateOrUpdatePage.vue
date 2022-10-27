@@ -1,25 +1,28 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <span>{{getTitle}}</span>
+            <span>{{this.getTitle}}</span>
         </div>
         <div class="page-editor-container">
             <div class="button-bar">
-                <button class="btn btn-primary" @click="toSite">&lt;&lt; To Site</button>&nbsp;
-                <button class="btn btn-primary" @click="save">Save</button>
+                <button class="btn btn-primary" @click="this.toSite">&lt;&lt; To Site</button>&nbsp;
+                <button class="btn btn-primary" @click="this.save">Save</button>
             </div>
             <div class="content-inputs-container">
                 <table>
                     <tr>
                         <td>File name:</td>
                         <td>
-                            <input type="text" v-model="contentName" v-if="!contentId" />
+                            <input type="text" v-model="contentName" v-if="!contentId" @change="()=>this.error = null"/>
                             <span class="content-label" v-if="contentId">{{contentName}}</span>
                         </td>
                         <td>Destination path:</td>
                         <td>
                             <input type="text" v-model="contentDestinationPath" v-if="!contentId" />
                             <span class="content-label" v-if="contentId">{{contentDestinationPath || '--'}}</span>
+                        </td>
+                        <td v-if="error" class="validation-error-container">
+                            <span class="validation-error">{{error}}</span>
                         </td>
                     </tr>
                 </table>
@@ -72,7 +75,7 @@
                 </div>
                 <div>
                     <span>CSS Classes: </span>
-                    <ul v-if="elementEditor.cssClasses.length" class="attributes-list">
+                    <ul v-if="this.elementEditor.cssClasses.length" class="attributes-list">
                          <li v-for="cssClass in elementEditor.cssClasses" :key="cssClass">
                             <span>{{cssClass}}</span>
                             <a href="javascript:void(0)" class="delete-element-lnk" 
@@ -189,6 +192,7 @@
                 uploadSessionId: null,
                 previewSessionId: null,
                 htmlTree: null,
+                error: null,
                 elementEditor: {
                     isNewElement: false,
                     innerCode: null,
@@ -1044,10 +1048,42 @@
             },
             
             save: async function() {
+                if (!this.contentId) {
+                    // For a new page, validate fileName (required, pattern, is unique, etc.)
+                    if (!this.contentName) {
+                        this.error = "File name is required.";
+                        return;
+                    }
+
+                    // Remote validation
+                    let checkFileNameUrl = `api/contenteditor/check-new-file-name?contentName=${this.contentName}&uploadSessionId=${this.uploadSessionId}`;
+                    if (this.contentDestinationPath) {
+                        checkFileNameUrl = `${checkFileNameUrl}&destinationPath=${this.contentDestinationPath}`;
+                    }
+
+                    if (this.siteId) {
+                        checkFileNameUrl = `${checkFileNameUrl}&siteId=${this.siteId}`;
+                    }
+                    try {
+                        let isContentNameUnique = (await this.$apiClient.getAsync(checkFileNameUrl)).data;
+                        if (!isContentNameUnique) {
+                            this.error = "These file name and destination path are already in use.";
+                            return;
+                        }
+                    } catch {
+                        this.error = "Cannot validate input data because of server error.";
+                        return;
+                    }
+                }
+
+                if (!this.previewSessionId) {
+                    this.previewSessionId = uuid();
+                }
+
                 let saveData = {
                     previewSessionId: this.previewSessionId,
                     contentId: this.contentId,
-                    destinationPath: this.destinationPath,
+                    destinationPath: this.contentDestinationPath,
                     fileName: this.contentName,
                     uploadSessionId: this.uploadSessionId
                 };
@@ -1074,7 +1110,7 @@
                             item.updateDate = data.updateDate;
                         }
                     } else {
-                        let item = uploadedFiles.find(i => i.name == this.contentName && i.destinationPath == this.destinationPath);
+                        let item = uploadedFiles.find(i => i.name == this.contentName && i.destinationPath == this.contentDestinationPath);
                         
                         if (item) {
                             item.size = contentSize;
@@ -1132,6 +1168,10 @@
     background-color: darkgrey;
 }
 
+.validation-error-container {
+    padding-left: 10px;
+}
+
 .html-tree-container {
     width: 550px;
     float: left;    
@@ -1141,11 +1181,14 @@
     float: left;
     width: calc(100vw - 620px);
     background-color: white;
+    margin-left: 2px;
+    margin-top: 5px;
 }
 
 #preview-frame {
     width: inherit;
-    height: calc(100vh - 195px);
+    height: calc(100vh - 210px);
+    border: 0px;
 }
 
 .content-inputs-container {

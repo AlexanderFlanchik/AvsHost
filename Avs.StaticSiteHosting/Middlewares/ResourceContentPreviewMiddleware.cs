@@ -4,7 +4,6 @@ using System.Web;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Generic;
-using System;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {

@@ -11,6 +11,7 @@ using Avs.StaticSiteHosting.ContentCreator.Models;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using System.IO;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
@@ -42,10 +43,29 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             _contentUploadService = contentUploadService;
         }
 
-        [Route("/{contentPath}")]
-        public IActionResult ProxyContent(string contentPath)
+        [HttpGet]
+        [Route("check-new-file-name")]
+        public async Task<IActionResult> CheckFileName([Required] string contentName, string destinationPath, [Required] string uploadSessionId, string siteId)
         {
-            return Ok();
+            var contentExtension = new FileInfo(contentName).Extension;
+            if (string.IsNullOrEmpty(contentExtension))
+            {
+                return BadRequest("Content file must have an extension .html, .htm, or .xhtml.");
+            }
+
+            if (siteId is not null)
+            {
+                var siteFiles = await _contentManager.GetUploadedContentAsync(siteId);
+                if (siteFiles.Any(f => f.FileName == contentName && f.DestinationPath == destinationPath))
+                {
+                    return Json(false);
+                }
+            }
+
+            var justUploaded = _contentManager.GetNewUploadedFiles(uploadSessionId, contentExtension);
+            var contentPath = string.IsNullOrEmpty(destinationPath) ? contentName : $"{destinationPath}/{contentName}";
+
+            return Json(!justUploaded.Any(path => path == contentPath));
         }
 
         [HttpGet]
@@ -174,7 +194,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return UnprocessableEntity();
             }
 
-            SavePageResponse result = null;
+            SavePageResponse result;
             var content = await pageRenderingService.RenderAsync(htmlTree);
             if (!string.IsNullOrEmpty(contentId))
             {
