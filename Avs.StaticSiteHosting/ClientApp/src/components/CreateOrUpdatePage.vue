@@ -1,12 +1,12 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <span>{{this.getTitle}}</span>
+            <span>{{getTitle}}</span>
         </div>
         <div class="page-editor-container">
             <div class="button-bar">
-                <button class="btn btn-primary" @click="this.toSite">&lt;&lt; To Site</button>&nbsp;
-                <button class="btn btn-primary" @click="this.save">Save</button>
+                <button class="btn btn-primary" @click="toSite">&lt;&lt; To Site</button>&nbsp;
+                <button class="btn btn-primary" @click="save">Save</button>
             </div>
             <div class="content-inputs-container">
                 <table>
