@@ -18,7 +18,7 @@
                         </td>
                         <td>Destination path:</td>
                         <td>
-                            <input type="text" v-model="contentDestinationPath" v-if="!contentId" />
+                            <input type="text" v-model="contentDestinationPath" @change="()=>this.error = null" v-if="!contentId" />
                             <span class="content-label" v-if="contentId">{{contentDestinationPath || '--'}}</span>
                         </td>
                         <td v-if="error" class="validation-error-container">
@@ -1055,6 +1055,19 @@
                         return;
                     }
 
+                    /* eslint-disable */
+                    let contentNamePattern = /^([a-z_\-\s0-9\.]+)+\.(html|htm|xhtml)$/;
+                    if (!contentNamePattern.test(this.contentName)) {
+                        this.error = "Invalid content file name. Enter a name with extension .html, .htm or .xhtml without any path.";
+                        return;
+                    }
+
+                    let destinationPathPattern = /(^[a-z0-9]+)(\/[a-z0-9-]+)*([a-z0-9])$/;
+                    if (!destinationPathPattern.test(this.contentDestinationPath)) {
+                        this.error = "Invalid destination path entered.";
+                        return;
+                    }
+
                     // Remote validation
                     let checkFileNameUrl = `api/contenteditor/check-new-file-name?contentName=${this.contentName}&uploadSessionId=${this.uploadSessionId}`;
                     if (this.contentDestinationPath) {
@@ -1119,7 +1132,7 @@
                             let cf = new ContentFile(
                                 null,
                                 this.contentName,
-                                this.destinationPath,
+                                this.contentDestinationPath,
                                 true,
                                 contentSize,
                                 false,
