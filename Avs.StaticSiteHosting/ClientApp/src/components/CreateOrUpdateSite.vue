@@ -134,7 +134,7 @@
                 <div class="uploaded-content-holder">
                     <span class="form-title">Site content</span>           
                     <div v-if="uploaded.length > 0">
-                        <table class="table table-striped">
+                        <table class="table table-hover uploaded-files-table">
                             <thead>
                                 <tr>
                                     <th>Name</th>
@@ -151,13 +151,12 @@
                                         {{file.fullName()}}
                                     </td>
                                     <td>{{file.size}}</td>
-                                    <td>{{file.uploadedAt}}</td>
-                                    <td>{{file.updateDate}}</td>
+                                    <td>{{formatDate(file.uploadedAt)}}</td>
+                                    <td>{{formatDate(file.updateDate)}}</td>
                                     <td>
                                         <span v-if="!file.isNew"><a :href="downloadLink(file)">Download</a> | </span>
-                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit Content</a> | </span>
+                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit</a> | </span>
                                         <span v-if="file.isViewable"><a href="javascript:void(0)" @click="() => view(file)">View</a> | </span>
-                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => openPageEditor(file)">Open in editor</a> | </span>
                                         <span><a href="javascript:void(0)" @click="() => deleteContentItem(file)">Remove</a></span>
                                     </td>
                                 </tr>
@@ -190,7 +189,6 @@
     </div>
 </template>
 <script lang="ts">
-    import * as moment from 'moment';
     import { formatDate } from '../common/DateFormatter';
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';
@@ -274,6 +272,8 @@
                 this.landingPage = cachedSite.landingPage;
                 this.resourceMappings = cachedSite.resourceMappings;
                 this.upload.uploadSessionId = cachedSite.uploadSessionId;
+                console.log("Uploaded files from cache:");
+                console.log(cachedSite.uploadedFiles);
                 this.uploaded = cachedSite.uploadedFiles.map(
                     f => new ContentFile(
                             f.id,
@@ -283,8 +283,8 @@
                             f.size,
                             f.isEditable,
                             f.isViewable,
-                            formatDate(f.uploadedAt),
-                            formatDate(f.updateDate)
+                            f.uploadedAt,
+                            f.updateDate
                     ));
             };
                        
@@ -315,8 +315,8 @@
                                 u.size,
                                 u.isEditable,
                                 u.isViewable,
-                                formatDate(u.uploadedAt),
-                                formatDate(u.updateDate)
+                                u.uploadedAt,
+                                u.updateDate
                             );
                             lst.push(uploadedFile);
                         }
@@ -343,6 +343,9 @@
         },
 
         methods: {
+            formatDate: function (date) {
+                return formatDate(date);
+            },
             addResourceMapping: function () {
                 this.rm.clear();
                 this.$refs['new-resource-mapping-dlg'].show();
@@ -512,19 +515,26 @@
                 this.$refs["view-content-dlg"].show();
             },
             edit: async function (file) {
-                let fileResponse = await this.$apiClient.getAsync(`api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`);
-                this.editContent.content = fileResponse.data;
-                this.editContent.fileName = file.name;
-                this.editContent.id = file.id;
-                
-                this.$refs["edit-content-dlg"].show();
+                if (file.name.endsWith(".html")) {
+                    await this.openPageEditor(file);
+                } else {
+                    let fileResponse = await this.$apiClient.getAsync(
+                        `api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`
+                    );
+
+                    this.editContent.content = fileResponse.data;
+                    this.editContent.fileName = file.name;
+                    this.editContent.id = file.id;
+
+                    this.$refs["edit-content-dlg"].show();
+                }
             },
             updateContent: async function () {
                 let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${this.editContent.id}`, { content: this.editContent.content });
                 if (updateResponse.status == 200) {
                     let updatedItem = this.uploaded.find(i => i.id == this.editContent.id);
                     if (updatedItem) {
-                        updatedItem.updateDate = moment(new Date()).format('MM/DD/YYYY hh:mm:ss A');
+                        updatedItem.updateDate = new Date();
                     }
                 }
                 this.$refs["edit-content-dlg"].hide();
@@ -759,6 +769,15 @@
         clear: both;
         padding-top: 55px;
         padding-right: 5px;
+    }
+
+    .uploaded-files-table {
+        width: 99%;
+        background-color: white;
+    }
+
+    .uploaded-files-table th {
+        background-color: darkgrey;
     }
 
     .site-form-header {
