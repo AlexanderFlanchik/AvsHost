@@ -60,6 +60,11 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
             void GetFilesFromFolder(string folder)
             {
+                if (!Directory.Exists(folder))
+                {
+                    return;
+                }
+
                 var entries = Directory.EnumerateFileSystemEntries(folder);
                 foreach (var entry in entries)
                 {
@@ -155,7 +160,10 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
             try
             {
-                Directory.Delete(uploadFolder, true);
+                if (Directory.Exists(uploadFolder))
+                {
+                    Directory.Delete(uploadFolder, true);
+                }
             }
             catch (Exception ex)
             {
