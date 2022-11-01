@@ -6,6 +6,7 @@
         <div class="page-editor-container">
             <div class="button-bar">
                 <button class="btn btn-primary" @click="toSite">&lt;&lt; To Site</button>&nbsp;
+                <button class="btn btn-primary" @click="editHtml">Edit HTML</button>&nbsp;
                 <button class="btn btn-primary" @click="save">Save</button>
             </div>
             <div class="content-inputs-container">
@@ -159,17 +160,20 @@
                 <button class="btn btn-default" @click="() => this.$refs['add-script-content-modal'].hide()">Cancel</button>
             </div>
         </b-modal>
+        <EditContentDialog ref="content-edit-dlg" />
     </div>
 </template>
 <script lang="ts">
     import { delay } from 'q';
+    import { firstValueFrom } from 'rxjs';
     import { GenericElement, Html, Script, Link, Metadata } from  '../content-creation/html-elements';
     import { mapTree } from '../content-creation/htmlTreeMapper';
     import { v4 as uuid } from 'uuid';
     import { SiteContextManager } from '../services/SiteContextManager';
     import { ContentFile } from '../common/ContentFile';
     import getAvailableTags from '../content-creation/TagsProvider';
-    
+    import EditContentDialog from '@/components/EditContentDialog.vue';
+
     const marginLeft1 = '10px';
     const marginLeft2 = '20px';
     const editIconSrc = '../icons8-edit-16.png';
@@ -314,75 +318,7 @@
                     document.body.appendChild(frame);
 
                     let onContentLoaded = () => {
-                        let contentDocument = frame.contentDocument;
-
-                        let frameHead = contentDocument.head;
-                        let frameBody = contentDocument.body;
-
-                        this.htmlTree = new Html();
-                        let head = this.htmlTree.head;
-                                               
-                        for (let node of frameHead.children) {
-                            let tagName = node.nodeName.toLowerCase();
-                            switch (tagName) {
-                                case "title" : {
-                                    head.title = node.textContent;
-                                    break;
-                                }
-                                case "style": {
-                                    head.styles.push(node.textContent);
-                                    break;
-                                }
-                                case "script": {
-                                    let script = new Script();
-                                    let typeAttr = node.attributes.getNamedItem('type'),
-                                        srcAttr = node.attributes.getNamedItem('src');
-                                    script.src = srcAttr != null ? srcAttr.value : null;
-                                    script.type = typeAttr != null ? typeAttr.value : null;
-                                    if (!script.src) {
-                                        script.body = node.textContent;
-                                    }
-
-                                    head.scripts.push(script);
-                                    break;
-                                }
-                                case "meta": {
-                                    let metadata = new Metadata();
-                                    let nameAttr = node.attributes.getNamedItem('name'),
-                                        charsetAttr = node.attributes.getNamedItem('charset'),
-                                        contentAttr = node.attributes.getNamedItem('content');
-                                    metadata.name = nameAttr != null ? nameAttr.value : null;
-                                    metadata.charset = charsetAttr != null ? charsetAttr.value : null;
-                                    metadata.content = contentAttr != null ? contentAttr.value : null;
-                                    head.metadatas.push(metadata);
-                                    break;
-                                }
-                                case "link": {
-                                    let link = new Link();
-                                    let hrefAttr = node.attributes.getNamedItem('href'),
-                                        relAttr = node.attributes.getNamedItem('rel'),
-                                        typeAttr = node.attributes.getNamedItem('type');
-
-                                    link.href = hrefAttr != null ? hrefAttr.value : null;
-                                    link.rel = relAttr != null ? relAttr.value : null;
-                                    link.type = typeAttr != null ? typeAttr.value : null;
-                                    head.links.push(link);
-                                    break;
-                                }
-                            }
-                        }
-
-                        let body = this.htmlTree.body;
-                        body.innerHtml = frameBody.innerHTML;
-                        
-                        let attributes = frameBody.attributes;
-                        for (let attr of attributes) {
-                            body.attributes.set(attr.name, attr.value);
-                        }
-                        
-                        // create children elements
-                        this.parseChildren(body, frameBody.children);
-                        
+                        this.processLoadedContentFrame(frame);
                         document.body.removeChild(frame);
                     };
 
@@ -417,6 +353,76 @@
             createEmptyTree: function() {
                 this.htmlTree = new Html();
                 this.htmlTree.head.title = 'New Page';
+            },
+            
+            processLoadedContentFrame: function(frame) {
+                let contentDocument = frame.contentDocument;
+                let frameHead = contentDocument.head;
+                let frameBody = contentDocument.body;
+
+                this.htmlTree = new Html();
+                let head = this.htmlTree.head;
+                       
+                for (let node of frameHead.children) {
+                    let tagName = node.nodeName.toLowerCase();
+                    switch (tagName) {
+                        case "title" : {
+                            head.title = node.textContent;
+                            break;
+                        }
+                        case "style": {
+                            head.styles.push(node.textContent);
+                            break;
+                        }
+                        case "script": {
+                            let script = new Script();
+                            let typeAttr = node.attributes.getNamedItem('type'),
+                            srcAttr = node.attributes.getNamedItem('src');
+                            script.src = srcAttr != null ? srcAttr.value : null;
+                            script.type = typeAttr != null ? typeAttr.value : null;
+                            if (!script.src) {
+                                script.body = node.textContent;
+                            }
+
+                            head.scripts.push(script);
+                            break;
+                        }
+                        case "meta": {
+                            let metadata = new Metadata();
+                            let nameAttr = node.attributes.getNamedItem('name'),
+                                charsetAttr = node.attributes.getNamedItem('charset'),
+                                contentAttr = node.attributes.getNamedItem('content');
+                            metadata.name = nameAttr != null ? nameAttr.value : null;
+                            metadata.charset = charsetAttr != null ? charsetAttr.value : null;
+                            metadata.content = contentAttr != null ? contentAttr.value : null;
+                            head.metadatas.push(metadata);
+                            break;
+                        }
+                        case "link": {
+                            let link = new Link();
+                            let hrefAttr = node.attributes.getNamedItem('href'),
+                                relAttr = node.attributes.getNamedItem('rel'),
+                                typeAttr = node.attributes.getNamedItem('type');
+
+                            link.href = hrefAttr != null ? hrefAttr.value : null;
+                            link.rel = relAttr != null ? relAttr.value : null;
+                            link.type = typeAttr != null ? typeAttr.value : null;
+                            head.links.push(link);
+                            break;
+                        }
+                    }
+                }
+
+                let body = this.htmlTree.body;
+                body.innerHtml = frameBody.innerHTML;
+
+                let attributes = frameBody.attributes;
+                for (let attr of attributes) {
+                    body.attributes.set(attr.name, attr.value);
+                }
+
+                // create children elements
+                this.parseChildren(body, frameBody.children);
             },
 
             parseChildren: function(element, contentNodes) {
@@ -1109,7 +1115,6 @@
                 let response = await this.$apiClient.postAsync(`api/contenteditor/save`, saveData);
                 if (response.status != 200) {
                     // Error during save, show error message
-                    console.log(response);
                     alert('Unable to save your changes. Make sure that HTML is valid and try again or contact us.');
                 } else {
                     let context = siteContextManager.get();
@@ -1163,12 +1168,88 @@
                         } 
                     });
                 }
+            },
+
+            editHtml: async function() {
+                let head = this.htmlTree.head;
+                let body = this.htmlTree.body;
+
+                let htmlContent = 
+                `<html>
+                <head>\n`;
+                if (head.title) {
+                    htmlContent += `<title>${head.title}</title>\n`
+                }
+
+                for (let metadata of head.metadatas) {
+                    if (metadata.charset) {
+                        htmlContent += `<meta charset="${metadata.charset}"/>\n`;
+                    } else {
+                        htmlContent += `<meta name="${metadata.name}" content="${metadata.content}"/>\n`;
+                    }
+                }
+
+                for (let link of head.links) {
+                    htmlContent += `<link rel="${link.rel}" type="${link.type}" href="${link.href}"/>\n`;
+                }
+
+                if (head.styles.length) {
+                    htmlContent += `<style>\n`;
+                    for (let style of head.styles) {
+                        htmlContent += `${style}\n`;
+                    }
+                    htmlContent += `</style>\n`;
+                }
+
+                for (let script of head.scripts) {
+                    let scr = document.createElement('script');
+                    if (script.src) {
+                        scr.src = script.src;
+                    }
+                    if (script.type) {
+                        scr.type = script.type;
+                    }
+
+                    if (script.body) {
+                        scr.text = script.body;
+                    }
+
+                    htmlContent += scr.outerHTML;
+                }
+                
+                htmlContent += `</head>\n`;
+                htmlContent += body.outerHtml + "\n";
+                htmlContent += "</html>";
+
+                let dlgSubject = this.$refs["content-edit-dlg"].showDialog(this.contentName, htmlContent, 
+                    content => {
+                        let parser = new DOMParser();
+                        let result = parser.parseFromString(content, 'application/xml');
+                        let errorNode = result.querySelector('parsererror');
+                        if (errorNode) {
+                            return errorNode.textContent;
+                        }
+                    });
+
+                let newContent = await firstValueFrom(dlgSubject);
+                let tempFrame = document.createElement('iframe');
+                document.body.appendChild(tempFrame);              
+                tempFrame.srcdoc = newContent.toString();
+
+                setTimeout(async () => {
+                    this.processLoadedContentFrame(tempFrame);
+                    document.body.removeChild(tempFrame);
+                    await this.updatePageState();
+                }, 500);
             }
         },
         computed: {
             getTitle: function() {
                 return this.contentId ? 'Edit Page' : 'Create New Page';
             }
+        },
+        components: {
+            EditContentDialog
         }
     }
 </script>

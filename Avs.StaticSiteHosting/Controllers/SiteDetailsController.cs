@@ -111,7 +111,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<IActionResult> UpdateSite(string siteId, SiteDetailsModel siteDetails, [FromServices] IEventLogsService eventLogsService)
         {
             var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
-            var siteToUpdate = await _siteService.GetSiteByIdAsync(siteId).ConfigureAwait(false);
+            var siteToUpdate = await _siteService.GetSiteByIdAsync(siteId);
             if (siteToUpdate == null)
             {
                 return NotFound();
@@ -148,11 +148,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             siteToUpdate.Mappings = siteDetails.ResourceMappings;
             siteToUpdate.LandingPage = siteDetails.LandingPage;
 
-            await _siteService.UpdateSiteAsync(siteToUpdate).ConfigureAwait(false);
+            await _siteService.UpdateSiteAsync(siteToUpdate);
 
             if (!string.IsNullOrEmpty(siteDetails.UploadSessionId))
             {
-                await _contentManager.ProcessSiteContentAsync(siteToUpdate, siteDetails.UploadSessionId).ConfigureAwait(false);
+                await _contentManager.ProcessSiteContentAsync(siteToUpdate, siteDetails.UploadSessionId);
             }
             
             return NoContent();

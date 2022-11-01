@@ -23,6 +23,15 @@
     justify-content: center;
 }
 
+.content-centered {
+    text-align: center;
+}
+
+.dlg-btn-container {
+    padding-top: 5px;
+    background-color: azure;
+}
+
 .validation-error {
     color: red;
     font-weight: bold;
