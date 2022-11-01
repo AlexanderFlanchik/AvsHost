@@ -5,9 +5,9 @@
         </div>
         <div class="page-editor-container">
             <div class="button-bar">
-                <button class="btn btn-primary" @click="toSite">&lt;&lt; To Site</button>&nbsp;
-                <button class="btn btn-primary" @click="editHtml">Edit HTML</button>&nbsp;
-                <button class="btn btn-primary" @click="save">Save</button>
+                <button class="btn btn-primary" @click="() => this.toSite()">&lt;&lt; To Site</button>&nbsp;
+                <button class="btn btn-primary" @click="() => this.editHtml()">Edit HTML</button>&nbsp;
+                <button class="btn btn-primary" @click="() => this.save()">Save</button>
             </div>
             <div class="content-inputs-container">
                 <table>
@@ -151,7 +151,7 @@
                             </option>
                         </select> <br/>
                         <b-form-radio value="false">From content:</b-form-radio> <br/>
-                        <b-form-textarea class="resource-content-area" v-model="content" :disabled="contentResourceEditor.fromFile == 'true'"></b-form-textarea>
+                        <b-form-textarea class="resource-content-area" v-model="contentResourceEditor.content" :disabled="contentResourceEditor.fromFile == 'true'"></b-form-textarea>
                     </b-form-radio-group>
                 </b-form-group>
             </div>
@@ -172,7 +172,7 @@
     import { SiteContextManager } from '../services/SiteContextManager';
     import { ContentFile } from '../common/ContentFile';
     import getAvailableTags from '../content-creation/TagsProvider';
-    import EditContentDialog from '@/components/EditContentDialog.vue';
+    import EditContentDialog from '../components/EditContentDialog.vue';
 
     const marginLeft1 = '10px';
     const marginLeft2 = '20px';
@@ -208,6 +208,7 @@
                     cssClasses: [],
                     error: null,
                     innerHtml: '',
+                    ok: () => {},
                     outerHtml: function () {
                         if (!this.tag) {
                             return '';
