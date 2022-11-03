@@ -8,6 +8,7 @@
                 <button class="btn btn-primary" @click="() => this.toSite()">&lt;&lt; To Site</button>&nbsp;
                 <button class="btn btn-primary" @click="() => this.editHtml()">Edit HTML</button>&nbsp;
                 <button class="btn btn-primary" @click="() => this.save()">Save</button>
+                <div class="loader" v-if="processing"></div>
             </div>
             <div class="content-inputs-container">
                 <table>
@@ -165,7 +166,6 @@
 </template>
 <script lang="ts">
     import { delay } from 'q';
-    import { firstValueFrom } from 'rxjs';
     import { GenericElement, Html, Script, Link, Metadata } from  '../content-creation/html-elements';
     import { mapTree } from '../content-creation/htmlTreeMapper';
     import { v4 as uuid } from 'uuid';
@@ -197,6 +197,7 @@
                 previewSessionId: null,
                 htmlTree: null,
                 error: null,
+                processing: false,
                 elementEditor: {
                     isNewElement: false,
                     innerCode: null,
@@ -321,6 +322,7 @@
                     let onContentLoaded = () => {
                         this.processLoadedContentFrame(frame);
                         document.body.removeChild(frame);
+                        this.processing = false;
                     };
 
                     let loadContent = async () => {
@@ -333,7 +335,7 @@
                             await delay(200);
                         }
                     }
-
+                    this.processing = true;
                     await loadContent();
                 } else {
                     // initiate creation of a new content item using the upload session ID passed from the CreateOrUpdateSite page
@@ -824,7 +826,14 @@
 
                 this.elementEditor.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
                 this.elementEditor.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
-                this.elementEditor.ok = async () => await this.elementEditorAddNewOk();
+                this.elementEditor.ok = async () => { 
+                    try {
+                        this.processing = true;
+                        await this.elementEditorAddNewOk();
+                    } finally {
+                        this.processing = false;
+                    }
+                };
                 this.$refs["edit-element-modal"].show();
             },
 
@@ -853,7 +862,14 @@
                 // child dialog event handlers
                 this.elementEditor.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
                 this.elementEditor.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
-                this.elementEditor.ok = async () => await this.elementEditorOk();
+                this.elementEditor.ok = async () => { 
+                    try {
+                        this.processing = true;
+                        await this.elementEditorOk();
+                    } finally {
+                        this.processing = false;
+                    }
+                };
                
                 this.$refs["edit-element-modal"].show();
             },
@@ -1055,104 +1071,110 @@
             },
             
             save: async function() {
-                if (!this.contentId) {
-                    // For a new page, validate fileName (required, pattern, is unique, etc.)
-                    if (!this.contentName) {
-                        this.error = "File name is required.";
-                        return;
-                    }
-
-                    /* eslint-disable */
-                    let contentNamePattern = /^([a-z_\-\s0-9\.]+)+\.(html|htm|xhtml)$/;
-                    if (!contentNamePattern.test(this.contentName)) {
-                        this.error = "Invalid content file name. Enter a name with extension .html, .htm or .xhtml without any path.";
-                        return;
-                    }
-
-                    let destinationPathPattern = /(^[a-z0-9]+)(\/[a-z0-9-]+)*([a-z0-9])$/;
-                    if (!destinationPathPattern.test(this.contentDestinationPath)) {
-                        this.error = "Invalid destination path entered.";
-                        return;
-                    }
-
-                    // Remote validation
-                    let checkFileNameUrl = `api/contenteditor/check-new-file-name?contentName=${this.contentName}&uploadSessionId=${this.uploadSessionId}`;
-                    if (this.contentDestinationPath) {
-                        checkFileNameUrl = `${checkFileNameUrl}&destinationPath=${this.contentDestinationPath}`;
-                    }
-
-                    if (this.siteId) {
-                        checkFileNameUrl = `${checkFileNameUrl}&siteId=${this.siteId}`;
-                    }
-                    try {
-                        let isContentNameUnique = (await this.$apiClient.getAsync(checkFileNameUrl)).data;
-                        if (!isContentNameUnique) {
-                            this.error = "These file name and destination path are already in use.";
+                this.processing = true;
+                try {
+                    if (!this.contentId) {
+                        // For a new page, validate fileName (required, pattern, is unique, etc.)
+                            if (!this.contentName) {
+                            this.error = "File name is required.";
                             return;
                         }
-                    } catch {
-                        this.error = "Cannot validate input data because of server error.";
-                        return;
+
+                        /* eslint-disable */
+                        let contentNamePattern = /^([a-z_\-\s0-9\.]+)+\.(html|htm|xhtml)$/;
+                        if (!contentNamePattern.test(this.contentName)) {
+                            this.error = "Invalid content file name. Enter a name with extension .html, .htm or .xhtml without any path.";
+                            return;
+                        }
+
+                        let destinationPathPattern = /(^[a-z0-9]+)(\/[a-z0-9-]+)*([a-z0-9])$/;
+                        if (!destinationPathPattern.test(this.contentDestinationPath)) {
+                            this.error = "Invalid destination path entered.";
+                            return;
+                        }
+
+                        // Remote validation
+                        let checkFileNameUrl = `api/contenteditor/check-new-file-name?contentName=${this.contentName}&uploadSessionId=${this.uploadSessionId}`;
+                        if (this.contentDestinationPath) {
+                            checkFileNameUrl = `${checkFileNameUrl}&destinationPath=${this.contentDestinationPath}`;
+                        }
+
+                        if (this.siteId) {
+                            checkFileNameUrl = `${checkFileNameUrl}&siteId=${this.siteId}`;
+                        }
+                        try {
+                            let isContentNameUnique = (await this.$apiClient.getAsync(checkFileNameUrl)).data;
+                            if (!isContentNameUnique) {
+                                this.error = "These file name and destination path are already in use.";
+                                return;
+                            }
+                        } catch {
+                            this.error = "Cannot validate input data because of server error.";
+                            return;
+                        }
                     }
-                }
 
-                if (!this.previewSessionId) {
-                    this.previewSessionId = uuid();
-                }
+                    if (!this.previewSessionId) {
+                        this.previewSessionId = uuid();
+                    }
 
-                let saveData = {
-                    previewSessionId: this.previewSessionId,
-                    contentId: this.contentId,
-                    destinationPath: this.contentDestinationPath,
-                    fileName: this.contentName,
-                    uploadSessionId: this.uploadSessionId
-                };
+                    let saveData = {
+                        previewSessionId: this.previewSessionId,
+                        contentId: this.contentId,
+                        destinationPath: this.contentDestinationPath,
+                        fileName: this.contentName,
+                        uploadSessionId: this.uploadSessionId
+                    };
 
-                await this.$apiClient.postAsync(
-                    `api/contenteditor/store-preview-session/${this.previewSessionId}`,
-                    mapTree(this.htmlTree)
-                );
+                    await this.$apiClient.postAsync(
+                        `api/contenteditor/store-preview-session/${this.previewSessionId}`,
+                        mapTree(this.htmlTree)
+                    );
                 
-                let response = await this.$apiClient.postAsync(`api/contenteditor/save`, saveData);
-                if (response.status != 200) {
-                    // Error during save, show error message
-                    alert('Unable to save your changes. Make sure that HTML is valid and try again or contact us.');
-                } else {
-                    let context = siteContextManager.get();
-                    let uploadedFiles = context.uploadedFiles || [];
-                    let data = response.data;
-                    let contentSize = data.size;
-                    if (data.id) {
-                        let item = uploadedFiles.find(i => i.id == data.id);
-                        if (item) {
-                            item.size = contentSize;
-                            item.updateDate = data.updateDate;
-                        }
+                    let response = await this.$apiClient.postAsync(`api/contenteditor/save`, saveData);
+                    if (response.status != 200) {
+                        // Error during save, show error message
+                        alert('Unable to save your changes. Make sure that HTML is valid and try again or contact us.');
                     } else {
-                        let item = uploadedFiles.find(i => i.name == this.contentName && i.destinationPath == this.contentDestinationPath);
-                        
-                        if (item) {
-                            item.size = contentSize;
-                            item.uploadedAt = data.uploadedAt;
+                        let context = siteContextManager.get();
+                        let uploadedFiles = context.uploadedFiles || [];
+                        let data = response.data;
+                        let contentSize = data.size;
+                        if (data.id) {
+                            let item = uploadedFiles.find(i => i.id == data.id);
+                            if (item) {
+                                item.size = contentSize;
+                                item.updateDate = data.updateDate;
+                            }
                         } else {
-                            let cf = new ContentFile(
-                                null,
-                                this.contentName,
-                                this.contentDestinationPath,
-                                true,
-                                contentSize,
-                                false,
-                                false,
-                                data.uploadedAt,
-                                null
-                            );
+                            let item = uploadedFiles.find(i => i.name == this.contentName && i.destinationPath == this.contentDestinationPath);
+                        
+                            if (item) {
+                                item.size = contentSize;
+                                item.uploadedAt = data.uploadedAt;
+                            } else {
+                                let cf = new ContentFile(
+                                    null,
+                                    this.contentName,
+                                    this.contentDestinationPath,
+                                    true,
+                                    contentSize,
+                                    false,
+                                    false,
+                                    data.uploadedAt,
+                                    null
+                                );
                             
-                            uploadedFiles.push(cf);
+                                uploadedFiles.push(cf);
+                            }
                         }
-                    }
 
-                    context.uploadedFiles = uploadedFiles;
-                    siteContextManager.save(context);
+                        context.uploadedFiles = uploadedFiles;
+                        siteContextManager.save(context);
+                    }
+                } finally {
+                    await delay(250);
+                    this.processing = false;
                 }
             },
 
@@ -1231,17 +1253,24 @@
                             return errorNode.textContent;
                         }
                     });
+                
+                dlgSubject.subscribe(async(newContent) => {
+                    this.processing = true;
+                    let tempFrame = document.createElement('iframe');
+                    
+                    document.body.appendChild(tempFrame);              
+                    tempFrame.srcdoc = newContent.toString();
 
-                let newContent = await firstValueFrom(dlgSubject);
-                let tempFrame = document.createElement('iframe');
-                document.body.appendChild(tempFrame);              
-                tempFrame.srcdoc = newContent.toString();
-
-                setTimeout(async () => {
-                    this.processLoadedContentFrame(tempFrame);
-                    document.body.removeChild(tempFrame);
-                    await this.updatePageState();
-                }, 500);
+                    setTimeout(async () => {
+                        try {
+                            this.processLoadedContentFrame(tempFrame);
+                            document.body.removeChild(tempFrame);
+                            await this.updatePageState();
+                        } finally {
+                            this.processing = false;
+                        }
+                    }, 500);
+                });
             }
         },
         computed: {
@@ -1257,6 +1286,7 @@
 <style scoped>
 .button-bar {
     width: 100%;
+    display: flex;
     padding-top: 5px;
     padding-bottom: 5px;
     padding-left: 3px;
@@ -1331,4 +1361,21 @@
 .resource-content-area {
     height: 400px;
 }
+
+.loader {
+    margin-top: 7px;
+    margin-left: 6px;
+    border: 4px solid #007bff;
+    border-top: 4px solid navy; 
+    border-bottom: 4px solid Navy;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 </style>

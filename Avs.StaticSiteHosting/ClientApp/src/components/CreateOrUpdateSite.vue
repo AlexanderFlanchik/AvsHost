@@ -155,9 +155,9 @@
                                     <td>{{formatDate(file.updateDate)}}</td>
                                     <td>
                                         <span v-if="!file.isNew"><a :href="downloadLink(file)">Download</a> | </span>
-                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="() => edit(file)">Edit</a> | </span>
-                                        <span v-if="file.isViewable"><a href="javascript:void(0)" @click="() => view(file)">View</a> | </span>
-                                        <span><a href="javascript:void(0)" @click="() => deleteContentItem(file)">Remove</a></span>
+                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="edit(file)">Edit</a> | </span>
+                                        <span v-if="file.isViewable"><a href="javascript:void(0)" @click="view(file)">View</a> | </span>
+                                        <span><a href="javascript:void(0)" @click="deleteContentItem(file)">Remove</a></span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -175,15 +175,7 @@
                         <button class="btn btn-primary" @click="closeViewContent">Close</button>
                     </div>
                 </b-modal>
-                <b-modal ref="edit-content-dlg" hide-footer size="xl" :title="editContent.fileName">
-                    <div class="content-centered">
-                       <b-form-textarea v-model="editContent.content" class="content-editor"></b-form-textarea>
-                    </div>
-                    <div class="dlg-btn-container dlg-btn-container-right">
-                        <button class="btn btn-primary" @click="updateContent">OK</button>
-                        <button class="btn btn-default" @click="closeEditContent">Cancel</button>
-                    </div>
-                </b-modal>
+                <EditContentDialog ref="edit-content-dlg" />
             </div>
         </div> 
     </div>
@@ -192,7 +184,8 @@
     import { formatDate } from '../common/DateFormatter';
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';
-
+    import EditContentDialog from '../components/EditContentDialog.vue';
+    
     const stateManager = new SiteContextManager();
 
     export default {
@@ -272,8 +265,6 @@
                 this.landingPage = cachedSite.landingPage;
                 this.resourceMappings = cachedSite.resourceMappings;
                 this.upload.uploadSessionId = cachedSite.uploadSessionId;
-                console.log("Uploaded files from cache:");
-                console.log(cachedSite.uploadedFiles);
                 this.uploaded = cachedSite.uploadedFiles.map(
                     f => new ContentFile(
                             f.id,
@@ -522,29 +513,22 @@
                         `api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`
                     );
 
-                    this.editContent.content = fileResponse.data;
-                    this.editContent.fileName = file.name;
-                    this.editContent.id = file.id;
-
-                    this.$refs["edit-content-dlg"].show();
+                    let dlgSubject = this.$refs["edit-content-dlg"].showDialog(file.name, fileResponse.data);
+                    dlgSubject.subscribe(async (newContent) => {
+                        let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${file.id}`, { content: newContent });
+                        if (updateResponse.status == 200) {
+                            let updatedItem = this.uploaded.find(i => i.id == file.id);
+                            if (updatedItem) {
+                                updatedItem.updateDate = new Date();
+                            }
+                        }
+                    }); 
                 }
-            },
-            updateContent: async function () {
-                let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${this.editContent.id}`, { content: this.editContent.content });
-                if (updateResponse.status == 200) {
-                    let updatedItem = this.uploaded.find(i => i.id == this.editContent.id);
-                    if (updatedItem) {
-                        updatedItem.updateDate = new Date();
-                    }
-                }
-                this.$refs["edit-content-dlg"].hide();
             },
             closeViewContent: function () {
                 this.$refs["view-content-dlg"].hide();
             },
-            closeEditContent: function () {
-                this.$refs["edit-content-dlg"].hide();
-            },
+
             deleteContentItem: async function (file) {
                 if (!confirm(`Are you sure to delete file ${file.name}?`)) {
                     return;
@@ -648,6 +632,9 @@
                     'invalid-field': applied
                 };
             }          
+        },
+        components: {
+            EditContentDialog
         }
     }
 </script>
@@ -815,14 +802,6 @@
     .dlg-btn-container {
         padding-top: 5px;
         background-color: azure;
-    }
-
-    .content-editor {
-        min-height: 570px;
-    }
-
-    .dlg-btn-container-right {
-        text-align: right;
     }
 
     #cancelBtn {
