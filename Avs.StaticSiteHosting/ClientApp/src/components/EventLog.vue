@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <!--<img src="../../public/icons8-chat-32.png" /> &nbsp;-->
+            <img src="../../public/icons8-logs-28.png" />
             <span>Site Events Log</span>
         </div>
         <UserInfo />

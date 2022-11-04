@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <img src="../../public/help.png" /> &nbsp;
+            <img src="../../public/help.png" />
             <span>Help</span>
         </div>
         <UserInfo />

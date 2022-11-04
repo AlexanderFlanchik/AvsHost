@@ -30,7 +30,6 @@ export default class AuthService {
         
         if (utcNow > expDate) {
             localStorage.removeItem(this.tokenKey);
-            console.log('Auth token expired.');
             return false;
         }
 

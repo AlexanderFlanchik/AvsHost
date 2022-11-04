@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <!--<img src="../../public/help.png" /> &nbsp;-->
+            <img src="../../../ClientApp/public/dashboard.png" />
             <span>Home</span>
         </div>
         <UserInfo />
@@ -42,7 +42,7 @@
                              <b-icon icon="caret-down-fill" v-if="lastVisitsExpaned" @click="collapseVisits"></b-icon>
                          </span>
                      </div>
-                     <div v-if="visits > 0 && lastVisitsExpaned">
+                     <div v-if="visits > 0 && lastVisitsExpaned" class="last-site-visits-container">
                          <LastSiteVisits />
                      </div>
                  </div>
@@ -86,7 +86,6 @@
                     this.areSites = vm.totalSites > 0;
                     let inactiveSites = vm.totalSites - vm.activeSites;
                     if (vm.totalSites) {
-                        console.log('Sites found: ' + vm.totalSites);
                         let sitesData = [
                             {
                                 name: 'Active',
@@ -160,7 +159,7 @@
     }
     
     .charts-container {
-        height: 420px;
+        height: 400px;
     }
 
     .chart-cell {        
@@ -170,6 +169,7 @@
     .home-page-content {
         height: calc(100% - 155px);
         background-color: azure;
+        overflow-y: auto;
     }
 
     .errors-title {
@@ -211,6 +211,11 @@
 
     .statistics-container {      
         height: calc(100vh - 645px);
+    }
+
+    .last-site-visits-container {
+        height: calc(100vh - 680px);
+        overflow-y: auto;
     }
 
     .no-sites-message {

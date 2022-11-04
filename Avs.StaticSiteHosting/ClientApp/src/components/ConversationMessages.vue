@@ -33,7 +33,6 @@
         },
         mounted: function () {
             this.userId = localStorage.getItem('user-id');
-            console.log(this.userId);
             this.conversationId$.subscribe((convId) => {
                 this.conversationId = convId;
                 if (this.rows.length) {

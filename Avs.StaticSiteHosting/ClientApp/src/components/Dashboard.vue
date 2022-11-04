@@ -1,7 +1,7 @@
 <template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <img src="../../../ClientApp/public/dashboard.png" /> &nbsp;
+            <img src="../../public/icons8-dashboard-28.png" />
             <span>Dashboard</span>
         </div>
         <UserInfo />

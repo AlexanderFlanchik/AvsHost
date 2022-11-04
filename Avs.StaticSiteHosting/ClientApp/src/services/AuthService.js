@@ -62,7 +62,6 @@ var AuthService = /** @class */ (function () {
         var expDate = new Date(token.expires_at);
         if (utcNow > expDate) {
             localStorage.removeItem(this.tokenKey);
-            console.log('Auth token expired.');
             return false;
         }
         // token is valid

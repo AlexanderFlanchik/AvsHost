@@ -1,7 +1,7 @@
 ﻿<template>
     <div class="content-block-container">
         <div class="general-page-title">
-            <img src="../../public/profile.png" /> &nbsp;
+            <img src="../../public/profile.png" />
             <span>Profile</span>
         </div>
         <UserInfo />
@@ -252,9 +252,7 @@
                 if (!this.conversationId) {
                     console.log('No conversation id, creating...');
                     this.$apiClient.postAsync('api/conversation').then((response) => {
-                        console.log(response);
                         this.conversationId = response.data.id;
-                        console.log('conversation id ' + this.conversationId);
                         postMessage();
                     });
                 } else {

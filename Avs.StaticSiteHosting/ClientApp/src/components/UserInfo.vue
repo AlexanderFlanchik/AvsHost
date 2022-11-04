@@ -30,7 +30,6 @@
                 if (!this.isAdmin) {
                     // for usual user we apply these two subscriptions
                     this.$userNotificationService.notify((status) => {
-                        console.log("New status code: " + status);
                         this.status = this.statuses[status];
                         if (this.status != 'Active') {
                             this.$authService.lockUser();
@@ -60,8 +59,6 @@
                         this.$authService.unLockUser();
                     }
                     localStorage.setItem('user-id', info.userId);
-
-                    console.log('status:' + this.status);
                 });
         },
 

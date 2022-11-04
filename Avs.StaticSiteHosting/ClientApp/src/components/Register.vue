@@ -68,7 +68,6 @@
         },
         mounted: function () {
             if (this.$authService.isAuthenticated()) {
-                console.log('User has logged in, redirecting to root..');
                 this.$router.push('/');
             }
         },
@@ -146,7 +145,6 @@
                 try {
                     let validationResponse = await this.$authService.validateUserData(this.userName, null);
                     this.remoteValidation.userName.success = validationResponse;
-                    console.log(this.remoteValidation.userName.success);
                 } finally {
                     this.remoteValidation.userName.inProcess = false;
                 }                

@@ -38,6 +38,7 @@
 </template>
 <script>
     const moment = require('moment');
+    const { SiteContextManager } = require("../services/SiteContextManager");
 
     export default {
         data: function () {
@@ -66,8 +67,9 @@
                 return date && moment(date).format('MM/DD/YYYY hh:mm:ss A');
             },
 
-            editSite: async function (siteId) {
-                await this.$apiClient.postAsync('api/sitedetails/clear-site-context');
+            editSite: async function (siteId) {               
+                let sm = new SiteContextManager();
+                sm.delete();
 
                 this.$router.push({ path: '/sites/update/' + siteId });
             }

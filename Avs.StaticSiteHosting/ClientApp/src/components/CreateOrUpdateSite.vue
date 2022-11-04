@@ -245,10 +245,6 @@
                 viewContent: {
                     fileName: '',
                     src: ''                   
-                },
-                editContent: {
-                    fileName: '',
-                    content: ''
                 }
             }
         },
