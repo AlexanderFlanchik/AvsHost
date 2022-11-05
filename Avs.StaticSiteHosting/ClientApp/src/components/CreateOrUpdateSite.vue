@@ -54,138 +54,29 @@
                         </td>
                     </tr>
                 </table>
-                <b-modal ref="new-resource-mapping-dlg" hide-footer title="New Resource Mapping">
-                    <div>
-                        <table class="site-form">
-                            <tr>
-                                <td>Name:</td>
-                                <td>
-                                    <b-form-input type="text" maxlength="30" v-model="rm.name" @input="checkNewResourceMappingName"></b-form-input>
-                                    <span v-if="rm.nameError" class="error-validation-message">This mapping already exists.</span> 
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Value:</td>
-                                <td>
-                                    <b-form-input type="text" maxlength="30" v-model="rm.value" @input="checkNewResourceMappingValue"></b-form-input>
-                                    <span v-if="rm.valueError" class="error-validation-message">The value is required.</span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <button class="btn btn-primary" @click="addResourceMappingApply" :disabled="rm.nameError">Add</button>
-                    <button class="btn btn-default" @click="newResourceMappingCancel">Cancel</button>
-                </b-modal>
-                <div class="resource-mapping-title-container">
-                    <div class="resource-mapping-container-left">
-                        <span class="form-title">Resource mappings</span>
-                    </div>
-                    <div class="resource-mapping-container-right">
-                        <a href="#" @click="addResourceMapping">Add new...</a>
-                    </div>
-                </div>
-                <table class="table resource-mapping-header">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                </table>
-                <table class="table table-striped" v-if="resourceMappings.length > 0">
-                    <tbody>
-                        <tr v-for="rm in resourceMappings" :key="rm">
-                            <td>{{rm.name}}</td>
-                            <td>{{rm.value}} &nbsp;<a href="#" class="delete-link" title="Delete" @click="removeResourceMapping(rm)">X</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="no-mappings-message" v-if="resourceMappings.length === 0">
-                    No resource mappings yet.
-                </div>
+                <ResourceMappingsSection :resourceMappings="resourceMappings"/>
             </div>
             <div class="site-form-holder-right">
-                <div class="upload-form">
-                    <span class="form-title">Upload files</span>
-                    <div>
-                        <b-form-file v-model="upload.contentFile"
-                                     :state="Boolean(upload.contentFile)"
-                                     placeholder="Choose a file or drop it here..."
-                                     drop-placeholder="Drop file here..."></b-form-file>
-                    </div>
-                    <div class="mrg-tp-10x">
-                        <b-form-checkbox v-model="upload.useDestinationPath">Use destination path</b-form-checkbox>
-                    </div>
-                    <div class="upload-bottom-bar">
-                        <div class="upload-bottom-bar-left">
-                            <b-form-input v-model="upload.destinationPath" :disabled="!upload.useDestinationPath"></b-form-input>
-                        </div>
-                        <div class="upload-bottom-bar-right">
-                            <button class="btn btn-primary" @click="uploadContentFile" :disabled="!Boolean(upload.contentFile)">Upload..</button>
-                        </div>
-                    </div>                  
-                </div>
-                <div v-if="upload.errorMessage" class="upload-error-holder">
-                    {{upload.errorMessage}}
-                </div>
+                <UploadSiteContent :uploadSessionId="uploadSessionId" :uploaded="uploaded" :onNewSessionHanlder="(newSessionId)=>this.uploadSessionId = newSessionId"/>
+
                 <div class="editor-buttons-container">
-                        <button class="btn btn-primary" @click="newHtmlPage">New HTML Page</button>
+                    <button class="btn btn-primary" @click="newHtmlPage">New HTML Page</button>
                 </div>
                 <div class="uploaded-content-holder">
-                    <span class="form-title">Site content</span>           
-                    <div v-if="uploaded.length > 0">
-                        <table class="table table-hover uploaded-files-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Size, kB</th>
-                                    <th>Uploaded Date</th>
-                                    <th>Update Date</th>
-                                    <th>&nbsp;</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="file in uploaded" :key="file">
-                                    <td>
-                                        <span class="badge badge-secondary" v-if="file.isNew">New</span>&nbsp;
-                                        {{file.fullName()}}
-                                    </td>
-                                    <td>{{file.size}}</td>
-                                    <td>{{formatDate(file.uploadedAt)}}</td>
-                                    <td>{{formatDate(file.updateDate)}}</td>
-                                    <td>
-                                        <span v-if="!file.isNew"><a :href="downloadLink(file)">Download</a> | </span>
-                                        <span v-if="file.isEditable"><a href="javascript:void(0)" @click="edit(file)">Edit</a> | </span>
-                                        <span v-if="file.isViewable"><a href="javascript:void(0)" @click="view(file)">View</a> | </span>
-                                        <span><a href="javascript:void(0)" @click="deleteContentItem(file)">Remove</a></span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table> 
-                    </div>    
-                    <div class="no-content-message" v-if="uploaded.length === 0">
-                        No content files found. Upload or create some content to continue.
-                    </div>
+                    <span class="form-title">Site content</span>
+                    <UploadedContentList :uploadSessionId="uploadSessionId" :uploaded="uploaded" :openPageEditor="openPageEditor" />  
                 </div>
-                <b-modal ref="view-content-dlg" hide-footer size="xl" :title="viewContent.fileName">
-                    <div class="content-centered">
-                        <img :src="viewContent.src" />
-                    </div>
-                    <div class="content-centered dlg-btn-container">
-                        <button class="btn btn-primary" @click="closeViewContent">Close</button>
-                    </div>
-                </b-modal>
-                <EditContentDialog ref="edit-content-dlg" />
             </div>
         </div> 
     </div>
 </template>
-<script lang="ts">
-    import { formatDate } from '../common/DateFormatter';
+<script>
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';
-    import EditContentDialog from '../components/EditContentDialog.vue';
-    
+    import ResourceMappingsSection from './CreateOrUpdateSite/ResourceMappingsSection.vue';
+    import UploadSiteContent from './CreateOrUpdateSite/UploadSiteContent.vue';
+    import UploadedContentList from './CreateOrUpdateSite/UploadedContentList.vue';
+
     const stateManager = new SiteContextManager();
 
     export default {
@@ -199,52 +90,14 @@
                 landingPage: '',
                 processError: '',
                 resourceMappings: [],
-                // upload form view model
-                upload: {
-                    contentFile: null,
-                    useDestinationPath: false,
-                    destinationPath: '',
-                    uploadSessionId: '',
-                    errorMessage: '',
-                    clear: function () {
-                        this.errorMessage = '';
-                        this.contentFile = null;
-                        this.useDestinationPath = false;
-                        this.destinationPath = '';
-                    }
-                },
-                uploaded: [],
-                // popup add new resource mapping view model
-                rm: {
-                    name: '',
-                    value: '',
-                    nameError: false,
-                    valueError: false,
-                    clear : function () {
-                        this.name = '';
-                        this.value = '',
-                        this.nameError = false;
-                        this.valueError = false;
-                    },
-                    checkNewResourceMappingValue: function () {
-                        let val = this.value;
-                        if (!val) {
-                            this.valueError = true;
-                        } else {
-                            this.valueError = false;
-                        }
-                    },
-                },
+                uploadSessionId: '',
+                uploaded: [],                
                 validation: {
                     siteName: {
                         touched: false,
                         valid: true,
                         inProcess: false
                     }                   
-                },
-                viewContent: {
-                    fileName: '',
-                    src: ''                   
                 }
             }
         },
@@ -260,7 +113,7 @@
                 this.isActive = cachedSite.isActive;
                 this.landingPage = cachedSite.landingPage;
                 this.resourceMappings = cachedSite.resourceMappings;
-                this.upload.uploadSessionId = cachedSite.uploadSessionId;
+                this.uploadSessionId = cachedSite.uploadSessionId;
                 this.uploaded = cachedSite.uploadedFiles.map(
                     f => new ContentFile(
                             f.id,
@@ -329,95 +182,7 @@
             }
         },
 
-        methods: {
-            formatDate: function (date) {
-                return formatDate(date);
-            },
-            addResourceMapping: function () {
-                this.rm.clear();
-                this.$refs['new-resource-mapping-dlg'].show();
-            },
-            newResourceMappingCancel: function () {
-                this.$refs['new-resource-mapping-dlg'].hide();
-            },
-            addResourceMappingApply: function () {
-                let name = this.rm.name;
-                let value = this.rm.value;
-
-                this.rm.checkNewResourceMappingValue();
-                if (this.rm.valueError) {
-                    return;
-                }
-
-                this.resourceMappings.push({ name, value });
-                this.$refs['new-resource-mapping-dlg'].hide();
-            },
-
-            checkNewResourceMappingName: function () {
-                let name = this.rm.name;
-                if (this.resourceMappings.find(m => m.name == name)) {
-                    this.rm.nameError = true;
-                } else {
-                    this.rm.nameError = false;
-                } 
-            },            
-
-            checkNewResourceMappingValue: function () {
-                this.rm.checkNewResourceMappingValue();
-            },
-
-            removeResourceMapping: function (mapping) {
-                if (confirm(`Are you sure to delete '${mapping.name}' mapping?`)) {
-                    let ix = this.resourceMappings.indexOf(mapping);
-                    this.resourceMappings.splice(ix, 1);
-                }
-            },
-
-            uploadContentFile: async function () {
-                let file = this.upload.contentFile;
-                
-                if (!this.upload.uploadSessionId) {
-                    let sessionResponse = await this.$apiClient.getAsync('api/contentupload/session');
-                    this.upload.uploadSessionId = sessionResponse.headers['upload-session-id'];
-                }
-
-                let formData = new FormData();               
-                formData.append('contentFile', file);
-
-                let uploadUrl = `api/contentupload?uploadSessionId=${this.upload.uploadSessionId}`;
-                if (this.upload.useDestinationPath && this.upload.destinationPath) {
-                    uploadUrl += `&destinationPath=${this.upload.destinationPath}`;
-                }
-
-                try {
-                    await this.$apiClient.postAsync(uploadUrl, formData);
-
-                    if (!this.uploaded.find(u => u.name == file.name && u.destinationPath == this.upload.destinationPath)) {
-                        let cf = new ContentFile(
-                                    null,
-                                    file.name,
-                                    this.upload.destinationPath,
-                                    true,
-                                    file.size,
-                                    false,
-                                    false,
-                                    formatDate(new Date()),
-                                    null
-                                );
-                            
-                        this.uploaded.push(cf);
-                    }
-
-                    this.upload.clear();
-                } catch {
-                    let msg = `Unable to upload ${file.name}.`;
-                    if (this.upload.destinationPath) {
-                        msg += 'Please check destination path.';
-                    }
-                    this.upload.errorMessage = msg;
-                }
-            },
-
+        methods: {          
             validateSiteName: async function () {
                 if (!this.siteName || !this.siteName.length) {
                     return;
@@ -440,13 +205,14 @@
 
             cancel: async function () {
                 if (confirm('Are you sure to cancel? Any unsaved data will be lost.')) {
-                    if (this.upload.uploadSessionId) {
-                        await this.$apiClient.postAsync('api/contentupload/cancelupload', null, { "upload-session-id" : this.upload.uploadSessionId });
+                    if (this.uploadSessionId) {
+                        await this.$apiClient.postAsync('api/contentupload/cancelupload', null, { "upload-session-id" : this.uploadSessionId });
                     }
 
                     this.$router.replace('/');
                 }
             },
+
             createOrUpdateSite: async function () {
                 this.processError = '';
 
@@ -467,7 +233,7 @@
 
                 let siteDetailsModel = {
                     siteName: this.siteName,
-                    uploadSessionId: this.upload.uploadSessionId,
+                    uploadSessionId: this.uploadSessionId,
                     description: this.description,
                     isActive: this.isActive,
                     landingPage: this.landingPage,
@@ -487,74 +253,13 @@
                     this.processError = msg;
                 }
             },
-            downloadLink: function (file) {
-                if (!file || !file.id) {
-                    return '#';
-                }
-
-                let url = `api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`;                
-                return url;
-            },
-            view: function (file) {               
-                this.viewContent.src = `api/sitedetails/content-get?contentItemId=${file.id}&maxWidth=600&__accessToken=${this.$authService.getToken()}`;
-                this.viewContent.fileName = file.name;
-
-                this.$refs["view-content-dlg"].show();
-            },
-            edit: async function (file) {
-                if (file.name.endsWith(".html")) {
-                    await this.openPageEditor(file);
-                } else {
-                    let fileResponse = await this.$apiClient.getAsync(
-                        `api/sitedetails/content-get?contentItemId=${file.id}&__accessToken=${this.$authService.getToken()}`
-                    );
-
-                    let dlgSubject = this.$refs["edit-content-dlg"].showDialog(file.name, fileResponse.data);
-                    dlgSubject.subscribe(async (newContent) => {
-                        let updateResponse = await this.$apiClient.putAsync(`api/sitedetails/content-edit/${file.id}`, { content: newContent });
-                        if (updateResponse.status == 200) {
-                            let updatedItem = this.uploaded.find(i => i.id == file.id);
-                            if (updatedItem) {
-                                updatedItem.updateDate = new Date();
-                            }
-                        }
-                    }); 
-                }
-            },
-            closeViewContent: function () {
-                this.$refs["view-content-dlg"].hide();
-            },
-
-            deleteContentItem: async function (file) {
-                if (!confirm(`Are you sure to delete file ${file.name}?`)) {
-                    return;
-                }
-
-                let deleteUrl = `api/sitedetails/content-delete`;
-                if (file.id) {
-                    deleteUrl += `?contentItemId=${file.id}`;
-                } else {
-                    deleteUrl += `?contentItemName=${file.fullName()}&uploadSessionId=${this.upload.uploadSessionId}`;
-                }
-
-                let response = await this.$apiClient.deleteAsync(deleteUrl);
-              
-                try {
-                    if (response.status == 200) {
-                        let itemDeleted = this.uploaded.find(i => i.name == file.name);
-                        let ix = this.uploaded.indexOf(itemDeleted);
-                        this.uploaded.splice(ix, 1);
-                    }
-                } catch {
-                    alert(`Unable to delete ${file.name}. Server error or the file does not exist.`);
-                }
-            },
+        
             getUploadSessionId: async function () {
-                let sessionId = this.upload.uploadSessionId;
+                let sessionId = this.uploadSessionId;
                 if (!sessionId) {
                     let sessionResponse = await this.$apiClient.getAsync('api/contentupload/session');
-                    this.upload.uploadSessionId = sessionResponse.headers['upload-session-id'];
-                    sessionId = this.upload.uploadSessionId;
+                    this.uploadSessionId = sessionResponse.headers['upload-session-id'];
+                    sessionId = this.uploadSessionId;
                 }
                 return sessionId;
             },
@@ -575,6 +280,7 @@
 
                 this.$router.push({ name: 'page-editor', params: { uploadSessionId: sessionId, siteId: this.siteId  } });
             },
+
             openPageEditor: async function (file) {
                 let sessionId = await this.getUploadSessionId();
 
@@ -596,7 +302,7 @@
                         contentId: file.id,
                         contentName: file.name,
                         contentDestinationPath: file.destinationPath, 
-                        uploadSessionId: this.upload.uploadSessionId 
+                        uploadSessionId: this.uploadSessionId 
                     }});
             }
         },
@@ -630,14 +336,13 @@
             }          
         },
         components: {
-            EditContentDialog
+            UploadSiteContent,
+            ResourceMappingsSection,
+            UploadedContentList
         }
     }
 </script>
 <style scoped>
-    .form-title {
-        font-style: italic;
-    }
     .site-name-editor {
         width: 450px;
     }
@@ -647,14 +352,12 @@
         height: calc(100vh - 135px);
         overflow-y: auto;
     }
-
     .site-form-holder-left {
         width: 550px;
         float: left;
         padding-left: 5px;
         padding-top: 5px;
     }
-
     .site-form-holder-right {
         padding-top: 5px;
         padding-left: 25px;
@@ -662,107 +365,23 @@
         width: calc(100% - 550px);
         float: left;
     }
-    
     td.vertical-tex-align {
         vertical-align: top;
     }
-
     table.site-form td {
         padding-top: 5px;
         padding-bottom: 5px;
     }
-
-    table.resource-mapping-header {
-        width: 100%;
-    }
-
-    .resource-mapping-title-container {
-        width: 100%;
-    }
-
-    .resource-mapping-container-left {
-        width: 50%;
-        float: left;
-    }
-
-    .resource-mapping-container-right {
-        width: 50%;
-        float: left;
-        text-align: right;
-    }
-
-    .delete-link {
-        color: red;
-        font-weight: bold;
-        text-decoration: none;
-    }
-
-    .error-validation-message {
-        color: red;
-        font-weight: bold;
-    }
-
-    .no-mappings-message {
-        text-align: center;
-        padding-top: 10px;
-        color: navy;
-        font-weight: bold;
-    }
-
-    .upload-form {
-        padding-top: 2px;
-        max-width: 550px;
-    }
-
-    .mrg-tp-10x {
-        margin-top: 10px;
-    }
-
-    .upload-bottom-bar {
-        padding-top: 10px;
-        width: 100%;
-    }
-
-    .upload-bottom-bar-left {
-        width: calc(100% - 90px);
-        min-width: 150px;
-        float: left;
-    }
-
-    .upload-bottom-bar-right {
-        width: 90px;
-        float: left;
-        text-align: right;
-    }
-
-    .upload-error-holder {
-        padding-top: 3px;
-        clear: both;
-        color: red;
-        font-weight: bold;
-    }
-
     .editor-buttons-container {
         clear: both;
         padding-top: 55px;
         padding-right: 5px;
     }
-
     .uploaded-content-holder {
         clear: both;
         padding-top: 55px;
         padding-right: 5px;
     }
-
-    .uploaded-files-table {
-        width: 99%;
-        background-color: white;
-    }
-
-    .uploaded-files-table th {
-        background-color: darkgrey;
-    }
-
     .site-form-header {
         width: 100%;
         background-color: lavender;
@@ -771,35 +390,14 @@
         padding-bottom: 5px;
         height: 50px;
     }
-
-    .no-content-message {
-        background-color: white;
-        height: 150px;
-        max-width: 550px;
-        padding-top: 60px;
-        font-weight: bold;
-        text-align: center;
-    }
-
     .invalid-field {
         background-color:#ffe6e6;
         border-color: red;
     }
-
     .validation-error {
         color: red;
         font-weight: bold;
     }
-
-    .content-centered {
-        text-align: center;
-    }
-
-    .dlg-btn-container {
-        padding-top: 5px;
-        background-color: azure;
-    }
-
     #cancelBtn {
         margin-left: 2px;
     }

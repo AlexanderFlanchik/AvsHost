@@ -172,7 +172,7 @@
     import { SiteContextManager } from '../services/SiteContextManager';
     import { ContentFile } from '../common/ContentFile';
     import getAvailableTags from '../content-creation/TagsProvider';
-    import EditContentDialog from '../components/EditContentDialog.vue';
+    import EditContentDialog from './EditContentDialog.vue';
 
     const marginLeft1 = '10px';
     const marginLeft2 = '20px';

@@ -79,7 +79,7 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
     import UserInfo from '../components/UserInfo.vue';
     import NavigationMenu from '../components/NavigationMenu.vue';
     import { SiteContextManager } from '../services/SiteContextManager';
