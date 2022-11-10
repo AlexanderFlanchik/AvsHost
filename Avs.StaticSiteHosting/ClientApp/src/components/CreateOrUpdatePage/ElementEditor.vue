@@ -20,81 +20,54 @@
                         </option>
                     </select>
                 </div>
-            <div>
-            <span>Attributes: </span>
-            <ul v-if="attributes.length" class="attributes-list">
-                <li v-for="attribute in attributes" :key="attribute">
-                    <span>Name: {{attribute.name}}, value: {{attribute.value}}</span>
-                        <a href="javascript:void(0)" class="delete-element-lnk" 
-                            @click="() => { removeAttribute(attribute); error = null; }">X</a>
-                </li>
-            </ul>
-            <span v-if="!attributes.length">(none)</span>
-            <span>&nbsp;<a href="javascript:void(0)" 
-                    @click="() => this.$refs['add-attribute-modal'].show()">Add attribute...</a></span>
-        </div>
-        <div>
-            <span>CSS Classes: </span>
-            <ul v-if="this.cssClasses.length" class="attributes-list">
-                <li v-for="cssClass in cssClasses" :key="cssClass">
-                    <span>{{cssClass}}</span>
-                    <a href="javascript:void(0)" class="delete-element-lnk" 
-                        @click="() => { removeCssClass(cssClass); error = null; }">X</a>
-                </li>
-            </ul>
-            <span v-if="!cssClasses.length">(none) </span>
-            <span><a href="javascript:void(0)" @click="() => this.$refs['add-css-class-modal'].show()">Add CSS class...</a></span>
-        </div>
-        <div>
-            <span>Inner content:</span>
-            <br/>
-            <b-form-textarea class="resource-content-area" v-model="innerHtml" rows="10" cols="10" @change="() => error = null"></b-form-textarea>
-        </div>
-        </div>
-        <div class="modal-btn-holder">
-            <button class="btn btn-primary" @click="() => ok()">OK</button>
-            <button class="btn btn-default" @click="() => this.$refs['edit-element-modal'].hide()">Cancel</button>
-        </div>
-        </b-modal>
-        
-        <b-modal ref="add-attribute-modal" hide-footer title="Add New Attribute">
-           <div v-if="addNewAttributeDlg.error">
-               <span class="validation-error">{{addNewAttributeDlg.error}}</span> 
-            </div>
-            <div>
-                <span>Name:</span> <br />
-                <b-form-input v-model="addNewAttributeDlg.name" @change="() => this.addNewAttributeDlg.error = null"></b-form-input>
-            </div>
-            <div>
-                <span>Value:</span> <br />
-                <b-form-input v-model="addNewAttributeDlg.value" @change="() => this.addNewAttributeDlg.error = null"></b-form-input>
+                <div>
+                    <span>Attributes: </span>
+                    <ul v-if="attributes.length" class="attributes-list">
+                        <li v-for="attribute in attributes" :key="attribute">
+                            <span>Name: {{attribute.name}}, value: {{attribute.value}}</span>
+                                <a href="javascript:void(0)" class="delete-element-lnk" 
+                                    @click="() => { removeAttribute(attribute); error = null; }">X</a>
+                        </li>
+                    </ul>
+                    <span v-if="!attributes.length">(none)</span>
+                    <span>&nbsp;<a href="javascript:void(0)" 
+                        @click="() => this.$refs['add-attribute-modal'].open()">Add attribute...</a></span>
+                </div>
+                <div>
+                    <span>CSS Classes: </span>
+                    <ul v-if="this.cssClasses.length" class="attributes-list">
+                        <li v-for="cssClass in cssClasses" :key="cssClass">
+                            <span>{{cssClass}}</span>
+                            <a href="javascript:void(0)" class="delete-element-lnk" 
+                                @click="() => { removeCssClass(cssClass); error = null; }">X</a>
+                        </li>
+                    </ul>
+                    <span v-if="!cssClasses.length">(none) </span>
+                    <span><a href="javascript:void(0)" @click="() => this.$refs['add-css-class-modal'].open()">Add CSS class...</a></span>
+                </div>
+                <div>
+                    <span>Inner content:</span>
+                    <br/>
+                    <b-form-textarea class="resource-content-area" v-model="innerHtml" rows="10" cols="10" @change="() => error = null"></b-form-textarea>
+                </div>
             </div>
             <div class="modal-btn-holder">
-                <button class="btn btn-primary" @click="() => this.addNewAttributeDlg.ok()">OK</button>
-                <button class="btn btn-default" @click="() => this.$refs['add-attribute-modal'].hide()">Cancel</button>
+                <button class="btn btn-primary" @click="() => ok()">OK</button>
+                <button class="btn btn-default" @click="() => this.$refs['edit-element-modal'].hide()">Cancel</button>
             </div>
         </b-modal>
-        
-        <b-modal ref="add-css-class-modal" hide-footer title="Add CSS Class">
-            <div v-if="addNewCssClassDlg.error">
-               <span class="validation-error">{{addNewCssClassDlg.error}}</span> 
-            </div>
-            <div>
-                <span>Name:</span> <br />
-                <b-form-input v-model="addNewCssClassDlg.name" @change="() => this.addNewCssClassDlg.error = null"></b-form-input>
-            </div>
-            <div class="modal-btn-holder">
-                <button class="btn btn-primary" @click="() => this.addNewCssClassDlg.ok()">OK</button>
-                <button class="btn btn-default" @click="() => this.$refs['add-css-class-modal'].hide()">Cancel</button>
-            </div>
-        </b-modal>
-        </div>
+        <AddNewAttributeModalDialog :attributes="attributes" ref="add-attribute-modal" />
+        <AddNewCssClassModalDialog :cssClasses="cssClasses" ref="add-css-class-modal" />
+    </div>
 </template>
 <script>
     import getAvailableTags from '../../content-creation/TagsProvider';
     import { GenericElement } from '../../content-creation/html-elements';
     import { v4 as uuid } from 'uuid';
 
+    import AddNewAttributeModalDialog from './AddNewAttributeModalDialog.vue';
+    import AddNewCssClassModalDialog from './AddNewCssClassModalDialog.vue';
+    
     export default {
         props: {
             htmlTree: Object,
@@ -118,18 +91,7 @@
                 error: null,
                 innerHtml: '',
                 ok: () => {},
-                getEditorTitle: '',
-                addNewAttributeDlg: {
-                    error: '',
-                    name: '',
-                    value: '',
-                    ok: () => { },
-                },
-                addNewCssClassDlg: {
-                    error: '',
-                    name: '',
-                    ok: () => { }
-                }
+                getEditorTitle: ''
             };
         },
         methods: {
@@ -180,50 +142,6 @@
                     return { isValid: false, errorMessage: errorNode.textContent };
                 }
                 return { isValid: true, htmlDocument: result };
-            },
-
-            elementEditor_newAttributeDlgOk: function() {
-                let name = this.addNewAttributeDlg.name;
-                if (!name) {
-                    this.addNewAttributeDlg.error = "'Name' field is required.";
-                    return;   
-                }
-
-                let existingAttribute = this.attributes.find(a => a.name == name);
-                if (existingAttribute) {
-                    this.addNewAttributeDlg.error = `The attribute with name '${name}' already exists.`;
-                    return;
-                }
-
-                let newAttribute = { name: name, value: this.addNewAttributeDlg.value };
-                this.attributes.push(newAttribute);
-                            
-                this.addNewAttributeDlg.name = null;
-                this.addNewAttributeDlg.value = null;
-                this.addNewAttributeDlg.error = null;
-
-                this.$refs['add-attribute-modal'].hide();
-            },
-
-            elementEditor_newCssClassDlgOk: function() {
-                let name = this.addNewCssClassDlg.name;
-                if (!name) {
-                    this.addNewCssClassDlg.error = "'Name' field is required.";
-                    return;   
-                }
-
-                let names = name.split(' ');
-                for (let nm of names) {
-                    let cssClass = this.cssClasses.find(c => c == nm);
-                    if (!cssClass) {
-                        this.cssClasses.push(nm);
-                    }
-                }
-
-                this.addNewCssClassDlg.name = null;
-                this.addNewCssClassDlg.error = null;
-
-                this.$refs['add-css-class-modal'].hide();
             },
 
             elementEditorAddNewOk: async function() {
@@ -310,8 +228,6 @@
                 let allTags = tgsJson || [];
                 this.tagsAvailable = allTags.filter(t => tagsAvailable.indexOf(t.tag) >= 0);
 
-                this.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
-                this.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
                 this.ok = async () => { 
                     try {
                         this.onProcess(true);
@@ -345,9 +261,6 @@
                     }
                 }
 
-                // child dialog event handlers
-                this.addNewAttributeDlg.ok = this.elementEditor_newAttributeDlgOk;
-                this.addNewCssClassDlg.ok = this.elementEditor_newCssClassDlgOk;
                 this.ok = async () => { 
                     try {
                         this.onProcess(true);
@@ -423,6 +336,11 @@
 
                 this.$refs['edit-element-modal'].hide();
             }
+        },
+
+        components: {
+            AddNewAttributeModalDialog,
+            AddNewCssClassModalDialog
         }
     }
 </script>
