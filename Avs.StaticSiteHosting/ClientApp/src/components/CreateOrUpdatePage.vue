@@ -231,7 +231,10 @@
                 }
 
                 let body = this.htmlTree.body;
-                body.innerHtml = frameBody.innerHTML;
+                body.innerHtml = frameBody.innerHTML || "";
+                if (body.length > 1 && body.innerHtml.endsWith("\n")) {
+                    body.innerHtml = body.innerHtml.substring(0, body.innerHtml.length - 1);
+                }
 
                 let attributes = frameBody.attributes;
                 for (let attr of attributes) {
@@ -649,7 +652,7 @@
 
                 let htmlContent = 
                 `<html>
-                <head>\n`;
+<head>\n`;
                 if (head.title) {
                     htmlContent += `<title>${head.title}</title>\n`
                 }
@@ -667,9 +670,10 @@
                 }
 
                 if (head.styles.length) {
-                    htmlContent += `<style>\n`;
+                    htmlContent += `<style>`;
                     for (let style of head.styles) {
-                        htmlContent += `${style}\n`;
+                        console.log("style: " + style);
+                        htmlContent += `${style.trimEnd()}\n`;
                     }
                     htmlContent += `</style>\n`;
                 }
@@ -687,12 +691,14 @@
                         scr.text = script.body;
                     }
 
-                    htmlContent += scr.outerHTML;
+                    htmlContent += `${scr.outerHTML}\n`;
                 }
                 
                 htmlContent += `</head>\n`;
-                htmlContent += body.outerHtml + "\n";
+                htmlContent += `${body.outerHtml}\n`;
                 htmlContent += "</html>";
+
+                htmlContent = htmlContent.split("\n").filter(l => l && l.trim().length).join("\n");
 
                 let dlgSubject = this.$refs["content-edit-dlg"].showDialog(this.contentName, htmlContent, 
                     content => {

@@ -7,7 +7,9 @@
 
 #wrapper {
     height: 100%;
-    background-color: /*#59A1FF */ #5DADE2;
+    /*background-color: #5DADE2;*/
+    background: #5DADE2;
+    background: radial-gradient(circle, #5DADE2 0%, rgba(9,9,121,1) 35%, rgba(0,212,255,1) 100%);
 }
 
 .form-title {
