@@ -4,8 +4,8 @@
             <span>{{title}}</span>
         </div>
         <div class="site-form-header">
-            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button>
-            <button class="btn btn-primary" @click="cancel" id="cancelBtn">Cancel</button>
+            <button class="btn btn-primary" @click="goToDashboard" id="dashboardBtn">Dashboard</button>
+            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button>           
             <span class="validation-error" v-if="processError && processError.length">{{processError}}</span>
         </div>
         <div class="site-form-holder">
@@ -76,8 +76,10 @@
     import ResourceMappingsSection from './CreateOrUpdateSite/ResourceMappingsSection.vue';
     import UploadSiteContent from './CreateOrUpdateSite/UploadSiteContent.vue';
     import UploadedContentList from './CreateOrUpdateSite/UploadedContentList.vue';
+    import { CreateOrUpdateSiteContextHolder } from './CreateOrUpdateSite/ContextHolder';
 
     const stateManager = new SiteContextManager();
+    const contextHolder = new CreateOrUpdateSiteContextHolder();
 
     export default {
         data: function () {
@@ -91,7 +93,7 @@
                 processError: '',
                 resourceMappings: [],
                 uploadSessionId: '',
-                uploaded: [],                
+                uploaded: [],
                 validation: {
                     siteName: {
                         touched: false,
@@ -126,6 +128,8 @@
                             f.uploadedAt,
                             f.updateDate
                     ));
+
+                contextHolder.set(this.getFormContext());
             };
                        
             if (this.siteId) {
@@ -170,6 +174,8 @@
                                 this.resourceMappings.push({ name: key, value: mappings[key] });
                             }
                         }
+
+                        contextHolder.set(this.getFormContext());
                     }
                     catch (e) {
                         console.log(e);
@@ -178,11 +184,28 @@
             } else {
                 if (cachedSite && !cachedSite.siteId) {
                     getSiteDataFromCache();
+                } else {
+                    contextHolder.set(this.getFormContext());
                 }
             }
         },
 
         methods: {          
+            getFormContext: function() {
+                let rm = new Map();
+                for (let mapping of this.resourceMappings) {
+                    rm.set(mapping.name, mapping.value);
+                }
+
+                return {
+                    siteName: this.siteName,
+                    description: this.description,
+                    isActive: this.isActive,
+                    landingPage: this.landingPage,
+                    resourceMappings: rm           
+                };
+            },
+
             validateSiteName: async function () {
                 if (!this.siteName || !this.siteName.length) {
                     return;
@@ -203,14 +226,26 @@
                 this.validation.siteName.inProcess = false;
             },
 
-            cancel: async function () {
-                if (confirm('Are you sure to cancel? Any unsaved data will be lost.')) {
-                    if (this.uploadSessionId) {
-                        await this.$apiClient.postAsync('api/contentupload/cancelupload', null, { "upload-session-id" : this.uploadSessionId });
-                    }
-
-                    this.$router.replace('/');
+            goToDashboard: async function() {
+                let isModified = contextHolder.isModified(this.getFormContext())
+                    || this.uploaded.find(u => u.isNew);
+                if (!isModified) {
+                    this.$router.replace("/dashboard");
+                    return;
                 }
+
+                if (confirm("You have made changes. Do you want to save them?")) {
+                    if (!await this.createOrUpdateSite()) {
+                        // Errors during save
+                        return;
+                    }
+                }
+
+                if (this.uploadSessionId) {
+                    await this.$apiClient.postAsync('api/contentupload/cancelupload', null, { "upload-session-id" : this.uploadSessionId });
+                }
+
+                this.$router.replace("/dashboard");
             },
 
             createOrUpdateSite: async function () {
@@ -246,12 +281,17 @@
                     } else {
                         await this.$apiClient.putAsync(`api/sitedetails/${this.siteId}`, siteDetailsModel);
                     }
-                    this.$router.replace('/');
+                    //this.$router.replace('/');
+                    contextHolder.set(this.getFormContext());
                 } catch {
                     let mode = this.siteId ? 'edit' : 'create';
                     let msg = `Unable to ${mode} your site due to server error. Please try again later.`;
                     this.processError = msg;
+                    
+                    return false;
                 }
+
+                return true;
             },
         
             getUploadSessionId: async function () {
@@ -398,7 +438,7 @@
         color: red;
         font-weight: bold;
     }
-    #cancelBtn {
-        margin-left: 2px;
+    #dashboardBtn {
+        margin-right: 2px;
     }
 </style>

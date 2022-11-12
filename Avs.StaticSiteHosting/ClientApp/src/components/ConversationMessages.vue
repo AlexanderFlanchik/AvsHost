@@ -75,7 +75,6 @@
 
                         if (!this.firstLoaded) {
                             setTimeout(() => {
-                                console.log('firstLoadedCallback fired.');
                                 this.firstLoadedCallback && this.firstLoadedCallback();
                             }, 600);
                             this.firstLoaded = true;

@@ -57,7 +57,6 @@
 
                         this.onNewConversationsLoadedCallback && this.onNewConversationsLoadedCallback(ids);
                         this.conversationsToLoad -= rows.length;
-                        console.log('Current page: ' + this.pageNumber + ' Conversations to load:' + this.conversationsToLoad);
                     });
             },
             loadMore: function () {

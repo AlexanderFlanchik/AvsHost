@@ -672,7 +672,6 @@
                 if (head.styles.length) {
                     htmlContent += `<style>`;
                     for (let style of head.styles) {
-                        console.log("style: " + style);
                         htmlContent += `${style.trimEnd()}\n`;
                     }
                     htmlContent += `</style>\n`;
