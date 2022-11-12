@@ -289,7 +289,7 @@
                 
                 let parseContentResult = this.validateInnerHtml();
                 if (!parseContentResult.isValid) {
-                    this.elementEditor.error = parseContentResult.errorMessage;
+                    this.error = parseContentResult.errorMessage;
                     return;
                 }
                             
