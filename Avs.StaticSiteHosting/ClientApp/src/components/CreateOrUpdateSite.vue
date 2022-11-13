@@ -4,9 +4,14 @@
             <span>{{title}}</span>
         </div>
         <div class="site-form-header">
-            <button class="btn btn-primary" @click="goToDashboard" id="dashboardBtn">Dashboard</button>
-            <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button>           
-            <span class="validation-error" v-if="processError && processError.length">{{processError}}</span>
+            <div>
+                <button class="btn btn-primary" @click="goToDashboard" id="dashboardBtn">Dashboard</button>
+                <button class="btn btn-primary" :disabled="saveButtonDisabled" @click="createOrUpdateSite">{{ siteId ? 'Save' : 'Create'}}</button>  
+            </div>
+            <Loader :processing="this.processing"/>
+            <div class="process-error-bar" v-if="processError && processError.length">
+                <span class="validation-error">{{processError}}</span>
+            </div>
         </div>
         <div class="site-form-holder">
             <div class="site-form-holder-left">
@@ -73,10 +78,12 @@
 <script>
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';
+    import Loader from './Loader.vue';
     import ResourceMappingsSection from './CreateOrUpdateSite/ResourceMappingsSection.vue';
     import UploadSiteContent from './CreateOrUpdateSite/UploadSiteContent.vue';
     import UploadedContentList from './CreateOrUpdateSite/UploadedContentList.vue';
     import { CreateOrUpdateSiteContextHolder } from './CreateOrUpdateSite/ContextHolder';
+    import * as Q from 'q';
 
     const stateManager = new SiteContextManager();
     const contextHolder = new CreateOrUpdateSiteContextHolder();
@@ -94,6 +101,7 @@
                 resourceMappings: [],
                 uploadSessionId: '',
                 uploaded: [],
+                processing: false,
                 validation: {
                     siteName: {
                         touched: false,
@@ -139,6 +147,7 @@
                 }
                 else {
                     try {
+                        this.processing = true;
                         let siteResponse = await this.$apiClient.getAsync(`api/sitedetails/${this.siteId}`);
                         let data = siteResponse.data;
 
@@ -176,9 +185,12 @@
                         }
 
                         contextHolder.set(this.getFormContext());
+                        await Q.delay(250);
+                        this.processing = false;
                     }
                     catch (e) {
                         console.log(e);
+                        this.processing = false;
                     }
                 }
             } else {
@@ -250,6 +262,7 @@
 
             createOrUpdateSite: async function () {
                 this.processError = '';
+                this.processing = true;
 
                 const getResourceMappings = () => {
                     if (!this.resourceMappings || !this.resourceMappings.length) {
@@ -281,12 +294,15 @@
                     } else {
                         await this.$apiClient.putAsync(`api/sitedetails/${this.siteId}`, siteDetailsModel);
                     }
-                    //this.$router.replace('/');
+                    
                     contextHolder.set(this.getFormContext());
+                    await Q.delay(250);
+                    this.processing = false;
                 } catch {
                     let mode = this.siteId ? 'edit' : 'create';
                     let msg = `Unable to ${mode} your site due to server error. Please try again later.`;
                     this.processError = msg;
+                    this.processing = false;
                     
                     return false;
                 }
@@ -376,6 +392,7 @@
             }          
         },
         components: {
+            Loader,
             UploadSiteContent,
             ResourceMappingsSection,
             UploadedContentList
@@ -423,12 +440,17 @@
         padding-right: 5px;
     }
     .site-form-header {
+        display: flex;
         width: 100%;
         background-color: lavender;
         padding-left: 10px;
         padding-top: 5px;
         padding-bottom: 5px;
         height: 50px;
+    }
+    .process-error-bar {
+        padding-top: 7px;
+        padding-left: 5px;
     }
     .invalid-field {
         background-color:#ffe6e6;

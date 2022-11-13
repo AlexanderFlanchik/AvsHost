@@ -8,7 +8,7 @@
                 <button class="btn btn-primary" @click="() => this.toSite()">&lt;&lt; To Site</button>&nbsp;
                 <button class="btn btn-primary" @click="() => this.editHtml()">Edit HTML</button>&nbsp;
                 <button class="btn btn-primary" @click="() => this.save()">Save</button>
-                <div class="loader" v-if="processing"></div>
+                <Loader :processing="this.processing"/>
             </div>
             <div class="content-inputs-container">
                 <table>
@@ -69,6 +69,7 @@
     import { ContentFile } from '../common/ContentFile';
     import getAvailableTags from '../content-creation/TagsProvider';
     
+    import Loader from './Loader.vue';
     import EditContentDialog from './EditContentDialog.vue';
     import ElementEditor from './CreateOrUpdatePage/ElementEditor.vue';
     import ContentResourceEditor from './CreateOrUpdatePage/ContentResourceEditor.vue';
@@ -734,6 +735,7 @@
             }
         },
         components: {
+            Loader,
             EditContentDialog,
             ElementEditor,
             ContentResourceEditor
@@ -804,35 +806,4 @@
     height: calc(100% - 68px);
     background-color: azure;
 }
-
-.delete-element-lnk {
-    color: red;
-    font-weight: bold;
-    margin-left: 5px;
-}
-
-.resource-files-select {
-    width: -webkit-fill-available;
-}
-
-.resource-content-area {
-    height: 400px;
-}
-
-.loader {
-    margin-top: 7px;
-    margin-left: 6px;
-    border: 4px solid #007bff;
-    border-top: 4px solid navy; 
-    border-bottom: 4px solid Navy;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    animation: spin 2s linear infinite;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
 </style>
