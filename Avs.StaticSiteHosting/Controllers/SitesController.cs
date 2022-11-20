@@ -17,22 +17,17 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     [Authorize]
     public class SitesController : BaseController
     {
-        private readonly ISiteService _siteService;
-
-        public SitesController(ISiteService siteService)
-        {
-            _siteService = siteService ?? throw new ArgumentNullException(nameof(siteService));
-        }
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SiteModel>>> GetSitesData(int page, int pageSize, string sortOrder, string sortField)
+        public async Task<ActionResult<IEnumerable<SiteModel>>> GetSitesData([FromQuery] SiteRequestModel sitesRequest, ISiteService siteService)
         {           
+            var order = sitesRequest.SortOrder;
             var query = new SitesQuery()
             {
-                Page = page,
-                PageSize = pageSize,
-                SortOrder = !string.IsNullOrEmpty(sortOrder) ? Enum.Parse<SortOrder>(sortOrder) : SortOrder.None,
-                SortField = sortField
+                Page = sitesRequest.Page,
+                PageSize = sitesRequest.PageSize,
+                SortOrder = !string.IsNullOrEmpty(order) ? Enum.Parse<SortOrder>(order) : SortOrder.None,
+                SortField = sitesRequest.SortField,
+                TagIds = sitesRequest.TagIds
             };
 
             var claims = User.Claims;
@@ -41,17 +36,17 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             string ownerUserID = !isAdmin ? CurrentUserId : null;                        
             query.OwnerId = ownerUserID;
-       
+
             var amounts = await Task.WhenAll(new[]
                     {
-                        _siteService.GetSitesAmountAsync(ownerUserID),
-                        _siteService.GetActiveSitesAmountAsync(ownerUserID)
-                    }).ConfigureAwait(false);
+                        siteService.GetSitesAmountAsync(ownerUserID),
+                        siteService.GetActiveSitesAmountAsync(ownerUserID)
+                    });
                        
             Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
             Response.Headers.Add(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));
 
-            var sitesList = (await _siteService.GetSitesAsync(query).ConfigureAwait(false))
+            var sitesList = (await siteService.GetSitesAsync(query))
                     .Select(s => new SiteModel()
                         {
                             Id = s.Id,

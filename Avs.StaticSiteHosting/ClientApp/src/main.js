@@ -23,6 +23,7 @@ import CreateOrUpdatePage from './components/CreateOrUpdatePage.vue';
 import AppSettings from './components/AppSettings.vue';
 import ApiClient from './services/ApiClient';
 import { UserNotificationService } from './services/UserNotificationService';
+import Tags from './components/Tags.vue';
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
@@ -44,6 +45,7 @@ const routes = [
     { path: '/registered', component: Registered },
     { path: '/profile', component: MyProfile },
     { path: '/help', component: Help },
+    { path: '/tags', component: Tags },
     { path: '/conversations', component: Conversations },
     { name: 'create-site', path: '/sites/create', component: CreateOrUpdateSite },
     { name: 'update-site', path: '/sites/update/:siteId', component: CreateOrUpdateSite, props: true },
