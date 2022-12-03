@@ -1,7 +1,8 @@
 ﻿<template>
     <div class="tag-list-container">
         <div @click="() => openOptions()">
-            <ul class="selected-tags-container">
+            <div class="no-selected-tags" v-if="!selected.length">-- Click here to add --</div>
+            <ul class="selected-tags-container" v-if="selected.length">
                 <li v-for="tag of selected" :key="tag.id">
                     <Tag :tagData="tag" />
                     <a href="#" @click="removeTag(tag)">X</a>
@@ -78,6 +79,10 @@
         },
         computed: {
             selected: function() {
+                if (!this.tagIds) {
+                    return [];
+                }
+
                 return this.allTags.filter(t => this.tagIds.indexOf(t.id) >= 0);
             }
         },
@@ -87,6 +92,12 @@
     }
 </script>
 <style scoped>
+   .no-selected-tags {
+        color: navy;
+        font-style: italic;
+        cursor: pointer;
+        margin-top: 10px;
+   }
    .tag-list-container {
         position: relative;
    }
@@ -119,11 +130,12 @@
     }
     .selected-tags-container {
         width: 100%;
-        border: 1px solid darkblue;
+        cursor: pointer;
         list-style-type: none;
         padding-top: 3px;
         padding-bottom: 3px;
         min-height: 45px;
+        padding-left: 0px;
     }
     .selected-tags-container li {
         padding-left: 5px;

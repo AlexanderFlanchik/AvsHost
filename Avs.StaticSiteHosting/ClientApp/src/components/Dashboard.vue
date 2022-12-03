@@ -44,6 +44,9 @@
                             User Name
                         </th>
                         <th class="w-150">Is Active</th>
+                        <th class="tags-column">
+                            Tags
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -61,6 +64,11 @@
                             </td>
                             <td class="w-150">
                                 <input type="checkbox" v-model="site.isActive" disabled="disabled" />
+                            </td>
+                            <td class="tags-column">
+                                <div class="tags-holder">
+                                   <Tag v-for="tag in site.tags" :key="tag.id" :tagData="tag" />
+                                </div>
                             </td>
                             <td>
                                 <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
@@ -83,7 +91,7 @@
     import UserInfo from '../components/UserInfo.vue';
     import NavigationMenu from '../components/NavigationMenu.vue';
     import { SiteContextManager } from '../services/SiteContextManager';
-    
+    import Tag from './Tags/Tag.vue';
     import * as moment from 'moment';
     const stateManager = new SiteContextManager();
 
@@ -95,6 +103,7 @@
         self.launchedOn = siteData.launchedOn ? moment(siteData.launchedOn).format('MM/DD/YYYY hh:mm:ss A') : null;
         self.landingPage = siteData.landingPage;
         self.isActive = siteData.isActive;
+        self.tags = siteData.tags;
         self.owner = {
             id: siteData.owner.id,
             name: siteData.owner.userName
@@ -211,7 +220,8 @@
         },
         components: {
             UserInfo,
-            NavigationMenu
+            NavigationMenu,
+            Tag
         }
     }
 </script>
@@ -322,5 +332,32 @@
 
     .desc:after {
         content: "\2191";
+    }
+    .tags-holder {
+        display: flex;
+        min-height: 40px;
+        flex-wrap: wrap;
+    }
+
+    @media screen and (max-width: 1024px)
+    {
+        .tags-column {
+            width: 280px;
+        }
+
+        .tags-holder {
+            width: 280px;
+        }
+    }
+
+    @media screen and (min-width: 1025px)
+    {
+        .tags-column {
+            width: 380px;
+        }
+
+        .tags-holder {
+            width: 380px;
+        }
     }
 </style>

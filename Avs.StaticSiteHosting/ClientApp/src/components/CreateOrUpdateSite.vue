@@ -59,7 +59,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td>Tags:</td>
+                        <td class="tags-label">Tags:</td>
                         <td>
                             <TagsSelectList :tagIds="tagIds" :onTagsChanged="(selectedTags) => tagsChanged(selectedTags)" />
                         </td>
@@ -492,5 +492,9 @@
     }
     #dashboardBtn {
         margin-right: 2px;
+    }
+    .tags-label {
+        vertical-align: top;
+        padding-top: 16px !important;
     }
 </style>

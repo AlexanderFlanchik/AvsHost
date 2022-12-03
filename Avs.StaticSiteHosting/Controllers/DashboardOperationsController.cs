@@ -28,7 +28,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpPost]
         [Route("toggleSiteStatus")]
-        public async Task<IActionResult> ToggleSiteStatus(ToggleSiteStatusRequestModel requestModel, [FromServices] IEventLogsService eventLogsService)
+        public async Task<IActionResult> ToggleSiteStatus(ToggleSiteStatusRequestModel requestModel, IEventLogsService eventLogsService)
         {
             var siteId = requestModel.SiteId;
             var site = await _siteService.GetSiteByIdAsync(siteId);
@@ -45,8 +45,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
 
             var currentUserName = currentUser.Name;
-            var toggleResult = await _siteService.ToggleSiteStatusAsync(site)
-                    .ConfigureAwait(false);
+            var toggleResult = await _siteService.ToggleSiteStatusAsync(site);
 
             if (toggleResult)
             {
@@ -65,7 +64,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [HttpDelete("{siteId}")]
         public async Task<IActionResult> DeleteSite([Required] string siteId, [FromServices] IContentManager contentManager)
         {
-            var siteToDelete = await _siteService.GetSiteByIdAsync(siteId).ConfigureAwait(false);
+            var siteToDelete = await _siteService.GetSiteByIdAsync(siteId);
             if (siteToDelete == null)
             {
                 return NotFound();
