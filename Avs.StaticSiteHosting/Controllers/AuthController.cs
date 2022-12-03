@@ -1,16 +1,11 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.Identity;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
@@ -32,13 +27,14 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpPost]
         [Route("token")]
-        public async Task<IActionResult> GetAccessToken(LoginRequestModel loginModel, [FromServices] PasswordHasher pwdHasher)
+        public async Task<IActionResult> GetAccessToken(LoginRequestModel loginModel, PasswordHasher pwdHasher, IJwtTokenProvider jwtTokenProvider)
         {
             var login = loginModel.Login;
             var password = loginModel.Password;
+
             var user = await _userService.GetUserByLoginAsync(login);
             
-            if (user == null)
+            if (user is null)
             {
                 return badRequestResponse($"No user with login '{login}' has been found.");
             }
@@ -47,38 +43,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 return badRequestResponse("Invalid password entered.");
             }
-                     
-            var currentTimestamp = DateTime.UtcNow;
-            var tokenLifeTime = AuthSettings.TokenLifetime;
-            var signingCredentials = new SigningCredentials(AuthSettings.SecurityKey(), SecurityAlgorithms.HmacSha256);
-            var expiresAt = currentTimestamp.Add(tokenLifeTime);
 
-            var claims = new List<Claim>();
-            claims.Add(new Claim(AuthSettings.UserIdClaim, user.Id));
-            claims.Add(new Claim(ClaimsIdentity.DefaultNameClaimType, user.Name));
-            
-            var jwtToken = new JwtSecurityToken(issuer: AuthSettings.ValidIssuer, 
-                    audience: AuthSettings.ValidAudience, 
-                    claims: claims.Union(user.Roles.Select(r => new Claim(ClaimsIdentity.DefaultRoleClaimType, r.Name)).ToArray()),
-                    notBefore: currentTimestamp, 
-                    expires: expiresAt, 
-                    signingCredentials: signingCredentials
-            );
-
-            var encodedToken = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+            var (tokenValue, expiresAt) = jwtTokenProvider.GenerateToken(user);
             _logger.LogInformation($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
 
-            var response = new
-            {
-                token = encodedToken,
-                expires_at = expiresAt,
-                userInfo = new
-                {
-                    user.Name,
-                    user.Email,
-                    isAdmin = _userService.IsAdmin(user)
-                }
-            };
+            var userInfo = new UserInfo(user.Name, user.Email, _userService.IsAdmin(user));
+            var response = new LoginResponse(tokenValue, expiresAt, userInfo); 
 
             return Ok(response);
         }                

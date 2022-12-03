@@ -50,7 +50,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return Unauthorized();
             }
 
-            var uploadedFiles = await _contentManager.GetUploadedContentAsync(siteId).ConfigureAwait(false);
+            var uploadedFiles = await _contentManager.GetUploadedContentAsync(siteId);
 
             var siteDetailsResponse = new SiteDetailsResponse()
                 {
@@ -59,7 +59,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     IsActive = site.IsActive,
                     ResourceMappings = site.Mappings,
                     LandingPage = site.LandingPage,
-                    Uploaded = uploadedFiles.ToList()
+                    Uploaded = uploadedFiles.ToList(),
+                    TagIds = site.TagIds?.Select(x => x.Id).ToArray()
                 };
 
             return siteDetailsResponse;
@@ -79,7 +80,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return Conflict("This site name is already in use.");
             }
 
-            var currentUser = await _userService.GetUserByIdAsync(CurrentUserId).ConfigureAwait(false);
+            var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
             if (currentUser == null)
             {
                 return BadRequest("Cannot find user by ID provided.");
@@ -93,11 +94,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 CreatedBy = currentUser,
                 LaunchedOn = DateTime.UtcNow,
                 Mappings = siteDetails.ResourceMappings,
-                LandingPage = siteDetails.LandingPage
+                LandingPage = siteDetails.LandingPage,
+                TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id =  id }).ToArray()
             };
 
-            var newSite = await _siteService.CreateSiteAsync(siteData).ConfigureAwait(false);
-            await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId).ConfigureAwait(false);
+            var newSite = await _siteService.CreateSiteAsync(siteData);
+            await _contentManager.ProcessSiteContentAsync(newSite, uploadSessionId);
 
             await eventLogsService.InsertSiteEventAsync(newSite.Id, "Site Created", SiteEventType.Information,
                 $"Site '{newSite.Name}' was created successfully.");
@@ -147,7 +149,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             siteToUpdate.Description = siteDetails.Description;
             siteToUpdate.Mappings = siteDetails.ResourceMappings;
             siteToUpdate.LandingPage = siteDetails.LandingPage;
-
+            siteToUpdate.TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray();
+            
             await _siteService.UpdateSiteAsync(siteToUpdate);
 
             if (!string.IsNullOrEmpty(siteDetails.UploadSessionId))
@@ -162,11 +165,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("content-get")]
         public async Task<IActionResult> GetContent([Required] string contentItemId, int? maxWidth, [FromServices] ImageResizeService resizeService)
         {
-            var (
-                fileName, 
-                contentType, 
-                contentStream
-            ) = await _contentManager.GetContentFileAsync(contentItemId);
+            var (fileName, contentType, contentStream) = await _contentManager.GetContentFileAsync(contentItemId);
             contentType ??= "application/octet-stream";
             
             if (contentStream is null)
@@ -201,7 +200,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("content-edit/{contentItemId}")]
         public async Task<IActionResult> EditContent([Required] string contentItemId, EditContentModel model)
         {
-            await _contentManager.UpdateContentItem(contentItemId, model.Content).ConfigureAwait(false);
+            await _contentManager.UpdateContentItem(contentItemId, model.Content);
             
             return Ok();
         }
@@ -220,7 +219,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             if (!string.IsNullOrEmpty(contentItemId))
             {
-                isDeleted = await _contentManager.DeleteContentByIdAsync(contentItemId).ConfigureAwait(false);
+                isDeleted = await _contentManager.DeleteContentByIdAsync(contentItemId);
 
                 errorMsg = isDeleted ? string.Empty : $"Cannot delete content with ID: {contentItemId}";
             }
@@ -235,12 +234,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return BadRequest("You must specify either content item ID or name with upload session ID");
             }
 
-            if (!isDeleted)
-            {
-                return BadRequest(new { errorMsg });
-            }
-
-            return Ok();
+            return isDeleted ? Ok() : BadRequest(errorMsg);
         }
     }
 }

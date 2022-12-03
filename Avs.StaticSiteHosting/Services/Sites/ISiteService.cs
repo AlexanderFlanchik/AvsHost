@@ -13,7 +13,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// </summary>
         /// <param name="query">Query parameters</param>
         /// <returns></returns>
-        Task<IEnumerable<Site>> GetSitesAsync(SitesQuery query);
+        Task<IEnumerable<SiteModel>> GetSitesAsync(SitesQuery query);
         
         /// <summary>
         /// Calculates amount of sites created by user.

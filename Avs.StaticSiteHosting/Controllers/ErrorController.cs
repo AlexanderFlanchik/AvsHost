@@ -11,12 +11,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         {
             var errorModel = new ErrorInfoModel();
             var errorFeature = HttpContext.Features.Get<IExceptionHandlerFeature>();
-            if (errorFeature.Error == null)
+            if (errorFeature.Error is null)
             {
                 return Redirect("/");
             }
 
-            if (!(errorFeature.Error is StaticSiteProcessingException exception))
+            if (errorFeature.Error is not StaticSiteProcessingException exception)
             {
                 errorModel.ErrorMessage = "Unknown server error";
                 errorModel.Title = "Error";

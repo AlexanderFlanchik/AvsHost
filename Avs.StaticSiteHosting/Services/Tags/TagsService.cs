@@ -38,6 +38,14 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// <param name="tagId">Tag ID</param>
         /// <returns></returns>
         Task DeleteTag(string tagId);
+
+        /// <summary>
+        /// Checks if a tag with name specified already exists for a user.
+        /// </summary>
+        /// <param name="userId">User ID</param>
+        /// <param name="tagName">Tag name</param>
+        /// <returns>true if the tag exists, false otherwise.</returns>
+        Task<bool> TagExists(string userId, string tagName);
     }
 
     public class TagsService : ITagsService
@@ -87,6 +95,12 @@ namespace Avs.StaticSiteHosting.Web.Services
             }
 
             return new TagModel(tagId, tag.Name, tag.BackgroundColor, tag.TextColor);
+        }
+
+        public async Task<bool> TagExists(string userId, string tagName)
+        {
+            var tagQuery = await _tags.FindAsync(new FilterDefinitionBuilder<Tag>().Where(x => x.Name == tagName && x.UserId == userId));
+            return await tagQuery.AnyAsync();
         }
     }
 }

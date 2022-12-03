@@ -4,6 +4,7 @@ export interface SiteFormData {
     isActive: boolean,
     landingPage: string,
     resourceMappings: Map<string, string>,
+    tagIds: Array<string>
 }
 
 export class CreateOrUpdateSiteContextHolder {
@@ -48,6 +49,29 @@ export class CreateOrUpdateSiteContextHolder {
             }
         } else {
             if (siteFormData.resourceMappings && siteFormData.resourceMappings.size) {
+                return true;
+            }
+        }
+
+        if (this._state.tagIds && this._state.tagIds.length) {
+            if (!siteFormData.tagIds || !siteFormData.tagIds.length || this._state.tagIds.length != siteFormData.tagIds.length) {
+                return true;
+            }
+            
+            let tagsChanged = false;
+            siteFormData.tagIds.forEach((val, no) => {
+                let tagId = this._state.tagIds[no];
+                if (tagId != val) {
+                    tagsChanged = true;
+                }
+            });
+
+            if (tagsChanged) {
+                return true;
+            }
+
+        } else {
+            if (siteFormData.tagIds && siteFormData.tagIds.length) {
                 return true;
             }
         }

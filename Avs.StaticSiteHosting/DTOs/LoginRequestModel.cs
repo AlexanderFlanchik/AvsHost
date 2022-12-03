@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Avs.StaticSiteHosting.Web.DTOs
 {
@@ -12,4 +13,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         [MinLength(4)]
         public string Password { get; set; }
     }
+
+    public record UserInfo(string Name, string Email, bool isAdmin);
+    public record LoginResponse(string token, DateTime expires_at, UserInfo userInfo);
 }

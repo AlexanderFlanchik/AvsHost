@@ -42,14 +42,14 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             user.Email = profileModel.Email;
             user.Name = profileModel.UserName;
 
-            await _userService.UpdateUserAsync(user).ConfigureAwait(false);
+            await _userService.UpdateUserAsync(user);
 
             return Ok();
         }
 
         [HttpPost]
         [Route("changepassword")]
-        public async Task<IActionResult> ChangePassword(ChangePasswordRequestModel requestModel, [FromServices] PasswordHasher passwordHasher)
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestModel requestModel, PasswordHasher passwordHasher)
         {
             var newPassword = requestModel.NewPassword;
             var pwd = requestModel.Password;
@@ -67,7 +67,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             user.Password = passwordHasher.HashPassword(newPassword);
 
-            await _userService.UpdateUserAsync(user).ConfigureAwait(false);
+            await _userService.UpdateUserAsync(user);
             
             return Ok();
         }
@@ -77,7 +77,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> GetUserProfile([Required] string userId)
         {
-            var user = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            var user = await _userService.GetUserByIdAsync(userId);
                         
             return user == null ? (IActionResult)NotFound() :
              Ok(new UserProfileModel() 
@@ -95,9 +95,11 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [HttpPut]
         [Authorize(Roles = "Administrator")]
         [Route("UpdateUserProfile/{userId}")]
-        public async Task<IActionResult> UpdateUserProfile(string userId, UserStatusModel updateRequest, [FromServices]IHubContext<UserNotificationHub> notificationHub, [FromServices]ISiteService siteService)
+        public async Task<IActionResult> UpdateUserProfile(string userId, UserStatusModel updateRequest, 
+                IHubContext<UserNotificationHub> notificationHub, 
+                ISiteService siteService)
         {
-            var user = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            var user = await _userService.GetUserByIdAsync(userId);
             if (user == null)
             {
                 return NotFound();
@@ -120,7 +122,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     _logger.LogInformation($"Ban is removed from the user ID = {userId} at {DateTime.UtcNow}.");
                 }
                 user.Status = newStatus;
-                await siteService.UpdateSitesStatusAsync(userId, newStatus).ConfigureAwait(false);
+                await siteService.UpdateSitesStatusAsync(userId, newStatus);
                 await notificationHub.Clients.User(userId).SendAsync("UserStatusChanged", new { currentStatus = newStatus });
 
                 isModified = true;
@@ -137,7 +139,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return NoContent();
             }
 
-            await _userService.UpdateUserAsync(user).ConfigureAwait(false);
+            await _userService.UpdateUserAsync(user);
 
             return Ok();
         }
@@ -153,7 +155,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return BadRequest();
             }
 
-            var profile = await _userService.GetUserByIdAsync(userId).ConfigureAwait(false);
+            var profile = await _userService.GetUserByIdAsync(userId);
             if (profile == null)
             {
                 return NotFound();

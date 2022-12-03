@@ -46,18 +46,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
             Response.Headers.Add(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));
 
-            var sitesList = (await siteService.GetSitesAsync(query))
-                    .Select(s => new SiteModel()
-                        {
-                            Id = s.Id,
-                            Name = s.Name,
-                            Description = s.Description,
-                            LaunchedOn = s.LaunchedOn,
-                            IsActive = s.IsActive,
-                            LandingPage = s.LandingPage,
-                            Owner = new UserModel { Id = s.CreatedBy.Id, UserName = s.CreatedBy.Name }
-                        }
-                    ).ToArray();
+            var sitesList = await siteService.GetSitesAsync(query);
 
             return Ok(sitesList);
         }

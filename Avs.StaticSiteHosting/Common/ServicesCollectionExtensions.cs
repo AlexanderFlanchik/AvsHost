@@ -47,6 +47,7 @@ namespace Avs.StaticSiteHosting.Web.Common
     {
         public static IServiceCollection AddIdentityServices(this IServiceCollection services)
         {
+            services.AddScoped<IJwtTokenProvider, JwtTokenProvider>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserRoleService, UserRoleService>();

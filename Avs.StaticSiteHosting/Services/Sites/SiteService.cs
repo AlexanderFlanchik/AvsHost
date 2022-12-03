@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tag = Avs.StaticSiteHosting.Web.Models.Tags.Tag;
 
 namespace Avs.StaticSiteHosting.Web.Services
 {
@@ -15,9 +16,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         private readonly IMongoCollection<Site> _sites;
 
         public SiteService(MongoEntityRepository entityRepository)
-        {
-            _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
-        }
+            => _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
 
         public async Task<IEnumerable<string>> GetSiteIdsByOwner(string ownerId)
         {
@@ -28,21 +27,26 @@ namespace Avs.StaticSiteHosting.Web.Services
             return siteIds;
         }
 
-        public async Task<IEnumerable<Site>> GetSitesAsync(SitesQuery query)
+        public async Task<IEnumerable<SiteModel>> GetSitesAsync(SitesQuery query)
         {
-            var findOptions = new FindOptions<Site>() { Limit = query.PageSize, Skip = query.PageSize * (query.Page - 1) };
             var filterBuilder = new FilterDefinitionBuilder<Site>();
             var filter = filterBuilder.Empty;
-
+            
             if (!string.IsNullOrEmpty(query.OwnerId))
             {
                 var filterByOwner = filterBuilder.Where(r => r.CreatedBy.Id == query.OwnerId);
                 filter = filterBuilder.And(filter, filterByOwner);
             }
-                     
+
+            if (query.TagIds is not null && query.TagIds.Any())
+            {
+                var filterByTags = filterBuilder.Where(r => r.TagIds != null && r.TagIds.Any(t => query.TagIds.Contains(t.Id)));
+                filter = filterBuilder.And(filter, filterByTags);
+            }
+
+            SortDefinition<Site> sort = null;
             if (!string.IsNullOrEmpty(query.SortField))
             {
-                SortDefinition<Site> sort = null;
                 var sortDefBuilder = new SortDefinitionBuilder<Site>();
                 switch (query.SortOrder)
                 {
@@ -53,14 +57,31 @@ namespace Avs.StaticSiteHosting.Web.Services
                         sort = sortDefBuilder.Descending(query.SortField);
                         break;               
                 }
-
-                findOptions.Sort = sort;
             }
 
-            var sitesCursor = await _sites.FindAsync(filter, findOptions).ConfigureAwait(false);
-            var sitesList = await sitesCursor.ToListAsync().ConfigureAwait(false);
+            var sitesQuery = _sites.Aggregate().Match(filter);
+            if (sort is not null)
+            {
+                sitesQuery = sitesQuery.Sort(sort);
+            }
+                
+            sitesQuery = sitesQuery.Skip(query.PageSize * (query.Page - 1))
+                .Limit(query.PageSize)
+                .Lookup<Tag, Site>(GeneralConstants.TAGS_COLLECTION, "TagIds._id", "_id", "Tags");
 
-            return sitesList;
+            var sitesList = await sitesQuery.ToListAsync();
+
+            return sitesList.Select(s => new SiteModel 
+                { 
+                    Id = s.Id,
+                    Name = s.Name,
+                    Description = s.Description,
+                    LandingPage = s.LandingPage,
+                    LaunchedOn = s.LaunchedOn,
+                    Owner = new UserModel { Id = s.CreatedBy.Id, UserName = s.CreatedBy.Name },
+                    IsActive = s.IsActive,
+                    Tags = s.Tags?.Select(t => new TagModel(t.Id, t.Name, t.BackgroundColor, t.TextColor)).ToArray()
+                });
         }
 
         public async Task<int> GetSitesAmountAsync(string ownerId = null)
@@ -137,7 +158,8 @@ namespace Avs.StaticSiteHosting.Web.Services
                                       .Set(s => s.Description, siteToUpdate.Description)
                                       .Set(s => s.IsActive, siteToUpdate.IsActive)
                                       .Set(s => s.Mappings, siteToUpdate.Mappings)
-                                      .Set(s => s.LandingPage, siteToUpdate.LandingPage);
+                                      .Set(s => s.LandingPage, siteToUpdate.LandingPage)
+                                      .Set(s => s.TagIds, siteToUpdate.TagIds);
             
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }

@@ -28,3 +28,6 @@
 /Avs.StaticSiteHosting/bin/Debug/net7.0
 /Avs.StaticSiteHosting.ContentCreator/bin/Debug/net7.0
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net7.0
+/Avs.StaticSiteHosting/bin/Release/net7.0
+/Avs.StaticSiteHosting.DataMigrator/bin/Release/net7.0
+/Avs.StaticSiteHosting.ContentCreator/bin/Release/net7.0

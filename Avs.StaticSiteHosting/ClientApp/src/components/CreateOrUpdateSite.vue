@@ -58,6 +58,12 @@
                             <b-form-checkbox v-model="isActive"></b-form-checkbox>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Tags:</td>
+                        <td>
+                            <TagsSelectList :tagIds="tagIds" :onTagsChanged="(selectedTags) => tagsChanged(selectedTags)" />
+                        </td>
+                    </tr>
                 </table>
                 <ResourceMappingsSection :resourceMappings="resourceMappings"/>
             </div>
@@ -78,6 +84,7 @@
 <script>
     import { ContentFile } from '../common/ContentFile';
     import { SiteContextManager } from '../services/SiteContextManager';
+    import TagsSelectList from './Tags/TagsSelectList.vue';
     import Loader from './Loader.vue';
     import ResourceMappingsSection from './CreateOrUpdateSite/ResourceMappingsSection.vue';
     import UploadSiteContent from './CreateOrUpdateSite/UploadSiteContent.vue';
@@ -98,6 +105,7 @@
                 isActive: true,
                 landingPage: '',
                 processError: '',
+                tagIds: [],
                 resourceMappings: [],
                 uploadSessionId: '',
                 uploaded: [],
@@ -122,6 +130,7 @@
                 this.description = cachedSite.description;
                 this.isActive = cachedSite.isActive;
                 this.landingPage = cachedSite.landingPage;
+                this.tagIds = cachedSite.tagIds;
                 this.resourceMappings = cachedSite.resourceMappings;
                 this.uploadSessionId = cachedSite.uploadSessionId;
                 this.uploaded = cachedSite.uploadedFiles.map(
@@ -155,7 +164,11 @@
                         this.description = data.description;
                         this.isActive = data.isActive;
                         this.landingPage = data.landingPage;
-
+                        console.log("check tags");
+                        
+                        this.tagIds = data.tagIds;
+                        console.log(this.tagIds);
+                        
                         let lst = [];
                         let uploaded = data.uploaded;
                         for (let u of uploaded) {
@@ -203,6 +216,10 @@
         },
 
         methods: {          
+            tagsChanged: function(selectedTags) {
+                this.tagIds = selectedTags.map(t => t.id);
+            },
+            
             getFormContext: function() {
                 let rm = new Map();
                 for (let mapping of this.resourceMappings) {
@@ -214,7 +231,8 @@
                     description: this.description,
                     isActive: this.isActive,
                     landingPage: this.landingPage,
-                    resourceMappings: rm           
+                    tagIds: this.tagIds,
+                    resourceMappings: rm        
                 };
             },
 
@@ -285,12 +303,18 @@
                     description: this.description,
                     isActive: this.isActive,
                     landingPage: this.landingPage,
+                    tagIds: this.tagIds,
                     resourceMappings: getResourceMappings()
                 };
 
+                let isNew = !this.siteId;
                 try {
-                    if (!this.siteId) {
-                        await this.$apiClient.postAsync('api/sitedetails', siteDetailsModel);
+                    if (isNew) {
+                        let newSiteData = (await this.$apiClient.postAsync('api/sitedetails', siteDetailsModel))?.data;
+                        this.siteId = newSiteData.id;
+                        for (let up of this.uploaded) {
+                            up.isNew = false;
+                        }
                     } else {
                         await this.$apiClient.putAsync(`api/sitedetails/${this.siteId}`, siteDetailsModel);
                     }
@@ -298,6 +322,9 @@
                     contextHolder.set(this.getFormContext());
                     await Q.delay(250);
                     this.processing = false;
+                    if (isNew) {
+                        this.$router.push({ path: '/sites/update/' + this.siteId });
+                    }
                 } catch {
                     let mode = this.siteId ? 'edit' : 'create';
                     let msg = `Unable to ${mode} your site due to server error. Please try again later.`;
@@ -331,6 +358,7 @@
                     isActive: this.isActive,
                     landingPage: this.landingPage,
                     resourceMappings: this.resourceMappings,
+                    tagIds: this.tagIds,
                     uploadedFiles: this.uploaded
                 });
 
@@ -347,6 +375,7 @@
                     description: this.description,
                     isActive: this.isActive,
                     landingPage: this.landingPage,
+                    tagIds: this.tagIds,
                     resourceMappings: this.resourceMappings,
                     uploadedFiles: this.uploaded
                 });
@@ -395,7 +424,8 @@
             Loader,
             UploadSiteContent,
             ResourceMappingsSection,
-            UploadedContentList
+            UploadedContentList,
+            TagsSelectList
         }
     }
 </script>

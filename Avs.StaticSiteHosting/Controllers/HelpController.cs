@@ -18,6 +18,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     public class HelpController : BaseController
     {
         private readonly IHelpContentService _helpService;
+
         public HelpController(IHelpContentService helpService)
         {
             _helpService = helpService ?? throw new ArgumentNullException(nameof(helpService));
@@ -28,7 +29,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<ActionResult<IEnumerable<HelpSectionModel>>> GetHelpSections()
         {
             var roles = GetUserRoles();
-            var helpSections = await _helpService.GetAllHelpSectionsAsync().ConfigureAwait(false);
+            var helpSections = await _helpService.GetAllHelpSectionsAsync();
 
             return helpSections.Where(s =>
                 s.RolesAllowed == null || s.RolesAllowed.Any(r => roles.Contains(r))
@@ -52,9 +53,9 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return new EmptyResult();
             }
 
-            var totalTopics = await _helpService.GetTopicsAmountAsync(helpSectionId).ConfigureAwait(false);
             var userRoles = GetUserRoles();
-
+            var totalTopics = await _helpService.GetTopicsAmountAsync(helpSectionId);
+            
             // Check role access if needed
             var allowedRoles = topic.RolesAllowed ?? Array.Empty<string>();
             if (allowedRoles.Any() && !userRoles.Any(r => allowedRoles.Contains(r)))
@@ -67,7 +68,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             Response.Headers.Add("total-topics", new StringValues(totalTopics.ToString()));
             
             // Search for paragraphs available for a user
-            var paragraphs = await _helpService.GetTopicContentAsync(topic.Id).ConfigureAwait(false);
+            var paragraphs = await _helpService.GetTopicContentAsync(topic.Id);
             var filteredParagraphs = paragraphs.Where(p =>
                     p.RolesAllowed == null || 
                     userRoles.Any(role => 

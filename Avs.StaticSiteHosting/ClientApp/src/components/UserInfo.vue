@@ -76,7 +76,6 @@
                 return this.$authService.isAuthenticated();
             },
             isUnreadMessageNotificationShown: function () {
-                console.log(this.$route.path);
                 return this.$route.path != "/profile" && this.unreadMessages > 0 && !this.isAdmin;
             }
         }

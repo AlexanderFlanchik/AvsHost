@@ -7,7 +7,7 @@
         <NavigationMenu />
         <div class="tag-parent">
             <TagList ref="tag-list" class="tag-list-container" />
-            <NewTag />
+            <NewTag :tagCreated$="tagCreatedSubject" />
         </div>
     </div>
 </template>
@@ -16,8 +16,17 @@
     import NewTag from './Tags/NewTag.vue';
     import UserInfo from './UserInfo.vue';
     import NavigationMenu from './NavigationMenu.vue';
+    import { Subject } from 'rxjs';
 
     export default {
+        data: function () {
+            return {
+                tagCreatedSubject: new Subject()
+            };
+        },
+        mounted: function () {
+            this.tagCreatedSubject.subscribe(() => this.$refs["tag-list"].loadTags());
+        },
         components: {
             TagList,
             NewTag,
@@ -36,5 +45,7 @@
         min-width: 450px;
         padding-left: 5px;
         padding-top: 2px;
+        height: 100%; 
+        overflow-y: auto;
     }
 </style>

@@ -10,7 +10,6 @@ using Avs.StaticSiteHosting.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
-using Microsoft.AspNetCore.Mvc.Formatters;
 
 var builder = WebApplication.CreateBuilder(args);
 

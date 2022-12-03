@@ -40,6 +40,26 @@ var CreateOrUpdateSiteContextHolder = /** @class */ (function () {
                 return true;
             }
         }
+        if (this._state.tagIds && this._state.tagIds.length) {
+            if (!siteFormData.tagIds || !siteFormData.tagIds.length || this._state.tagIds.length != siteFormData.tagIds.length) {
+                return true;
+            }
+            var tagsChanged_1 = false;
+            siteFormData.tagIds.forEach(function (val, no) {
+                var tagId = _this._state.tagIds[no];
+                if (tagId != val) {
+                    tagsChanged_1 = true;
+                }
+            });
+            if (tagsChanged_1) {
+                return true;
+            }
+        }
+        else {
+            if (siteFormData.tagIds && siteFormData.tagIds.length) {
+                return true;
+            }
+        }
         return false;
     };
     return CreateOrUpdateSiteContextHolder;
