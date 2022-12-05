@@ -12,7 +12,7 @@
         <div v-if="showOptions" class="tag-options-container">
            <div class="options-list-container" v-if="allTags.length">
                 <ul class="options-list">
-                    <li v-for="tag of allTags" :key="tag.id" @click="addTag(tag)" v-bind:class="tagSelected(tag)">
+                    <li v-for="tag of allTags" :key="tag.id" @click="addOrRemoveTag(tag)" v-bind:class="tagSelected(tag)">
                         <Tag :tagData="tag" />
                     </li>
                 </ul>
@@ -53,11 +53,13 @@
                     this.tagRemoving = false;
                 }
             },
-            addTag: function(tag) {
+            addOrRemoveTag: function(tag) {
                 let foundTag = this.selected.find(t => t.id == tag.id);
                 if (!foundTag) {
                     this.selected.push(tag);
                     this.onTagsChanged(this.selected);
+                } else {
+                    this.removeTag(tag);
                 }
             },
 
@@ -104,6 +106,8 @@
    .tag-options-container {
         background-color: white;
         border: 1px solid darkblue;
+        border-radius: 5px;
+        padding-right: 2px;
         width: 100%;
         top: 45px;
         position: absolute;
@@ -147,8 +151,12 @@
         margin-top: 8px;
     }
     .btn-bar {
+        border-top: 1px solid darkblue;
         text-align: right;
-        padding-right: 5px;
+        margin-top: 2px;
+        padding-top: 2px;
+        padding-right: 2px;
+        padding-bottom: 2px;
     }
 
     .selected-tag {

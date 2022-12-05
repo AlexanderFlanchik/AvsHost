@@ -337,6 +337,8 @@
         display: flex;
         min-height: 40px;
         flex-wrap: wrap;
+        row-gap: 2px;
+        column-gap: 2px;
     }
 
     @media screen and (max-width: 1024px)
