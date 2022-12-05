@@ -280,6 +280,10 @@
     .w-350 {
         width: 350px;
     }
+    .site-row td {
+        padding: 0 0 0 8px;
+        vertical-align: middle;
+    }
 
     .new-site-link-container {
         width: 130px;
