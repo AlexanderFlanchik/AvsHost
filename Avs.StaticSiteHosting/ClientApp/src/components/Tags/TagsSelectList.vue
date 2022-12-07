@@ -57,9 +57,13 @@
             },
 
             clear: function() {
-                let t = this.selected.pop();
+                if (!this.tagIds) {
+                    return;
+                }
+
+                let t = this.tagIds.pop();
                 while (t) {
-                    t = this.selected.pop();
+                    t = this.tagIds.pop();
                 }
 
                 this.onTagsChanged(this.selected);
