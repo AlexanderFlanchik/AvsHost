@@ -1,8 +1,8 @@
 ﻿<template>
     <div class="tag-list-container">
         <div @click="() => openOptions()">
-            <div class="no-selected-tags" v-if="!selected.length">-- Click here to add --</div>
-            <ul class="selected-tags-container" v-if="selected.length">
+            <div class="no-selected-tags" v-if="!selected.length && !hideSelectedTags">-- Click here to add --</div>
+            <ul class="selected-tags-container" v-if="selected.length && !hideSelectedTags">
                 <li v-for="tag of selected" :key="tag.id">
                     <Tag :tagData="tag" />
                     <a href="#" @click="removeTag(tag)">X</a>
@@ -18,6 +18,7 @@
                 </ul>
             </div>
             <div class="btn-bar" v-if="allTags.length">
+                <button class="btn btn-primary clear-selected-tags-btn" @click="clear" v-if="selected.length">Clear</button>
                 <button class="btn btn-primary" @click="showOptions = false">OK</button>
             </div>
             <div v-if="!allTags.length">
@@ -32,7 +33,8 @@
     export default {
         props: {
             tagIds: Object,
-            onTagsChanged: Object
+            onTagsChanged: Object,
+            hideSelectedTags: Object
         },
         data: function () {
             return {
@@ -53,6 +55,16 @@
                     this.tagRemoving = false;
                 }
             },
+
+            clear: function() {
+                let t = this.selected.pop();
+                while (t) {
+                    t = this.selected.pop();
+                }
+
+                this.onTagsChanged(this.selected);
+            },
+
             addOrRemoveTag: function(tag) {
                 let foundTag = this.selected.find(t => t.id == tag.id);
                 if (!foundTag) {
@@ -159,7 +171,12 @@
         padding-bottom: 2px;
     }
 
+    .clear-selected-tags-btn {
+        margin-right: 2px;
+    }
+
     .selected-tag {
         background-color: darkgrey;
     }
+
 </style>

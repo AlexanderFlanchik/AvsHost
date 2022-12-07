@@ -44,8 +44,13 @@
                             User Name
                         </th>
                         <th class="w-150">Is Active</th>
-                        <th class="tags-column">
-                            Tags
+                        <th class="tags-column" v-if="!isAdmin">
+                            <div>Tags <span v-if="tags.length">({{tags.length}})</span> &nbsp;
+                                <a href="javascript:void(0)" @click="openTagsFilter">Select..</a>
+                            </div>
+                            <div class="tags-select-list-container">
+                                <TagsSelectList ref="tags-filter" :tagIds="tags" :onTagsChanged="applySelectedTags" :hideSelectedTags="true" />
+                            </div>
                         </th>
                         <th>Actions</th>
                     </tr>
@@ -65,7 +70,7 @@
                             <td class="w-150">
                                 <input type="checkbox" v-model="site.isActive" disabled="disabled" />
                             </td>
-                            <td class="tags-column">
+                            <td class="tags-column" v-if="!isAdmin">
                                 <div class="tags-holder">
                                    <Tag v-for="tag in site.tags" :key="tag.id" :tagData="tag" />
                                 </div>
@@ -92,6 +97,7 @@
     import NavigationMenu from '../components/NavigationMenu.vue';
     import { SiteContextManager } from '../services/SiteContextManager';
     import Tag from './Tags/Tag.vue';
+    import TagsSelectList from './Tags/TagsSelectList.vue';
     import * as moment from 'moment';
     const stateManager = new SiteContextManager();
 
@@ -132,19 +138,7 @@
                 totalFound: 0,
                 sortState: NoSort,
                 sortField: '',
-                loadSiteData: async function () {
-                    let apiUrl = `api/sites?page=${this.page}&pageSize=${this.pageSize}`;
-
-                    if (this.sortField && this.sortState.order) {
-                        apiUrl += `&sortOrder=${this.sortState.order}&sortField=${this.sortField}`;
-                    }
-
-                    this.$apiClient.getAsync(apiUrl).then((response) => {
-                        let siteRows = response.data.map(s => new Site(s));
-                        this.sites = siteRows;
-                        this.totalFound = Number(response.headers["total-rows-amount"]);
-                    });
-                }
+                tags: []
             }
         },
 
@@ -162,9 +156,42 @@
         },
 
         methods: {
+            loadSiteData: function () {
+                let apiUrl = `api/sites?page=${this.page}&pageSize=${this.pageSize}`;
+
+                if (this.sortField && this.sortState.order) {
+                    apiUrl += `&sortOrder=${this.sortState.order}&sortField=${this.sortField}`;
+                }
+
+                let tags = "";
+                for (let tag of this.tags) {
+                    tags += `&tagIds=${tag}`;
+                }
+
+                if (tags.length) {
+                    apiUrl += tags;
+                }
+
+                this.$apiClient.getAsync(apiUrl).then((response) => {
+                    let siteRows = response.data.map(s => new Site(s));
+                    this.sites = siteRows;
+                    this.totalFound = Number(response.headers["total-rows-amount"]);
+                });
+            },
+            
             pageChanged: function () {
                 this.loadSiteData();
             },
+
+            openTagsFilter: function() {
+                this.$refs["tags-filter"].openOptions();
+            },
+
+            applySelectedTags: function(selectedTags) {
+                this.tags = selectedTags?.map(r => r.id);
+                this.loadSiteData();
+            },
+
             toggleSiteStatus: async function (siteId) {
                 let toggleResult = await this.$apiClient.postAsync('api/dashboardoperations/toggleSiteStatus', { siteId });
                 let site = this.sites.find(s => s.id == siteId);
@@ -221,7 +248,8 @@
         components: {
             UserInfo,
             NavigationMenu,
-            Tag
+            Tag,
+            TagsSelectList
         }
     }
 </script>
@@ -306,7 +334,10 @@
     .columns-holder {
         margin-bottom: 0 !important;
     }
-
+    .tags-select-list-container {
+        position: relative;
+        top: -30px;
+    }
     .site-list-container {
         height: calc(100vh - 280px);
         overflow-y: auto;

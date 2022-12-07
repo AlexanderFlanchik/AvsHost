@@ -130,13 +130,18 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
 
             siteToUpdate.Name = siteDetails.SiteName;
+            siteToUpdate.Description = siteDetails.Description;
+            siteToUpdate.Mappings = siteDetails.ResourceMappings;
+            siteToUpdate.LandingPage = siteDetails.LandingPage;
+            siteToUpdate.TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray();
+
             bool siteStateChanged = siteToUpdate.IsActive != siteDetails.IsActive;
             if (siteStateChanged)
-            {                
+            {
                 siteToUpdate.IsActive = siteDetails.IsActive;
                 if (siteToUpdate.IsActive)
                 {
-                    await eventLogsService.InsertSiteEventAsync(siteToUpdate.Id, "Site Started.", SiteEventType.Information, 
+                    await eventLogsService.InsertSiteEventAsync(siteToUpdate.Id, "Site Started.", SiteEventType.Information,
                         $"Site '{siteToUpdate.Name}' was started by {currentUser.Name}.");
                 }
                 else
@@ -145,12 +150,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                          $"Site '{siteToUpdate.Name}' was stopped by {currentUser.Name}.");
                 }
             }
-            
-            siteToUpdate.Description = siteDetails.Description;
-            siteToUpdate.Mappings = siteDetails.ResourceMappings;
-            siteToUpdate.LandingPage = siteDetails.LandingPage;
-            siteToUpdate.TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray();
-            
+
             await _siteService.UpdateSiteAsync(siteToUpdate);
 
             if (!string.IsNullOrEmpty(siteDetails.UploadSessionId))
