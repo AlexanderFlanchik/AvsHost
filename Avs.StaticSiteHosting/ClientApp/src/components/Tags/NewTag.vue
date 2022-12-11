@@ -42,7 +42,7 @@
 
             onTagNameChanged: function () {
                 this.error = null;
-                this.$apiClient.getAsync(`api/tags/check-new-tag?tagName=${this.name}`)
+                this.$apiClient.getAsync(`api/tagvalidation/check-new-tag?tagName=${this.name}`)
                     .then(response => {
                         if (response.data) {
                             this.error = `A tag with name '${this.name}' already exists.`;

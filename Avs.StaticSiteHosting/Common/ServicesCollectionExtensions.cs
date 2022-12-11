@@ -38,6 +38,7 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddSingleton<CloudStorageSyncWorker>();
             services.AddHostedService(sp => sp.GetRequiredService<CloudStorageSyncWorker>());
             services.AddScoped<ITagsService, TagsService>();
+            services.AddScoped<ITagSiteService, TagSiteService>();
 
             return services;
         }

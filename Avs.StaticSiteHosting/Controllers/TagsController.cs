@@ -21,10 +21,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TagModel>>> GetTags() => Ok(await _tagsService.GetAllTags(CurrentUserId));
+        public async Task<ActionResult<IEnumerable<TagModel>>> GetTags() 
+            => Ok(await _tagsService.GetAllTags(CurrentUserId));
 
         [HttpGet("{tagId}")]
-        public async Task<ActionResult<TagModel>> GetTagById(string tagId) => Ok(await _tagsService.GetTagById(CurrentUserId, tagId));
+        public async Task<ActionResult<TagModel>> GetTagById(string tagId) 
+            => Ok(await _tagsService.GetTagById(CurrentUserId, tagId));
 
         [HttpPost]
         public async Task<IActionResult> CreateTag(TagModel newTagRequest)
@@ -34,16 +36,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             return CreatedAtAction(nameof(GetTagById), new { tagId = newTag.Id }, newTag);
         }
 
-        [HttpDelete]
+        [HttpDelete("{tagId}")]
         public async Task<IActionResult> DeleteTag(string tagId)
         {
             await _tagsService.DeleteTag(tagId);
 
             return NoContent();
         }
-
-        [HttpGet]
-        [Route("check-new-tag")]
-        public async Task<IActionResult> NewTagExists(string tagName) => Json(await _tagsService.TagExists(CurrentUserId, tagName));
     }
 }

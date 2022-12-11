@@ -51,10 +51,12 @@ namespace Avs.StaticSiteHosting.Web.Services
     public class TagsService : ITagsService
     {
         private readonly IMongoCollection<Tag> _tags;
+        private readonly ITagSiteService _tagSiteService;
 
-        public TagsService(MongoEntityRepository repository)
+        public TagsService(MongoEntityRepository repository, ITagSiteService tagSiteService)
         {
             _tags = repository.GetEntityCollection<Tag>(GeneralConstants.TAGS_COLLECTION);
+            _tagSiteService = tagSiteService;
         }
 
         public async Task<IEnumerable<TagModel>> GetAllTags(string userId)
@@ -82,6 +84,7 @@ namespace Avs.StaticSiteHosting.Web.Services
 
         public async Task DeleteTag(string tagId)
         {
+            await _tagSiteService.RemoveTagFromSites(tagId);
             await _tags.DeleteOneAsync(new FilterDefinitionBuilder<Tag>().Where(t => t.Id == tagId));
         }
 
