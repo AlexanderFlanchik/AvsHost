@@ -31,9 +31,25 @@
                 <thead>
                     <tr>
                         <th class="w-300">
-                            <a href="javascript:void(0)" 
-                                v-bind:class="{ asc: sortField == 'Name' && sortState.order == 'Asc', desc: sortField == 'Name' && sortState.order == 'Desc' }" 
-                                @click="sort('Name')">Name</a>
+                            <div>
+                                <a href="javascript:void(0)" 
+                                        v-bind:class="{ asc: sortField == 'Name' && sortState.order == 'Asc', desc: sortField == 'Name' && sortState.order == 'Desc' }" 
+                                        @click="sort('Name')">Name</a>
+                                &nbsp;
+                                <a href="#" @click="nameFilterShown = true">
+                                    <img src="../../public/icons8-filter-empty-16.png" v-if="!nameFilter" />
+                                    <img src="../../public/icons8-filter-16.png" v-if="nameFilter" />
+                                </a>
+                            </div>
+                            <div class="name-filter-container" v-if="nameFilterShown">
+                                <div class="name-filter-container-inner">
+                                    <div class="name-filter-container-input-container">Site name contains: <b-form-input type="text" v-model="nameFilter" @input="() => loadSiteData()"></b-form-input></div>
+                                    <div class="name-filter-btn-bar">
+                                        <button class="btn btn-primary" @click="clearNameFilter">Clear</button>
+                                        <button class="btn btn-primary" @click="nameFilterShown = false">OK</button>                                    
+                                    </div>
+                                </div>
+                            </div>
                         </th>
                         <th class="w-300">Description</th>
                         <th class="w-300">
@@ -46,7 +62,10 @@
                         <th class="w-150">Is Active</th>
                         <th class="tags-column" v-if="!isAdmin">
                             <div>Tags <span v-if="tags.length">({{tags.length}})</span> &nbsp;
-                                <a href="javascript:void(0)" @click="openTagsFilter">Select..</a>
+                                <a href="javascript:void(0)" @click="openTagsFilter">
+                                    <img src="../../public/icons8-filter-empty-16.png" v-if="!tags.length" />
+                                    <img src="../../public/icons8-filter-16.png" v-if="tags.length" />
+                                </a>
                             </div>
                             <div class="tags-select-list-container">
                                 <TagsSelectList ref="tags-filter" :tagIds="tags" :onTagsChanged="applySelectedTags" :hideSelectedTags="true" />
@@ -138,7 +157,9 @@
                 totalFound: 0,
                 sortState: NoSort,
                 sortField: '',
-                tags: []
+                tags: [],
+                nameFilterShown: false,
+                nameFilter: null
             }
         },
 
@@ -172,11 +193,21 @@
                     apiUrl += tags;
                 }
 
+                if (this.nameFilter) {
+                    apiUrl += `&siteName=${this.nameFilter}`;
+                }
+
                 this.$apiClient.getAsync(apiUrl).then((response) => {
                     let siteRows = response.data.map(s => new Site(s));
                     this.sites = siteRows;
                     this.totalFound = Number(response.headers["total-rows-amount"]);
                 });
+            },
+
+            clearNameFilter: function() {
+                this.nameFilter = null;
+                this.loadSiteData();
+                this.nameFilterShown = false;
             },
             
             pageChanged: function () {
@@ -274,25 +305,29 @@
         color: #42b983;
     }
 
-    .dashboard-container {
-        background-color: azure;
+    .name-filter-container {
+        position: absolute;
     }
 
-    .two-columns-content {
-        padding: 5px;
+    .name-filter-container-inner {
+        background-color: white;
+        border: 1px solid darkblue;
+        padding: 2px;
+    }
+    .name-filter-container-input-container {
+        padding: 3px;
     }
 
-    .column-left {
-        width: 20%;
-        float: left;
+    .name-filter-container-input-container input {
+        border-color: darkblue;
     }
-
-    .column-right {
-        width: 80%;
-        float: left;
-        text-align: right;
+    .name-filter-btn-bar {
+        border-top: 1px solid darkblue;
+        display: flex;
+        flex-direction: row-reverse;
+        gap: 2px;
+        padding: 2px;
     }
-
     .w-100prc {
         width: 100%;
     }
@@ -305,9 +340,6 @@
         width: 300px;
     }
 
-    .w-350 {
-        width: 350px;
-    }
     .site-row td {
         padding: 0 0 0 8px;
         vertical-align: middle;

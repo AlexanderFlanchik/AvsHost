@@ -37,6 +37,12 @@ namespace Avs.StaticSiteHosting.Web.Services
                 var filterByOwner = filterBuilder.Where(r => r.CreatedBy.Id == query.OwnerId);
                 filter = filterBuilder.And(filter, filterByOwner);
             }
+            
+            if (!string.IsNullOrEmpty(query.SiteName)) 
+            {
+                var filterBySiteName = filterBuilder.Where(r => r.Name.Contains(query.SiteName));
+                filter = filterBuilder.And(filter, filterBySiteName);
+            }
 
             if (query.TagIds is not null && query.TagIds.Any())
             {

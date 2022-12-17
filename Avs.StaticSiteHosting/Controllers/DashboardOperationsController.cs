@@ -39,11 +39,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             var siteName = site.Name;
             var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
-            if (currentUser == null)
-            {
-                return BadRequest();
-            }
-
+            
             var currentUserName = currentUser.Name;
             var toggleResult = await _siteService.ToggleSiteStatusAsync(site);
 

@@ -27,6 +27,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 PageSize = sitesRequest.PageSize,
                 SortOrder = !string.IsNullOrEmpty(order) ? Enum.Parse<SortOrder>(order) : SortOrder.None,
                 SortField = sitesRequest.SortField,
+                SiteName = sitesRequest.SiteName,
                 TagIds = sitesRequest.TagIds
             };
 
