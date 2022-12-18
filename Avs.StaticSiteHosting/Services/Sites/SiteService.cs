@@ -90,8 +90,8 @@ namespace Avs.StaticSiteHosting.Web.Services
                 });
         }
 
-        public async Task<int> GetSitesAmountAsync(string ownerId = null)
-         => await GetSitesAmount(null, ownerId);
+        public async Task<int> GetSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null)
+         => await GetSitesAmount(null, ownerId, nameFilter, tagIds);
 
         public async Task<bool> CheckSiteNameUsedAsync(string siteName, string siteId)
         {
@@ -186,8 +186,8 @@ namespace Avs.StaticSiteHosting.Web.Services
             await _sites.DeleteOneAsync(filter).ConfigureAwait(false);
         }
 
-        public async Task<int> GetActiveSitesAmountAsync(string ownerId = null)
-         => await GetSitesAmount(true, ownerId);
+        public async Task<int> GetActiveSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null)
+         => await GetSitesAmount(true, ownerId, nameFilter, tagIds);
 
         public async Task UpdateSitesStatusAsync(string ownerId, UserStatus status)
         {
@@ -196,29 +196,39 @@ namespace Avs.StaticSiteHosting.Web.Services
              ).ConfigureAwait(false);
         }
 
-        private async Task<int> GetSitesAmount(bool? isActive, string ownerId)
+        private async Task<int> GetSitesAmount(bool? isActive, string ownerId, string nameFilter = null, string[] tagIds = null)
         {
-            IAsyncCursor<Site> siteCursor = null;
+            FilterDefinition<Site> filter = new FilterDefinitionBuilder<Site>().Empty;
+
             if (!string.IsNullOrEmpty(ownerId))
             {
-                siteCursor = isActive.HasValue ? await _sites.FindAsync(
-                        s => s.IsActive == isActive.Value && 
-                            s.CreatedBy != null && 
-                            s.CreatedBy.Id == ownerId
-                            ).ConfigureAwait(false)
-                     : 
-                     await _sites.FindAsync(
-                        s => s.CreatedBy != null &&
-                             s.CreatedBy.Id == ownerId).ConfigureAwait(false);
+                var ownerIdFilter = isActive.HasValue ?
+                    new FilterDefinitionBuilder<Site>().Where(s => s.IsActive == isActive.Value && s.CreatedBy != null && s.CreatedBy.Id == ownerId) :
+                    new FilterDefinitionBuilder<Site>().Where(s => s.CreatedBy != null && s.CreatedBy.Id == ownerId);
+                filter &= ownerIdFilter;
             }
-            else
-            {
-                siteCursor = isActive.HasValue ? await _sites.FindAsync(s => s.IsActive == isActive.Value).ConfigureAwait(false)
-                     :
-                     await _sites.FindAsync(s => true).ConfigureAwait(false);
+            else if (isActive.HasValue)
+            {     
+                var isActiveFilter = new FilterDefinitionBuilder<Site>().Where(s => s.IsActive == isActive.Value);
+                filter &= isActiveFilter;
             }
 
-            return siteCursor.ToEnumerable().Count();
+            if (!string.IsNullOrEmpty(nameFilter))
+            {
+                var siteNameFilter = new FilterDefinitionBuilder<Site>().Where(s => s.Name.Contains(nameFilter));
+                filter &= siteNameFilter;
+            }
+
+            if (tagIds is not null && tagIds.Any())
+            {
+                var tagIdsFilter = new FilterDefinitionBuilder<Site>()
+                        .Where(s => s.TagIds != null && s.TagIds.Any(t => tagIds.Contains(t.Id)));
+                filter &= tagIdsFilter;
+            }
+
+            var query = await _sites.FindAsync(filter);
+
+            return (await query.ToListAsync()).Count;
         }
     }
 }

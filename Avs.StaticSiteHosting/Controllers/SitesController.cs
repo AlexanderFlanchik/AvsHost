@@ -21,14 +21,17 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<ActionResult<IEnumerable<SiteModel>>> GetSitesData([FromQuery] SiteRequestModel sitesRequest, ISiteService siteService)
         {           
             var order = sitesRequest.SortOrder;
+            var tags = sitesRequest.TagIds;
+            var siteNameFilter = sitesRequest.SiteName;
+
             var query = new SitesQuery()
             {
                 Page = sitesRequest.Page,
                 PageSize = sitesRequest.PageSize,
                 SortOrder = !string.IsNullOrEmpty(order) ? Enum.Parse<SortOrder>(order) : SortOrder.None,
                 SortField = sitesRequest.SortField,
-                SiteName = sitesRequest.SiteName,
-                TagIds = sitesRequest.TagIds
+                SiteName = siteNameFilter,
+                TagIds = tags
             };
 
             var claims = User.Claims;
@@ -40,8 +43,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             var amounts = await Task.WhenAll(new[]
                     {
-                        siteService.GetSitesAmountAsync(ownerUserID),
-                        siteService.GetActiveSitesAmountAsync(ownerUserID)
+                        siteService.GetSitesAmountAsync(ownerUserID, siteNameFilter, tags),
+                        siteService.GetActiveSitesAmountAsync(ownerUserID, siteNameFilter, tags)
                     });
                        
             Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));

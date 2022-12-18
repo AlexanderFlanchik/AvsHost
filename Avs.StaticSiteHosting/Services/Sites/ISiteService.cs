@@ -20,8 +20,8 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// </summary>
         /// <param name="ownerId">Owner ID</param>
         /// <returns></returns>
-        Task<int> GetSitesAmountAsync(string ownerId = null);
-        Task<int> GetActiveSitesAmountAsync(string ownerId = null);
+        Task<int> GetSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null);
+        Task<int> GetActiveSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null);
         Task<IEnumerable<string>> GetSiteIdsByOwner(string ownerId);
         /// <summary>
         /// Checks if a site with the name given already exists.
