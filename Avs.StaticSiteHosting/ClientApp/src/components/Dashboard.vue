@@ -9,9 +9,9 @@
         <div class="dashboard-content">
             <table class="w-100prc">
                 <tr>
-                    <td>
+                    <td class="sites-amount-container">
                         {{isAdmin ? "All Sites" : "Your sites"}}:&nbsp;<strong>{{totalFound}}</strong>&nbsp; 
-                        Active:<strong>{{activeFound}}</strong>
+                        Active:&nbsp;<strong>{{activeFound}}</strong>
                     </td>
                     <td class="pager-conatiner" v-if="totalFound > 0">
                         <b-pagination v-model="page"
@@ -239,7 +239,7 @@
                     } else {
                         this.activeFound += 1;
                     }
-                    
+
                     site.isActive = newIsActive;
                 }
             },
@@ -317,7 +317,9 @@
     a {
         color: #42b983;
     }
-
+    .sites-amount-container {
+        padding-left: 5px;
+    }
     .name-filter-container {
         position: absolute;
     }
