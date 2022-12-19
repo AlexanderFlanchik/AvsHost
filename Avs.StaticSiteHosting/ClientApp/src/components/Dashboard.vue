@@ -9,7 +9,10 @@
         <div class="dashboard-content">
             <table class="w-100prc">
                 <tr>
-                    <td>{{isAdmin ? "All Sites" : "Your sites"}}:&nbsp;<strong>{{totalFound}}</strong></td>
+                    <td>
+                        {{isAdmin ? "All Sites" : "Your sites"}}:&nbsp;<strong>{{totalFound}}</strong>&nbsp; 
+                        Active:<strong>{{activeFound}}</strong>
+                    </td>
                     <td class="pager-conatiner" v-if="totalFound > 0">
                         <b-pagination v-model="page"
                                       :total-rows="totalFound"
@@ -27,7 +30,7 @@
                     </td>
                 </tr>
             </table>
-            <table class="table table-striped columns-holder" v-if="totalFound > 0">
+            <table class="table table-striped columns-holder" v-if="totalFound > 0 || nameFilter || tags.length">
                 <thead>
                     <tr>
                         <th class="w-300">
@@ -155,6 +158,7 @@
                 pageSize: 10,
                 pageSizes: [10, 25, 50, 100],
                 totalFound: 0,
+                activeFound: 0,
                 sortState: NoSort,
                 sortField: '',
                 tags: [],
@@ -201,6 +205,7 @@
                     let siteRows = response.data.map(s => new Site(s));
                     this.sites = siteRows;
                     this.totalFound = Number(response.headers["total-rows-amount"]);
+                    this.activeFound = Number(response.headers["active-sites-amount"]);
                 });
             },
 
@@ -227,7 +232,15 @@
                 let toggleResult = await this.$apiClient.postAsync('api/dashboardoperations/toggleSiteStatus', { siteId });
                 let site = this.sites.find(s => s.id == siteId);
                 if (site) {
-                    site.isActive = toggleResult.data;
+                    let newIsActive = toggleResult.data;
+
+                    if (!newIsActive) {
+                        this.activeFound -= 1;
+                    } else {
+                        this.activeFound += 1;
+                    }
+                    
+                    site.isActive = newIsActive;
                 }
             },
             deleteSite: async function (siteId) {
@@ -365,6 +378,9 @@
 
     .columns-holder {
         margin-bottom: 0 !important;
+    }
+    .columns-holder th {
+        background: beige;
     }
     .tags-select-list-container {
         position: relative;
