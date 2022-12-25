@@ -10,10 +10,10 @@
             <div class="charts-container">
                 <div>
                     <div class="cell-left chart-cell">
-                        <PieChart ref="sitesChart" title="Your Sites" seriesName="Sites"></PieChart>
+                        <PieChart ref="sitesChart" :title="sitesTitle" seriesName="Sites"></PieChart>
                     </div>
                     <div class="cell-left chart-cell">
-                        <PieChart ref="storageUsedChart" title="Storage Used" seriesName="Storage used"></PieChart>
+                        <PieChart ref="storageUsedChart" :title="spaceUsedTitle" seriesName="Storage used"></PieChart>
                     </div>
                 </div>
             </div>            
@@ -64,6 +64,8 @@
     export default {
         data: function () {
             return {
+                totalSites: 0,
+                totalSpaceKb: 0,
                 areSites: false,
                 errors: 0,
                 visits: 0,
@@ -84,6 +86,7 @@
                 .then((response) => {
                     let vm = response.data;
                     this.areSites = vm.totalSites > 0;
+                    this.totalSites = vm.totalSites;
                     let inactiveSites = vm.totalSites - vm.activeSites;
                     if (vm.totalSites) {
                         let sitesData = [
@@ -104,23 +107,31 @@
                     let totalContentBytes = vm.totalContentSize;
                     if (totalContentBytes) {
                         let storageData = [];
+                        let otherSites = { name: 'Others', y: 0 };
+
                         for (let storageUsedInfo of vm.storageUsedInfos) {
                             let ratio = storageUsedInfo.bytes / totalContentBytes;
-                            if (ratio < 0.001) {
-                                continue;
+    
+                            if (ratio <= 0.01) {
+                                otherSites.y += ratio;
+                            } else {
+                                let o = {
+                                    name: storageUsedInfo.siteName,
+                                    y: ratio
+                                };
+
+                                storageData.push(o);
                             }
+                        }
 
-                            let o = {
-                                name: storageUsedInfo.siteName,
-                                y: ratio
-                            };
-
-                            storageData.push(o);
+                        if (otherSites.y > 0) {
+                            storageData.push(otherSites);
                         }
 
                         this.$nextTick(() => this.$refs.storageUsedChart.loadData(storageData));
                     }
 
+                    this.totalSpaceKb = vm.totalContentSize / 1024;
                     this.errors = vm.errors;
                     this.visits = vm.totalSiteVisits;
 
@@ -141,7 +152,14 @@
                 this.lastVisitsExpaned = false;
             }
         },
-
+        computed: {
+            sitesTitle: function() {
+                return `Your Sites (${this.totalSites} total)`;
+            },
+            spaceUsedTitle: function() {
+                return `Storage Used ${this.totalSpaceKb.toFixed(2)} Kb`;
+            }
+        },
         components: {
             UserInfo,
             NavigationMenu,
