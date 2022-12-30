@@ -20,9 +20,14 @@
     <div id="wrapper">
         <div id="app">
         </div>
-        <div class="footer">&copy; 2022 AVS</div>
     </div>
-    <!-- built files will be auto injected -->
+    <script>
+        (function () {
+            fetch('api/Footer')
+                .then(res => res.text())
+                .then(footerContent => document.body.innerHTML += footerContent);
+        })();
+    </script>
 </body>
 
 </html>
