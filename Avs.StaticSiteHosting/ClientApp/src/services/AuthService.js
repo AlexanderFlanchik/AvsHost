@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var moment = require("moment");
 var axios_1 = require("axios");
 var AuthService = /** @class */ (function () {
@@ -96,7 +96,7 @@ var AuthService = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post('/auth/token', {
+                        return [4 /*yield*/, axios_1["default"].post('/auth/token', {
                                 login: userLogin,
                                 password: password
                             })];
@@ -126,7 +126,7 @@ var AuthService = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post('/auth/register', {
+                        return [4 /*yield*/, axios_1["default"].post('/auth/register', {
                                 email: email,
                                 userName: userName,
                                 password: password
@@ -155,18 +155,17 @@ var AuthService = /** @class */ (function () {
                             return [2 /*return*/, false];
                         }
                         if (userName) {
-                            url += "?userName=" + userName;
+                            url += "?userName=".concat(userName);
                             if (email) {
-                                url += "&email=" + email;
+                                url += "&email=".concat(email);
                             }
                         }
                         else {
-                            url += "?email=" + email;
+                            url += "?email=".concat(email);
                         }
-                        return [4 /*yield*/, axios_1.default.get(url)];
+                        return [4 /*yield*/, axios_1["default"].get(url)];
                     case 1:
                         response = _a.sent();
-                        console.log(response);
                         return [2 /*return*/, response.data];
                     case 2:
                         e_3 = _a.sent();
@@ -179,5 +178,4 @@ var AuthService = /** @class */ (function () {
     };
     return AuthService;
 }());
-exports.default = AuthService;
-//# sourceMappingURL=AuthService.js.map
+exports["default"] = AuthService;

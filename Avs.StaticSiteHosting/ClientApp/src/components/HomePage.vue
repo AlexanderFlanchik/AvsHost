@@ -30,7 +30,7 @@
                     </span>
                     <span v-if="errors == 0" class="no-errors-title">No errors!</span>
                     <div v-if="errors > 0 && errorsListExpanded">
-                        <ErrorSitesList/>
+                        <ErrorSitesList ref="site-errors"/>
                     </div>
                  </div>
                  <div class="cell-left visits-info-cell">
@@ -43,7 +43,7 @@
                          </span>
                      </div>
                      <div v-if="visits > 0 && lastVisitsExpaned" class="last-site-visits-container">
-                         <LastSiteVisits />
+                         <LastSiteVisits  ref="last-site-visits" />
                      </div>
                  </div>
                </div>
@@ -75,12 +75,28 @@
         },
 
         mounted: function () {
+            console.log("Home Page mounted started...");
             let userInfo = this.$authService.getUserInfo();
             if (userInfo && userInfo.isAdmin) {
                 // Prevent admin from home page view
                 this.$router.replace('/dashboard');
                 return;
             }
+
+            this.$userNotificationService.subscribeToSiteEvents(
+                () => {
+                    this.visits++;
+                    if (this.lastVisitsExpaned) {  
+                       this.$refs["last-site-visits"].loadData();
+                    }
+                }, 
+                () => {
+                    this.errors++;
+                    if (this.errorsListExpanded) {
+                        this.$refs["site-errors"].loadData();
+                    }
+                }
+            );
 
             this.$apiClient.getAsync('api/home')
                 .then((response) => {
@@ -134,8 +150,12 @@
                     this.totalSpaceKb = vm.totalContentSize / 1024;
                     this.errors = vm.errors;
                     this.visits = vm.totalSiteVisits;
-
                 }).catch(err => console.log(err));
+        },
+
+        beforeDestroy: function() {
+            this.$userNotificationService.unsubscribe(this.$userNotificationService.SiteErrorEvent);
+            this.$userNotificationService.unsubscribe(this.$userNotificationService.NewSiteVisited);
         },
 
         methods: {

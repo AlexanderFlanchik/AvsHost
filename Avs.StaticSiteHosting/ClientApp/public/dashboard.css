@@ -66,7 +66,7 @@
         height: 100%;
     }
 
-.footer {
+#footer {
     z-index: 9999;
     position: absolute;
     bottom: 0;

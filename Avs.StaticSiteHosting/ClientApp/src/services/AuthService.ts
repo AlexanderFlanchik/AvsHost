@@ -67,7 +67,7 @@ export default class AuthService {
 
     public async tryGetAccessToken(userLogin: String, password: String) : Promise<boolean> {
         try {
-            let response = await axios.post('/auth/token', {
+            let response: { data: { token: string, expires_at: Date, userInfo: any } } = await axios.post('/auth/token', {
                 login: userLogin,
                 password: password
             });
@@ -120,8 +120,7 @@ export default class AuthService {
                 url += `?email=${email}`;
             }
             
-            let response = await axios.get(url);
-            console.log(response);
+            let response: { data: boolean } = await axios.get(url);
             return response.data;
         } catch (e) {
             console.log(e);

@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var axios_1 = require("axios");
 var ApiClient = /** @class */ (function () {
     function ApiClient(authService) {
@@ -44,7 +44,7 @@ var ApiClient = /** @class */ (function () {
     ApiClient.prototype.setAuthorization = function (headers) {
         var authToken = this.authService.getToken();
         if (authToken) {
-            headers['Authorization'] = "Bearer " + authToken;
+            headers['Authorization'] = "Bearer ".concat(authToken);
         }
     };
     ApiClient.prototype.getAsync = function (url, headers) {
@@ -52,7 +52,7 @@ var ApiClient = /** @class */ (function () {
             return __generator(this, function (_a) {
                 headers = headers || {};
                 this.setAuthorization(headers);
-                return [2 /*return*/, axios_1.default.get(url, { headers: headers })];
+                return [2 /*return*/, axios_1["default"].get(url, { headers: headers })];
             });
         });
     };
@@ -61,7 +61,7 @@ var ApiClient = /** @class */ (function () {
             return __generator(this, function (_a) {
                 headers = headers || {};
                 this.setAuthorization(headers);
-                return [2 /*return*/, axios_1.default.post(url, data, { headers: headers })];
+                return [2 /*return*/, axios_1["default"].post(url, data, { headers: headers })];
             });
         });
     };
@@ -70,7 +70,7 @@ var ApiClient = /** @class */ (function () {
             return __generator(this, function (_a) {
                 headers = headers || {};
                 this.setAuthorization(headers);
-                return [2 /*return*/, axios_1.default.put(url, data, { headers: headers })];
+                return [2 /*return*/, axios_1["default"].put(url, data, { headers: headers })];
             });
         });
     };
@@ -79,11 +79,10 @@ var ApiClient = /** @class */ (function () {
             return __generator(this, function (_a) {
                 headers = headers || {};
                 this.setAuthorization(headers);
-                return [2 /*return*/, axios_1.default.delete(url, { headers: headers })];
+                return [2 /*return*/, axios_1["default"]["delete"](url, { headers: headers })];
             });
         });
     };
     return ApiClient;
 }());
-exports.default = ApiClient;
-//# sourceMappingURL=ApiClient.js.map
+exports["default"] = ApiClient;

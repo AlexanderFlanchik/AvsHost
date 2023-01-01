@@ -11,7 +11,7 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
 {
     public interface ISiteStatisticsService
     {
-        Task MarkSiteAsViewed(string siteId, string visitor);
+        Task<bool> MarkSiteAsViewed(string siteId, string visitor);
         Task<int> GetTotalSiteVisits(string ownerId);
         Task<IEnumerable<ViewedSiteInfoModel>> GetLatestSiteVisits(string ownerId, int take = 5);
     }
@@ -48,7 +48,7 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
             return (int)count;
         }
 
-        public async Task MarkSiteAsViewed(string siteId, string visitor)
+        public async Task<bool> MarkSiteAsViewed(string siteId, string visitor)
         {
             var now = DateTime.UtcNow;
             var df = now.AddMinutes(-1);
@@ -69,7 +69,11 @@ namespace Avs.StaticSiteHosting.Web.Services.SiteStatistics
                             Visitor = visitor
                         }
                 );
+
+                return true;
             }
+
+            return false;
         }
 
         public async Task<IEnumerable<ViewedSiteInfoModel>> GetLatestSiteVisits(string ownerId, int take = 5)

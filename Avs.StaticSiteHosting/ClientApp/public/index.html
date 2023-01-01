@@ -20,12 +20,17 @@
     <div id="wrapper">
         <div id="app">
         </div>
+        <div id="footer">
+        </div>
     </div>
     <script>
-        (function () {
+       (function () {
             fetch('api/Footer')
                 .then(res => res.text())
-                .then(footerContent => document.body.innerHTML += footerContent);
+                .then(footerContent => {
+                    let footer = document.getElementById('footer');
+                    footer.innerHTML = footerContent;
+                });
         })();
     </script>
 </body>

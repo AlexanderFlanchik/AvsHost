@@ -16,6 +16,8 @@ using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
+using Microsoft.AspNetCore.SignalR;
+using Avs.StaticSiteHosting.Web.Hubs;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -26,6 +28,8 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
     {
         private const string INVALID_SITE = "Invalid Site";
         private const string LOCAL_IP = "::1";
+        private const string NEW_SITE_VISIT = "site-visited";
+        private const string SITE_ERROR_EVENT = "site-error";
         
         private readonly ISiteService _siteService;
         private readonly IContentManager _contentManager;
@@ -33,21 +37,24 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
         private readonly ICloudStorageProvider _cloudStorageProvider;
         private readonly IEventLogsService _eventLogsService;
         private readonly CloudStorageSettings _cloudStorageSettings;
+        private readonly IHubContext<UserNotificationHub> _notificationHub;
 
-        public StaticSiteMiddleware(RequestDelegate next, 
-            ISiteService siteService, 
+        public StaticSiteMiddleware(RequestDelegate next,
+            ISiteService siteService,
             IContentManager contentManager,
             ISiteStatisticsService siteStatisticsService,
             ICloudStorageProvider cloudStorageProvider,
             IEventLogsService eventLogsService,
-            CloudStorageSettings cloudStorageSettings)
+            CloudStorageSettings cloudStorageSettings,
+            IHubContext<UserNotificationHub> notificationHub)
         {
-             _siteService = siteService;
+            _siteService = siteService;
             _contentManager = contentManager;
             _siteStatisticsService = siteStatisticsService;
             _cloudStorageProvider = cloudStorageProvider;
             _eventLogsService = eventLogsService;
             _cloudStorageSettings = cloudStorageSettings;
+            _notificationHub = notificationHub;
         }
 
         public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ILogger<StaticSiteMiddleware> logger)
@@ -88,7 +95,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
             else
             {
-                await AddErrorToEventLog(siteInfo.Id, $"Resource with name '{fileName}' was not found.");
+                await HandleSiteErrorAsync(siteInfo, $"Resource with name '{fileName}' was not found.");
                 
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
             }
@@ -106,7 +113,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             if (!siteInfo.IsActive)
             {
-                await AddErrorToEventLog(siteInfo.Id, "The site has been turned off.");
+                await HandleSiteErrorAsync(siteInfo, "The site has been turned off.");
 
                 throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
             }
@@ -119,7 +126,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             if (!Directory.Exists(siteContentPath))
             {
                 var errMessage = $"No content folder found for site named '{siteInfo.Name}'";
-                await AddErrorToEventLog(siteInfo.Id, errMessage);
+                await HandleSiteErrorAsync(siteInfo, errMessage);
 
                 throw new StaticSiteProcessingException(404, INVALID_SITE, errMessage);
             }
@@ -127,7 +134,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var siteOwner = siteInfo.CreatedBy;
             if (siteOwner.Status != UserStatus.Active)
             {
-                await AddErrorToEventLog(siteInfo.Id, "Site cannot be processed because of lock of its owner.");
+                await HandleSiteErrorAsync(siteInfo, "Site cannot be processed because of lock of its owner.");
 
                 throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
@@ -138,7 +145,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id);
             if (contentItems == null || !contentItems.Any())
             {
-                await AddErrorToEventLog(siteInfo.Id, "Unable to find content for site.");
+                await HandleSiteErrorAsync(siteInfo, "Unable to find content for site.");
 
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
             }
@@ -182,7 +189,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             async Task NoCloudContentError()
             {
                 var errorMessage = $"No content {fileInfo.Name} for site {siteInfo.Name}.";
-                await AddErrorToEventLog(siteInfo.Id, errorMessage);
+                await HandleSiteErrorAsync(siteInfo, errorMessage);
 
                 throw new StaticSiteProcessingException(404, "Oops, no content", errorMessage);
             }
@@ -194,7 +201,11 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             if (!string.IsNullOrEmpty(landingPage) && fi.Name == landingPage)
             {
                 var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
-                await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id, visitor);
+                var visited = await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id, visitor);
+                if (visited)
+                {
+                    await _notificationHub.Clients.User(siteInfo.CreatedBy.Id).SendAsync(NEW_SITE_VISIT);
+                }
             }
         }
 
@@ -218,8 +229,11 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             return false;
         }
 
-        private Task AddErrorToEventLog(string siteId, string errorMessage)
-                => _eventLogsService.InsertSiteEventAsync(siteId, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
+        private async Task HandleSiteErrorAsync(Site siteInfo, string errorMessage)
+        {
+            await _eventLogsService.InsertSiteEventAsync(siteInfo.Id, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
+            await _notificationHub.Clients.User(siteInfo.CreatedBy.Id).SendAsync(SITE_ERROR_EVENT);
+        }
 
         #endregion
     }

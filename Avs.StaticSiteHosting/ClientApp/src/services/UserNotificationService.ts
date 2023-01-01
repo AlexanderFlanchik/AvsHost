@@ -7,6 +7,8 @@ export class UserNotificationService {
     // Events
     readonly UserStatusChanged = "UserStatusChanged";
     readonly NewConversationMessage = "new-conversation-message";
+    readonly SiteErrorEvent = "site-error";
+    readonly NewSiteVisited = "site-visited";
 
     constructor(private authService: AuthService) {}
 
@@ -33,6 +35,15 @@ export class UserNotificationService {
         }
 
         this.connection.on(this.NewConversationMessage, (msg: any) => handler(msg));
+    }
+
+    public subscribeToSiteEvents(onNewVisit: () => void, onError: () => void) {
+        if (!this.connection) {
+            this.init();
+        }
+
+        this.connection.on(this.SiteErrorEvent, onError);
+        this.connection.on(this.NewSiteVisited, onNewVisit);
     }
    
     public unsubscribe(event: string) {
