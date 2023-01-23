@@ -15,7 +15,6 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     {
         private readonly IUserService _userService;
         private readonly IRoleService _roleService;
-        private readonly Func<string, IActionResult> badRequestResponse = (errorMessage) => new BadRequestObjectResult(new { error = errorMessage });
         private readonly ILogger<AuthController> _logger;
 
         public AuthController(IUserService userService, IRoleService roleService, ILogger<AuthController> logger)
@@ -32,22 +31,39 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var login = loginModel.Login;
             var password = loginModel.Password;
 
+            _logger.LogInformation("Received an access token request from a user with login: {0}", login);
+
             var user = await _userService.GetUserByLoginAsync(login);
             
             if (user is null)
             {
-                return badRequestResponse($"No user with login '{login}' has been found.");
+                _logger.LogWarning($"Login failed - invalid login \"{login}\" has been entered.");
+                
+                return BadRequest(new { error = $"Error: no user with login \"{login}\" has been found." });   
             }
+
+            var userName = user.Name;
 
             if (!pwdHasher.VerifyPassword(user.Password, password))
             {
-                return badRequestResponse("Invalid password entered.");
+                _logger.LogWarning($"Login failed - the user {userName} has entered invalid password.");
+                
+                return Unauthorized("Invalid password entered.");
             }
 
-            var (tokenValue, expiresAt) = jwtTokenProvider.GenerateToken(user);
-            _logger.LogInformation($"Requested token for {login} at {DateTime.UtcNow} (UTC), succeded.");
+            // Generate a token for user verified
+            var (tokenValue, expiresAt) = jwtTokenProvider.GenerateToken(user); 
+            
+            var lastLoginTimestamp = DateTime.UtcNow;
+            
+            _logger.LogInformation($"Requested authentication token for the user {userName} at {lastLoginTimestamp} (UTC), succeded.");
 
-            var userInfo = new UserInfo(user.Name, user.Email, _userService.IsAdmin(user));
+            // Update last login timestamp for the user
+            user.LastLogin = lastLoginTimestamp;
+
+            await _userService.UpdateUserAsync(user);
+
+            var userInfo = new UserInfo(userName, user.Email, _userService.IsAdmin(user));
             var response = new LoginResponse(tokenValue, expiresAt, userInfo); 
 
             return Ok(response);

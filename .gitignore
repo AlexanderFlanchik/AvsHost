@@ -31,3 +31,7 @@
 /Avs.StaticSiteHosting/bin/Release/net7.0
 /Avs.StaticSiteHosting.DataMigrator/bin/Release/net7.0
 /Avs.StaticSiteHosting.ContentCreator/bin/Release/net7.0
+/Avs.StaticSiteHosting.Reports/obj
+/Avs.StaticSiteHosting.Reports.Tests/bin/Debug/net7.0
+/Avs.StaticSiteHosting.Reports.Tests/obj
+/Avs.StaticSiteHosting.Reports/bin/Debug/net7.0

@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.DataM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.ContentCreator", "..\Avs.StaticSiteHosting.ContentCreator\Avs.StaticSiteHosting.ContentCreator.csproj", "{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Reports", "..\Avs.StaticSiteHosting.Reports\Avs.StaticSiteHosting.Reports.csproj", "{BE83E166-09C1-41DA-94B3-04F8E935EB98}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avs.StaticSiteHosting.Reports.Tests", "..\Avs.StaticSiteHosting.Reports.Tests\Avs.StaticSiteHosting.Reports.Tests.csproj", "{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B7695A0-250D-40F4-BC59-6DC3CA4061DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE83E166-09C1-41DA-94B3-04F8E935EB98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE83E166-09C1-41DA-94B3-04F8E935EB98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE83E166-09C1-41DA-94B3-04F8E935EB98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE83E166-09C1-41DA-94B3-04F8E935EB98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
