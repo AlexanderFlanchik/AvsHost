@@ -70,6 +70,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
             
             var cx = cellXindex;
             var cy = ++cellYindex;
+
             foreach (var column in tableSection.Columns)
             {
                 var headerCell = worksheet.Cells[cy, cx++];
@@ -84,7 +85,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
                 cy = ++cellYindex;
                 cx = cellXindex;
 
-                foreach (var rowCell in row.Cells)
+                foreach (var rowCell in row.Cells ?? Array.Empty<object>())
                 {
                     worksheet.Cells[cy, cx++].Value = rowCell is not null ? rowCell.ToString() : string.Empty;
                 }

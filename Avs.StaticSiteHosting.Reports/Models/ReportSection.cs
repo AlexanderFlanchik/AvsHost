@@ -23,6 +23,9 @@
 
     public class TableRow
     {
+        /// <summary>
+        /// Row cells
+        /// </summary>
         public object[]? Cells { get; set; }
     }
 }

@@ -39,26 +39,33 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
             var siteName = site.Name;
             var currentUser = await _userService.GetUserByIdAsync(CurrentUserId);
-            
+            if (currentUser == null)
+            {
+                return BadRequest();
+            }
+
             var currentUserName = currentUser.Name;
             var toggleResult = await _siteService.ToggleSiteStatusAsync(site);
 
             if (toggleResult)
             {
                 await eventLogsService.InsertSiteEventAsync(siteId, "Site started", SiteEventType.Information,
-                    $"Site '{siteName}' was started by {currentUserName}.");
+                    $"The site '{siteName}' was started by {currentUserName}.");
             }
             else
             {
+                site.LastStopped = DateTime.UtcNow;
+                await _siteService.UpdateSiteAsync(site);
+
                 await eventLogsService.InsertSiteEventAsync(siteId, "Site stopped", SiteEventType.Warning,
-                   $"Site '{siteName}' was stopped by {currentUserName}.");
+                   $"The site '{siteName}' was stopped by {currentUserName}.");
             }
 
             return Ok(toggleResult);
         }
 
         [HttpDelete("{siteId}")]
-        public async Task<IActionResult> DeleteSite([Required] string siteId, [FromServices] IContentManager contentManager)
+        public async Task<IActionResult> DeleteSite([Required] string siteId, IContentManager contentManager)
         {
             var siteToDelete = await _siteService.GetSiteByIdAsync(siteId);
             if (siteToDelete == null)

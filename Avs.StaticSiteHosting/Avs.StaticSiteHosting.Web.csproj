@@ -51,6 +51,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\Avs.StaticSiteHosting.ContentCreator\Avs.StaticSiteHosting.ContentCreator.csproj" />
+    <ProjectReference Include="..\Avs.StaticSiteHosting.Reports\Avs.StaticSiteHosting.Reports.csproj" />
   </ItemGroup>
   
   <ItemGroup>

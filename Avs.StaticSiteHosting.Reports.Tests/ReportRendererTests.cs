@@ -29,7 +29,6 @@ namespace Avs.StaticSiteHosting.Reports.Tests
 
             // Act
             var reportContent = await renderer.RenderAsync(report);
-            await File.WriteAllBytesAsync(@"C:\Projects\test.xlsx", reportContent);
             
             // Assert
             Assert.NotNull(reportContent);
