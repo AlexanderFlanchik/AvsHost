@@ -45,7 +45,7 @@ namespace Avs.StaticSiteHosting.Reports.Tests
             for (var i = 1; i <= 100; i++)
             {
                 var row = new TableRow();
-                row.Cells = new object[] { i, i + 1, i + 2 }; 
+                row.Cells = new TableCell[] { i, i + 1, i + 2 }; 
                 rows.Add(row);
             }
 

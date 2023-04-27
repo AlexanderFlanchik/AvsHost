@@ -90,3 +90,58 @@
 .vs__open-indicator {
     fill: navy !important;
 }
+
+.vs__actions svg {
+    cursor: pointer;
+}
+
+/**********************REPORTS PREVIEW**********************/
+.report-text-section-container {
+    padding: 5px;
+}
+.report-title-container {
+    text-align: center;
+    font-size: larger;
+    font-weight: bold;
+}
+.report-default-table {
+    padding: 0;
+    width: 100%;
+    background-color: white;
+}
+.report-table-header-cell {
+    background-color: navy;
+    border: 1px solid navy;
+    color: white;
+    padding: 5px;
+}
+.report-table-body-cell {
+    padding: 5px;
+    border: 1px solid navy;
+}
+
+.report-table-total-cell {
+    border: 0;
+    padding: 5px;
+}
+
+.total-cell-centered {
+    text-align: center;
+}
+
+.total-cell-right {
+    text-align: right;
+}
+
+.total-cell-bold {
+    font-weight: bold;
+}
+
+.no-report-data-info {
+    padding: 25px;
+    font-size: larger;
+    color: navy;
+    letter-spacing: 1px;
+    text-align: center;
+    background-color: white;
+}

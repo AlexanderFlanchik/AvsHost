@@ -28,6 +28,11 @@
                     Tags
                 </router-link>
             </li>
+            <li class="navigation-menu-item" v-if="!isAdmin">
+                <router-link to="/reports" class="navigation-menu-item-link" active-class="link-active">
+                    Reports
+                </router-link>
+            </li>
             <li class="navigation-menu-item">
                 <router-link to="/help" class="navigation-menu-item-link" active-class="link-active">Help</router-link>
             </li>

@@ -12,7 +12,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     public class SiteSearchController : BaseController
     {
         [HttpGet("{siteNameTerm}")]
-        public async Task<IActionResult> SearchSites(string siteNameTerm, [FromServices] ISiteService siteService, [FromServices] IUserService userService) 
+        public async Task<IActionResult> SearchSites(string siteNameTerm, ISiteService siteService, IUserService userService) 
             => Ok(await siteService.SearchSitesByName(
                 siteNameTerm,
                 await userService.IsAdminAsync(CurrentUserId) ? null : CurrentUserId

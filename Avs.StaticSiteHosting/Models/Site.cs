@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avs.StaticSiteHosting.Web.Models.Identity;
+using Avs.StaticSiteHosting.Web.Models.SiteStatistics;
 using Tag = Avs.StaticSiteHosting.Web.Models.Tags.Tag;
 
 namespace Avs.StaticSiteHosting.Web.Models
@@ -20,7 +21,8 @@ namespace Avs.StaticSiteHosting.Web.Models
         #region Navigation properties
         
         public IList<ContentItem> ContentItems { get; set; }
-        
+        public IList<ViewedSiteInfo> Visits { get; set; }
+
         #endregion
     }
 }

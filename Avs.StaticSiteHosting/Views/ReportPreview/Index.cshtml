@@ -1,0 +1,127 @@
+﻿@using Avs.StaticSiteHosting.Reports.Models
+
+@model Avs.StaticSiteHosting.Reports.Models.Report
+
+@functions {
+    public delegate void RenderReportSection(ReportSection section);
+
+    void RenderTextSection(ReportSection section)
+    {
+        if (section is not TextSection textSection)
+        {
+            return;
+        }
+
+        <div class="report-text-section-container">
+           @textSection.Content           
+        </div>
+    }
+
+    void RenderTableSection(ReportSection section)
+    {
+        if (section is not TableSection tableSection)
+        {
+            return;
+        }
+
+        if (!tableSection.Rows.Any())
+        {
+            <div class="no-report-data-info">
+                No data found. If some filters have been applied, please reset them.
+            </div>
+
+            return;
+        }
+
+        <table class="report-default-table">
+            <thead>
+                <tr class="report-table-header-row">
+                @foreach (var column in tableSection.Columns)
+                {
+                    <th class="report-table-header-cell">
+                        @column
+                    </th>        
+                }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in tableSection.Rows)
+                {
+                    <tr class="report-table-body-row">
+                    @foreach (var cell in row.Cells)
+                    {
+                        <td class="report-table-body-cell">
+                            @cell
+                        </td>
+                    }
+                    </tr>
+                }
+                @if (tableSection.Totals is not null)
+                {
+                    <tr>
+                        @foreach (var totalCell in tableSection.Totals.Cells)
+                        {
+                            const string defaultTblCellClass = "report-table-total-cell";
+                            if (totalCell is null)
+                            {
+                                <td class="@defaultTblCellClass"></td>
+                                
+                                continue;
+                            }
+
+                            var className = string.Empty;
+                            var style = string.Empty;
+            
+                            switch (totalCell.Align) {
+                                case TableCellAlign.Center:
+                                    className += " total-cell-centered";
+                                break;
+                                case TableCellAlign.Right:
+                                    className += " total-cell-right";
+                                break;
+                            }
+                            
+                            if (totalCell.IsBold) {
+                                className += " total-cell-bold";
+                            }
+
+                            className = !string.IsNullOrEmpty(className) ? $"{defaultTblCellClass} {className}" : defaultTblCellClass; 
+    
+                            <td class="@className" @style>
+                                @totalCell
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    Dictionary<Type, RenderReportSection> GetRenderers()
+    {
+        return new Dictionary<Type, RenderReportSection>()
+        {
+            [typeof(TextSection)] = RenderTextSection,
+            [typeof(TableSection)] = RenderTableSection
+        };
+    }
+}
+
+@{
+    var renderers = GetRenderers();
+}
+
+<div>
+    <div class="report-title-container">
+        @Model.Title
+    </div>
+    <div class="report-sections-container">
+        
+    @foreach (var section in Model.Sections)
+    {
+        var renderer = renderers[section.GetType()];
+
+        renderer(section);
+    }
+    </div>
+</div>

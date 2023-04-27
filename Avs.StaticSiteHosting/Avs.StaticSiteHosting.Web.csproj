@@ -39,6 +39,7 @@
     <None Remove="ClientApp\src\common\DateFormatter.ts" />
     <None Remove="ClientApp\src\components\Register.vue" />
     <None Remove="ClientApp\src\components\Registered.vue" />
+    <None Remove="ClientApp\src\components\Reports\ReportFilterTypes.ts" />
     <None Remove="ClientApp\src\content-creation\html-elements.ts" />
     <None Remove="ClientApp\src\content-creation\TagsProvider.ts" />
     <None Remove="ClientApp\src\ConversationMessage.ts" />

@@ -22,5 +22,13 @@
             get => _parameters[key]; 
             set => _parameters[key] = value;
         }
+
+        public void ApplyFilters(IDictionary<string, object> filters)
+        {
+            foreach (var filter in filters)
+            {
+                _parameters[filter.Key] = filter.Value;
+            }
+        }
     }
 }

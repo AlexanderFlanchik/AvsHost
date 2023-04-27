@@ -160,7 +160,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unable to generate preview for ID = '{0}'", previewSessionId);
+                _logger.LogError(ex, "Error: unable to generate preview for ID = '{0}'. Invalid preview content data.", previewSessionId);
                 
                 return PartialView("PreviewError");
             }

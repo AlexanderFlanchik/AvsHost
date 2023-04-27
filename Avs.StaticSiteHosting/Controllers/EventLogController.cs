@@ -14,7 +14,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
     public class EventLogController : BaseController
     {
         [HttpPost]
-        public async Task<IActionResult> GetEventLog(EventLogsQuery query, [FromServices] IUserService userService, [FromServices] IEventLogsService eventLogs)
+        public async Task<IActionResult> GetEventLog(EventLogsQuery query, IUserService userService, IEventLogsService eventLogs)
         {           
             query.CurrentUserId = await userService.IsAdminAsync(CurrentUserId) ? null : CurrentUserId;
 

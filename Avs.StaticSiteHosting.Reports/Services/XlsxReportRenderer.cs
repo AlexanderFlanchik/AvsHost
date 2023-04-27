@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OfficeOpenXml;
+﻿using OfficeOpenXml;
 using Avs.StaticSiteHosting.Reports.Common;
 using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Models;
+using OfficeOpenXml.Style;
 
 namespace Avs.StaticSiteHosting.Reports.Services
 {
@@ -88,6 +84,38 @@ namespace Avs.StaticSiteHosting.Reports.Services
                 foreach (var rowCell in row.Cells ?? Array.Empty<object>())
                 {
                     worksheet.Cells[cy, cx++].Value = rowCell is not null ? rowCell.ToString() : string.Empty;
+                }
+            }
+
+            if (tableSection.Totals is not null)
+            {
+                cx = cellXindex;
+                cy++;
+
+                foreach (var totalCell in tableSection.Totals.Cells!)
+                {
+                    var cellCurrent = worksheet.Cells[cy, cx++];
+                    if (totalCell is null)
+                    {
+                        cellCurrent.Value = string.Empty;
+                        continue;
+                    }
+
+                    cellCurrent.Value = totalCell.ToString();
+                    if (totalCell.IsBold)
+                    {
+                        cellCurrent.Style.Font.Bold = true;
+                    }
+
+                    switch (totalCell.Align)
+                    {
+                        case TableCellAlign.Center:
+                            cellCurrent.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            break;
+                        case TableCellAlign.Right:
+                            cellCurrent.Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                            break;
+                    }
                 }
             }
 

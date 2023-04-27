@@ -23,6 +23,7 @@ builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddSignalRServices();
 builder.Services.AddIdentityServices();
 builder.Services.AddContentManagement();
+builder.Services.AddReports();
 
 builder.Services.AddUserHelpModule();
 builder.Services.AddConversationModule();

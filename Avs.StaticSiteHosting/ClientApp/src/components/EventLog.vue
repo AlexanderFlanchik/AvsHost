@@ -23,7 +23,7 @@
             <div class="event-logs-grid-container">
                 <table class="table table-striped">
                     <thead>
-                        <tr>
+                        <tr class="header-row">
                             <th class="w-300">
                                 <div>  
                                     <span>Site</span> 
@@ -229,6 +229,10 @@
     }
 </script>
 <style scoped>
+    .header-row {
+        background-color: gainsboro;
+    }
+    
     .dates-filter-container {
         margin-bottom: 5px;
     }

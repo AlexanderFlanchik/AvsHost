@@ -24,6 +24,8 @@ import AppSettings from './components/AppSettings.vue';
 import ApiClient from './services/ApiClient';
 import { UserNotificationService } from './services/UserNotificationService';
 import Tags from './components/Tags.vue';
+import Reports from './components/Reports.vue';
+import 'vue-multiselect/dist/vue-multiselect.min.css';
 
 Vue.use(BootstrapVue);
 Vue.use(BootstrapVueIcons);
@@ -57,7 +59,8 @@ const routes = [
     },
     { path: '/user-profile/:userId', component: UserProfile, props: true },
     { path: '/event-log', component: EventLog },
-    { path: '/settings', component: AppSettings }
+    { path: '/settings', component: AppSettings },
+    { path: '/reports', component: Reports }
 ];
 
 const router = new VueRouter({ routes });

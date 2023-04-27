@@ -5,6 +5,7 @@ using iText.Layout.Element;
 using Avs.StaticSiteHosting.Reports.Models;
 using Avs.StaticSiteHosting.Reports.Common;
 using Avs.StaticSiteHosting.Reports.Contracts;
+using iText.Layout.Properties;
 
 namespace Avs.StaticSiteHosting.Reports.Services
 {
@@ -78,7 +79,41 @@ namespace Avs.StaticSiteHosting.Reports.Services
                                                 let cell = new Cell()
                                                 select (rowCell, cell))
                 {
-                    cell.Add(new Paragraph(rowCell is not null ? rowCell.ToString() : string.Empty));
+                    cell.Add(new Paragraph(rowCell?.Value is not null ? rowCell.Value.ToString() : string.Empty));
+                    table.AddCell(cell);
+                }
+            }
+
+            if (tableSection.Totals is not null)
+            {
+                table.StartNewRow();
+
+                foreach (var totalCell in tableSection.Totals.Cells!) 
+                { 
+                    var cell = new Cell();
+                    if (totalCell is not null)
+                    {
+                        var paragraph = new Paragraph(totalCell.Value is not null ? totalCell.Value.ToString() : string.Empty);
+                        paragraph = paragraph.SetFontSize(12f);
+                        
+                        if (totalCell.IsBold)
+                        {
+                            paragraph = paragraph.SetBold();
+                        }
+
+                        switch (totalCell.Align)
+                        {
+                            case TableCellAlign.Center:
+                                paragraph = paragraph.SetTextAlignment(TextAlignment.CENTER);
+                                break;
+                            case TableCellAlign.Right:
+                                paragraph = paragraph.SetTextAlignment(TextAlignment.RIGHT);
+                                break;
+                        }
+  
+                        cell.Add(paragraph);
+                    }
+
                     table.AddCell(cell);
                 }
             }

@@ -1,8 +1,13 @@
-﻿using Avs.StaticSiteHosting.Web.Services;
+﻿using Avs.StaticSiteHosting.Reports.Contracts;
+using Avs.StaticSiteHosting.Reports.Services;
+using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
+using Avs.StaticSiteHosting.Web.Services.Reporting;
+using Avs.StaticSiteHosting.Web.Services.Reporting.SiteErrors;
+using Avs.StaticSiteHosting.Web.Services.Reporting.SiteEvents;
 using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Services.Sites;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
@@ -107,6 +112,35 @@ namespace Avs.StaticSiteHosting.Web.Common
         public static IServiceCollection AddContentEditor(this IServiceCollection services)
         {
             services.AddScoped<IPageRenderingService, PageRenderingService>();
+            return services;
+        }
+    }
+
+    public static class ReportExtensions
+    {
+        public static IServiceCollection AddReports(this IServiceCollection services) 
+        {
+            // Sites General
+            services.AddScoped<IReportDataService, SitesGeneralReportDataService>();
+
+            // Site Events
+            services.AddScoped<IReportDataService, SiteEventsReportDataService>();
+
+            // Site visits
+            services.AddScoped<IReportDataService, SiteVisitsStatisticsReportDataService>();
+
+            // Site errors
+            services.AddScoped<IReportDataService, SiteErrorsStatisticsReportDataService>();
+
+            // All report services
+            services.AddScoped<IReportProvider, ReportProvider>()
+                    .AddScoped<IReportingService, ReportService>()
+                    .AddScoped<IReportDataFacade, ReportDataFacade>();
+
+            // Report renderers
+            services.AddScoped<IReportRenderer, PdfReportRenderer>()
+                    .AddScoped<IReportRenderer, XlsxReportRenderer>();
+
             return services;
         }
     }
