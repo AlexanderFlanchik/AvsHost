@@ -26,8 +26,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
         public async Task<Stream> GetResizedImageStreamAsync(Stream inputStream, string contentType, int maxWidth)
         {
-            var imageFormat = _formatManager.FindFormatByMimeType(contentType);
-            if (imageFormat == null)
+            if (! _formatManager.TryFindFormatByMimeType(contentType, out var imageFormat))
             {
                 throw new InvalidOperationException("Invalid image type.");
             }
@@ -36,17 +35,18 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             await inputStream.CopyToAsync(buffer).ConfigureAwait(false);
             buffer.Position = 0;
 
-            var currentImage = await Image.LoadWithFormatAsync(buffer).ConfigureAwait(false);
-            if (currentImage.Image.Width > maxWidth)
+            var currentImage = Image.Load(buffer);
+            if (currentImage.Width > maxWidth)
             {
                 // resize
-                var aspect = (decimal)currentImage.Image.Width / currentImage.Image.Height;
+                var aspect = (decimal)currentImage.Width / currentImage.Height;
                 var newWidth = maxWidth;
                 var newHeight = (int)Math.Round(newWidth / aspect, 0);
-                currentImage.Image.Mutate(o => o.Resize(new ResizeOptions { Size = new Size(newWidth, newHeight) }));
+                currentImage.Mutate(o => o.Resize(new ResizeOptions { Size = new Size(newWidth, newHeight) }));
 
                 var ms = new MemoryStream();
-                currentImage.Image.Save(ms, imageFormat);
+                await currentImage.SaveAsync(ms, imageFormat).ConfigureAwait(false);
+                
                 ms.Position = 0;
                 buffer.Dispose();
 

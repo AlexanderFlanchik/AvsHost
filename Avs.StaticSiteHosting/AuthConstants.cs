@@ -11,7 +11,7 @@ namespace Avs.StaticSiteHosting.Web
         public const string ValidAudience = "StaticSiteHostingDashboardSpa";
         public static SymmetricSecurityKey SecurityKey()
         {
-            return new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Secret@ForDashboard!123"));
+            return new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Secret@ForDashboard!123_WithNewUpdate@@@@@@_@111"));
         }
 
         public readonly static TimeSpan TokenLifetime = TimeSpan.FromMinutes(1440);
