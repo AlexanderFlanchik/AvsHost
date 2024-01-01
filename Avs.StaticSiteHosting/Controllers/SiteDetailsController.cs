@@ -9,6 +9,7 @@ using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
@@ -173,7 +174,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return NotFound();
             }
            
-            Response.Headers.Add("content-disposition", $"attachment;filename={fileName}");
+            Response.Headers.Append("content-disposition", $"attachment;filename={fileName}");
 
             if (maxWidth.HasValue) // its graphic content, possible we need to resize it to fit max width.
             {

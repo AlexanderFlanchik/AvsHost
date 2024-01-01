@@ -349,9 +349,9 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 {
                     SiteId = ci.Site.Id,
                     SiteName = ci.Site.Name,
-                    Bytes = (long)(ci.Size * 1024)
+                    Size = ci.Size
                 }
-                );
+            );
 
             var lst = await contentItems.Find(siteIdsFilter).Project(projection).ToListAsync();
 
@@ -362,7 +362,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                             {
                                 SiteId = i.Key.SiteId,
                                 SiteName = i.Key.SiteName,
-                                Bytes = i.Sum(b => b.Bytes)
+                                Size = i.Sum(b => b.Size)
                             }
                             ).ToList();
 

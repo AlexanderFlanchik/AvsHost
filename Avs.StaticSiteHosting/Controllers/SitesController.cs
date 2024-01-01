@@ -7,6 +7,7 @@ using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 
@@ -47,8 +48,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                         siteService.GetActiveSitesAmountAsync(ownerUserID, siteNameFilter, tags)
                     });
                        
-            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
-            Response.Headers.Add(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));
+            Response.Headers.Append(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(amounts[0].ToString()));
+            Response.Headers.Append(GeneralConstants.ACTIVE_SITES_AMOUNT, new StringValues(amounts[1].ToString()));
 
             var sitesList = await siteService.GetSitesAsync(query);
 

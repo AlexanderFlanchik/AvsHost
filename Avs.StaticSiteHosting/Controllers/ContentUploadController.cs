@@ -33,7 +33,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var sessionId = Guid.NewGuid().ToString();
             _logger.LogInformation($"Started new upload session: ID = {sessionId}");
             
-            Response.Headers.Add(GeneralConstants.UPLOAD_SESSION_ID, sessionId);
+            Response.Headers.Append(GeneralConstants.UPLOAD_SESSION_ID, sessionId);
 
             return Ok();
         }

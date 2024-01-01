@@ -100,6 +100,7 @@
 
             this.$apiClient.getAsync('api/home')
                 .then((response) => {
+                    debugger;
                     let vm = response.data;
                     this.areSites = vm.totalSites > 0;
                     this.totalSites = vm.totalSites;
@@ -126,7 +127,7 @@
                         let otherSites = { name: 'Others', y: 0 };
 
                         for (let storageUsedInfo of vm.storageUsedInfos) {
-                            let ratio = storageUsedInfo.bytes / totalContentBytes;
+                            let ratio = storageUsedInfo.size / totalContentBytes;
     
                             if (ratio <= 0.01) {
                                 otherSites.y += ratio;
@@ -147,7 +148,7 @@
                         this.$nextTick(() => this.$refs.storageUsedChart.loadData(storageData));
                     }
 
-                    this.totalSpaceKb = vm.totalContentSize / 1024;
+                    this.totalSpaceKb = vm.totalContentSize;
                     this.errors = vm.errors;
                     this.visits = vm.totalSiteVisits;
                 }).catch(err => console.log(err));

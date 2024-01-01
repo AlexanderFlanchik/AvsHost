@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Avs.StaticSiteHosting.Web.Services.Sites;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
+using Microsoft.AspNetCore.Http;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
@@ -20,7 +21,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<IActionResult> GetErrorSites(int page, int pageSize, [FromServices] IErrorSitesListService errorSitesListService)
         {
             var (totalErrorSites, errorSites) = await errorSitesListService.GetErrorSites(CurrentUserId, page, pageSize);
-            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalErrorSites.ToString()));
+            Response.Headers.Append(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalErrorSites.ToString()));
 
             return Ok(errorSites);
         }      

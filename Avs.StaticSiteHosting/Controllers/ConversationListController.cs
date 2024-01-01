@@ -1,8 +1,8 @@
 ﻿using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,7 +23,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<IActionResult> Get(int pageNumber, int pageSize)
         {                       
             var (total, conversations) = await _conversationService.GetLatestConversations(pageNumber, pageSize, CurrentUserId);
-            Response.Headers.Add("total-conversations", new StringValues(total.ToString()));
+            Response.Headers.Append("total-conversations", new StringValues(total.ToString()));
 
             return Ok(conversations);
         }

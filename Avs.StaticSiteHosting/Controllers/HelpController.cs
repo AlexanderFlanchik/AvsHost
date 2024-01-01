@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -65,7 +66,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return new EmptyResult();
             }
 
-            Response.Headers.Add("total-topics", new StringValues(totalTopics.ToString()));
+            Response.Headers.Append("total-topics", new StringValues(totalTopics.ToString()));
             
             // Search for paragraphs available for a user
             var paragraphs = await _helpService.GetTopicContentAsync(topic.Id);

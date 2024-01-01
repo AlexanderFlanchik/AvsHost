@@ -5,6 +5,7 @@ using Microsoft.Extensions.Primitives;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
+using Microsoft.AspNetCore.Http;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
@@ -23,7 +24,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 siteEvents
             ) = await eventLogs.GetEventLogsAsync(query);
 
-            Response.Headers.Add(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalEvents.ToString()));
+            Response.Headers.Append(GeneralConstants.TOTAL_ROWS_AMOUNT, new StringValues(totalEvents.ToString()));
 
             return Ok(siteEvents);
         }

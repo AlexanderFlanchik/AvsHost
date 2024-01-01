@@ -30,13 +30,13 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         /// <summary>
         /// Total storage usage in bytes.
         /// </summary>
-        public long TotalContentSize => StorageUsedInfos?.Sum(i => i.Bytes) ?? 0;
+        public decimal TotalContentSize => StorageUsedInfos?.Sum(i => i.Size) ?? 0;
     }
 
     public class StorageUsedInfo
     {
         public string SiteId { get; set; }
         public string SiteName { get; set; }
-        public long Bytes { get; set; }
+        public decimal Size { get; set; }
     }
 }
