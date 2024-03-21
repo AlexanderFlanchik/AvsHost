@@ -8,18 +8,18 @@ namespace Avs.StaticSiteHosting.Web
     /// </summary>
     public class MongoEntityRepository
     {
-        private readonly MongoDbSettings settings;
+        private readonly IMongoDatabase database;
 
         public MongoEntityRepository(IOptions<MongoDbSettings> mongoDbOptions)
         {
-            settings = mongoDbOptions.Value;            
+            var settings = mongoDbOptions.Value;
+            var mongoClient = new MongoClient(settings.Host);
+            database = mongoClient.GetDatabase(settings.Database);
         }
 
         public IMongoCollection<T> GetEntityCollection<T>(string collectionName)
         {
-            var mongoClient = new MongoClient(settings.Host);
-            var db = mongoClient.GetDatabase(settings.Database);
-            var collection = db.GetCollection<T>(collectionName);
+            var collection = database.GetCollection<T>(collectionName);
 
             return collection;
         }
