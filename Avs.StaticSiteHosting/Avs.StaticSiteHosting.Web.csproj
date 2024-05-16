@@ -80,8 +80,8 @@
   <Target Name="BuildDashboardApp" AfterTargets="Build">
     <Message Importance="high" Text="Start running npm install and build..." />
 
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
-    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build --prod" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="set NODE_OPTIONS=--openssl-legacy-provider npm install" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="set NODE_OPTIONS=--openssl-legacy-provider npm run build --prod" />
 
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>
