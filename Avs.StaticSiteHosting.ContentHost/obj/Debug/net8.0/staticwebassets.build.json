@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "uJyU5vSbVhNnZTCBwBSkdcRYfSJvLpyl26fs6X61/LU=",
+  "Source": "Avs.StaticSiteHosting.ContentHost",
+  "BasePath": "_content/Avs.StaticSiteHosting.ContentHost",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

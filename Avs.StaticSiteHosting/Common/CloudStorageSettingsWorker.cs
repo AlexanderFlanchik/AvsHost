@@ -1,4 +1,5 @@
-﻿using Avs.StaticSiteHosting.Web.Services.Settings;
+﻿using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Web.Services.Settings;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

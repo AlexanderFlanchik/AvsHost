@@ -87,32 +87,6 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             return Ok();
         }
 
-        [HttpGet]
-        [Route("get-content-context")]
-        public ActionResult<ContentInputContext> ReadContentInputData()
-        {
-            var ctxData = HttpContext.Session.GetString(CONTENT_CONTEXT_KEY);
-            if (string.IsNullOrEmpty(ctxData))
-            {
-                return null;
-            }
-
-            return JsonConvert.DeserializeObject<ContentInputContext>(ctxData);
-        }
-
-        [HttpPost]
-        [Route("clear-editor-context")]
-        public IActionResult ClearContentInputData(ClearEditorContextModel model)
-        {
-            HttpContext.Session.Remove(CONTENT_CONTEXT_KEY);
-            if (!string.IsNullOrEmpty(model.PreviewSessionId))
-            {
-                HttpContext.Session.Remove($"{PREVIEW_PREFIX}{model.PreviewSessionId}");
-            }
-            
-            return Ok();
-        }
-
         [HttpPost]
         [Route("store-preview-session/{previewSessionId}")]
         public IActionResult StorePreviewSession(string previewSessionId, HtmlTreeRoot htmlTree)

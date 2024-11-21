@@ -1,4 +1,5 @@
-﻿using Avs.StaticSiteHosting.Web.Common;
+﻿using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Web.Common;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avs.StaticSiteHosting.Web.DTOs

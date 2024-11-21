@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Reports.Common;
 using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Models;
+using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 
@@ -24,17 +25,17 @@ namespace Avs.StaticSiteHosting.Web.Services.Reporting.SiteEvents
 
         public async Task<Report> GetReportDataAsync(ReportType reportType, ReportParameters reportParameters)
         {
-            var siteId = reportParameters["siteId"]?.ToString();
+            string siteId = reportParameters["siteId"]?.ToString();
             
             if (string.IsNullOrEmpty(siteId))
             {
-                throw new InvalidOperationException($"Parameter '{nameof(siteId)}' cannot be null or empty.");
+                throw new NoRequiredFitlerException(["Site"]);
             }
 
             var site = await _siteService.GetSiteByIdAsync(siteId);
             if (site is null)
             {
-                throw new InvalidOperationException($"The site with ID = '{siteId}' was not found.");
+                throw new ReportPreviewException($"The site with ID = '{siteId}' was not found.");
             }
  
             var eventLogsQuery = new EventLogsQuery()

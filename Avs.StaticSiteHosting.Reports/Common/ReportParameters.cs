@@ -17,10 +17,16 @@
         /// </summary>
         /// <param name="Filter name"></param>
         /// <returns>Filter value</returns>
-        public object this[string key] 
+        public object? this[string key] 
         { 
-            get => _parameters[key]; 
-            set => _parameters[key] = value;
+            get 
+            {
+                if (_parameters.ContainsKey(key))
+                    return _parameters[key];
+                return null;
+            }
+
+            set => _parameters[key] = value!;
         }
 
         public void ApplyFilters(IDictionary<string, object> filters)

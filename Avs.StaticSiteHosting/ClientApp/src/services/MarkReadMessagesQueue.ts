@@ -1,33 +1,35 @@
-﻿const MarkReadMessagesQueue = function (postHandler) {
-    const self = this;
-    let messages = [];
-    let interval = null;
+export class MarkReadMessagesQueue {
+    private messages: Array<any> =  [];
+    private interval: number | null = null;
+    private postHandler: (messages: Array<any>) => Promise<string[]>;
 
-    self.addMessage = function (msg) {
-        let ids = messages.map(m => m.id);
-        if (ids.indexOf(msg.id) >= 0) {
-            return;
-        }
+    constructor (postHandler: (messages: Array<any>) => Promise<string[]>) {
+        this.postHandler = postHandler;
+    }
 
-        messages.push(msg);
-
-        if (!interval) {
-            startProcessing();
-        }
-    };
-
-    function startProcessing() {
-        interval = setInterval(() => {
-            postHandler(messages)
+    private startProcessing() {
+        this.interval = setInterval(() => {
+            this.postHandler(this.messages)
                 .then((ids) => {
-                    messages = messages.filter(m => ids.indexOf(m.id) < 0);
-                    if (!messages.length) {
-                        clearInterval(interval);
-                        interval = null;
+                    this.messages = this.messages.filter(m => ids.indexOf(m.id) < 0);
+                    if (!this.messages.length) {
+                        clearInterval(this.interval!);
+                        this.interval = null;
                     }
                 });
         }, 1000);
     }
-};
 
-export default MarkReadMessagesQueue;
+    public addMessage(msg: any) {
+        const ids = this.messages.map(m => m.id);
+        if (ids.indexOf(msg.id) >= 0) {
+            return;
+        }
+
+        this.messages.push(msg);
+        if (!this.interval) {
+            this.startProcessing();
+        }
+    }
+};
+ 

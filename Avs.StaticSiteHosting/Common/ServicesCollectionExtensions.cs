@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Services;
+using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
@@ -11,6 +12,7 @@ using Avs.StaticSiteHosting.Web.Services.Reporting.SiteEvents;
 using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Services.Sites;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
+using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +70,7 @@ namespace Avs.StaticSiteHosting.Web.Common
         {
             services.AddScoped<ISiteService, SiteService>();
             services.AddScoped<IContentManager, ContentManager>();
+            services.AddScoped<ISiteManagementService, SiteManagementService>();
             services.AddScoped<IContentUploadService, ContentUploadService>();
             services.AddScoped<IPagePreviewService, PagePreviewService>();
             services.AddSingleton<ICloudStorageProvider, CloudStorageProvider>();

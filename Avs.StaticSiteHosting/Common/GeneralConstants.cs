@@ -39,5 +39,7 @@
 
         public const string NEW_RESOURCE_PATTERN = "%25NEW_RESOURCE%25";
         public const string EXIST_RESOURCE_PATTERN = "%25EXIST_RESOURCE%25";
+
+        public const string REPORT_PREVIEW_READY = "x-report-preview-ready";
     }
 }

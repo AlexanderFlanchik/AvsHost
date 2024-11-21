@@ -14,7 +14,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// <param name="site">Site reference</param>
         /// <param name="uploadSessionId">Upload session id</param>
         /// <returns></returns>
-        Task ProcessSiteContentAsync(Site site, string uploadSessionId);
+        Task<IEnumerable<ContentItemModel>> ProcessSiteContentAsync(Site site, string uploadSessionId);
         
         /// <summary>
         /// Returns a list of content files for the site specified.

@@ -3,7 +3,7 @@
 @{
     var body = @Model.Body;
     var head = @Model.Head;
-    var bodyAttributes = string.Join(" ", body.Attributes.Select(a => $"{a.Key}=\"{a.Value}\"").ToArray());
+    var bodyAttributes = string.Join(" ", body.Attributes.Select(a => $"{a.Key}={a.Value}").ToArray());
 }
 
 <!DOCTYPE html>

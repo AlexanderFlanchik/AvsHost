@@ -7,13 +7,9 @@ namespace Avs.StaticSiteHosting.Web.DTOs
     {
         [Required]
         public string SiteName { get; set; }
-
         public string UploadSessionId { get; set; }
-        
         public string Description { get; set; }
-
         public bool IsActive { get; set; }
-
         public IDictionary<string, string> ResourceMappings { get; set; }               
         public string LandingPage { get; set; }
         public string[] TagIds { get; set; }

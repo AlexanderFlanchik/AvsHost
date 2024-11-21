@@ -1,24 +1,21 @@
 ﻿export class ContentFile {
     constructor(
-        public id: String,
-        public name: String,
-        public destinationPath: String,
-        public isNew: Boolean,
-        public size: Number,
-        public isEditable: Boolean,
-        public isViewable: Boolean,
+        public id: string | null,
+        public name: string,
+        public destinationPath: string,
+        public isNew: boolean,
+        public size: number,
+        public isEditable: boolean,
+        public isViewable: boolean,
         public uploadedAt: Date,
-        public updateDate: Date) { }
+        public updateDate: Date |  null) { }
 
     public fullName(): String {
         if (!this.destinationPath) {
             return this.name;
         }
 
-        var delimeter = '/';
-        if (this.destinationPath.indexOf('\\') > 0) {
-            delimeter = '\\';
-        }
+        const delimeter = this.destinationPath.indexOf('\\') > 0 ? '\\' : '/';
 
         return `${this.destinationPath}${delimeter}${this.name}`;
     }

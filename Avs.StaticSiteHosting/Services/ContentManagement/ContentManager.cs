@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
-using Avs.StaticSiteHosting.Web.Common;
+using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Microsoft.AspNetCore.StaticFiles;
@@ -41,7 +41,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             _cloudStorageProvider = cloudStorageProvider;
         }
 
-        public async Task ProcessSiteContentAsync(Site site, string uploadSessionId)
+        public async Task<IEnumerable<ContentItemModel>> ProcessSiteContentAsync(Site site, string uploadSessionId)
         {
             var uploadFolder = Path.Combine(options.TempContentPath, uploadSessionId);
             var siteFolder = Path.Combine(options.ContentPath, site.Name);
@@ -169,6 +169,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             {
                 _logger.LogError(ex, "Unable to store content.");
             }
+
+            return contentItemList.Select(FromEntity);
         }
 
         public async Task<IEnumerable<ContentItemModel>> GetUploadedContentAsync(string siteId)
@@ -176,23 +178,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             var ciCursor = await contentItems.FindAsync(i => i.Site.Id == siteId).ConfigureAwait(false);
             var contentList = await ciCursor.ToListAsync().ConfigureAwait(false);
 
-            return contentList.Select(i =>
-            {
-                var fi = new FileInfo(i.FullName);
-                var siteFolder = new DirectoryInfo(Path.Combine(options.ContentPath, i.Site.Name));
-                var destinationPath = fi.Directory.FullName.Replace(siteFolder.FullName, string.Empty);
-
-                return new ContentItemModel
-                {
-                    Id = i.Id,
-                    FileName = i.Name,
-                    ContentType = i.ContentType,
-                    UploadedAt = i.UploadedAt,
-                    Size = i.Size,
-                    UpdateDate = i.UpdateDate,
-                    DestinationPath = destinationPath.Length > 1 ? destinationPath.Substring(1) : destinationPath
-                };
-            });
+            return contentList.Select(FromEntity);
         }
 
         public async Task DeleteSiteContentAsync(Site site)
@@ -453,6 +439,24 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 newLink = Regex.Replace(newLink, @"\?\S*", "\"");
                 content = content.Replace(foundLink, newLink);
             }
+        }
+
+        private ContentItemModel FromEntity(ContentItem entity)
+        {
+            var fi = new FileInfo(entity.FullName);
+            var siteFolder = new DirectoryInfo(Path.Combine(options.ContentPath, entity.Site.Name));
+            var destinationPath = fi.Directory.FullName.Replace(siteFolder.FullName, string.Empty);
+
+            return new ContentItemModel
+            {
+                Id = entity.Id,
+                FileName = entity.Name,
+                ContentType = entity.ContentType,
+                UploadedAt = entity.UploadedAt,
+                Size = entity.Size,
+                UpdateDate = entity.UpdateDate,
+                DestinationPath = destinationPath.Length > 1 ? destinationPath.Substring(1) : destinationPath
+            };
         }
     }
 }

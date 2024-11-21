@@ -1,53 +1,53 @@
-﻿<template>
+<script setup lang="ts">
+ import { inject, onMounted, reactive } from 'vue';
+ import Tag, { TagData } from './Tag.vue';
+ import { API_CLIENT } from '../../common/diKeys';
+ 
+ interface TagListModel {
+    tags: TagData[];
+ }
+
+ const model = reactive<TagListModel>({
+    tags: []
+ });
+
+ const apiClient = inject(API_CLIENT)!;
+ const loadTags = () => 
+    apiClient.getAsync('api/tags')
+        .then((response: any) => model.tags = response.data)
+        .catch((e: Error) => console.log(e));
+
+ onMounted(loadTags);
+ 
+ defineExpose({ loadTags });
+ 
+ const deleteTag = async(tagId: string) => {
+    const response = await apiClient.getAsync(`api/tagvalidation/check-tag-use?tagId=${tagId}`) as any;
+    if (response?.data && !confirm('This tag is used in some sites. Do you confirm to delete it?')) {
+        return;
+    }
+
+    await apiClient.deleteAsync(`api/tags/${tagId}`);
+    let idx = model.tags.findIndex((t: any) => t.id == tagId);
+    model.tags.splice(idx, 1);
+ };
+
+</script>
+<template>
     <div>
-        <ul class="tag-list" v-if="tags && tags.length">
-            <li v-for="tag in tags" :key="tag.id">
+        <ul class="tag-list" v-if="model.tags && model.tags.length">
+            <li v-for="tag in model.tags" :key="tag.id">
                 <Tag :tagData="tag"/>
                 <div class="delete-link-container">
                     <a href="javascript:void(0)" @click="deleteTag(tag.id)">X</a>
                 </div>
             </li>
         </ul>
-        <div class="no-tags-message" v-if="!tags || !tags.length">
+        <div class="no-tags-message" v-if="!model.tags || !model.tags.length">
             No tags found. Use a form on the right to add a tag.
         </div>
     </div>
 </template>
-<script>
-    import Tag from './Tag.vue';
-    
-    export default {
-        data: function () {
-            return {
-                tags: []
-            };
-        },
-        mounted: function () {
-            this.loadTags();
-        },
-        methods: {
-            loadTags: function () {
-                this.$apiClient.getAsync('api/tags')
-                    .then(response => this.tags = response.data)
-                    .catch(err => console.log(err));
-            },
-
-            deleteTag: async function(tagId) {
-                let response = await this.$apiClient.getAsync(`api/tagvalidation/check-tag-use?tagId=${tagId}`);
-                if (response.data && !confirm('This tag is used in some sites. Do you confirm to delete it?')) {
-                    return;
-                }
-
-                await this.$apiClient.deleteAsync(`api/tags/${tagId}`);
-                let idx = this.tags.findIndex(t => t.id == tagId);
-                this.tags.splice(idx, 1);
-            }
-        },
-        components: {
-            Tag
-        }
-    }
-</script>
 <style scoped>
     .tag-list {
         list-style-type: none;
