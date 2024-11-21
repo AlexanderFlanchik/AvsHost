@@ -38,5 +38,11 @@
 /Avs.StaticSiteHosting/bin/Debug/net8.0
 /Avs.StaticSiteHosting.ContentCreator/bin/Debug/net8.0
 /Avs.StaticSiteHosting.DataMigrator/bin/Debug/net8.0
+/Avs.StaticSiteHosting.DataMigrator/obj
 /Avs.StaticSiteHosting.Reports/bin/Debug/net8.0
 /Avs.StaticSiteHosting.Reports.Tests/bin/Debug/net8.0
+.DS_Store
+/Avs.StaticSiteHosting.ContentHost/bin/Debug/net8.0
+/Avs.StaticSiteHosting.ContentHost/obj
+/Avs.StaticSiteHosting.Shared/bin/Debug/net8.0
+/Avs.StaticSiteHosting.Shared/obj
