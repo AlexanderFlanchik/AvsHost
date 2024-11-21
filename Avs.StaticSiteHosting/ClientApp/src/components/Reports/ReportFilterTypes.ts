@@ -1,4 +1,4 @@
-﻿const reportFilterTypeNames = {
+const reportFilterTypeNames = {
     SiteGeneralInfoFilter: "SiteGeneralInfoFilter",
     SiteEventsFilter: "SiteEventsFilter",
     SitesAndDatesFilter: "SitesAndDatesFilter"

@@ -1,23 +1,19 @@
-<template>
-    <div class="loader" v-if="processing"></div>
-</template>
-<script>
-    export default {
-        props: {
-            processing: Object
-        }
-    }
+<script setup lang="ts">
+const props = defineProps<{ processing: boolean }>();
 </script>
+<template>
+<div class="loader" v-if="props.processing"></div>
+</template>
 <style scoped>
     .loader {
-        margin-top: 7px;
+        margin-top: 2px;
         margin-left: 6px;
         border: 4px solid #007bff;
         border-top: 4px solid navy; 
         border-bottom: 4px solid Navy;
         border-radius: 50%;
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
         animation: spin 2s linear infinite;
     }
   

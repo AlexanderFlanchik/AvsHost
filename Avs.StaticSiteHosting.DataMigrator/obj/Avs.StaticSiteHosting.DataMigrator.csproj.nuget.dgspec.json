@@ -156,9 +156,86 @@
           "dependencies": {
             "EPPlus": {
               "target": "Package",
-              "version": "[7.0.1, )"
+              "version": "[7.5.0, )"
             },
-            "itext7": {
+            "itext": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
+            "itext.bouncy-castle-adapter": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj",
+        "projectName": "Avs.StaticSiteHosting.Shared",
+        "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj",
+        "packagesPath": "C:\\Users\\Alex\\.nuget\\packages\\",
+        "outputPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Alex\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "MassTransit.RabbitMQ": {
+              "target": "Package",
+              "version": "[8.3.0, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[8.0.2, )"
+            },
+            "Microsoft.Extensions.DependencyInjection.Abstractions": {
               "target": "Package",
               "version": "[8.0.2, )"
             }
@@ -212,6 +289,9 @@
               },
               "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Reports\\Avs.StaticSiteHosting.Reports.csproj": {
                 "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Reports\\Avs.StaticSiteHosting.Reports.csproj"
+              },
+              "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj": {
+                "projectPath": "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj"
               }
             }
           }
@@ -228,7 +308,7 @@
           "dependencies": {
             "AWSSDK.S3": {
               "target": "Package",
-              "version": "[3.7.301, )"
+              "version": "[3.7.405, )"
             },
             "BCrypt.Net-Next": {
               "target": "Package",
@@ -236,11 +316,11 @@
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.10, )"
             },
             "Microsoft.AspNetCore.Mvc.NewtonsoftJson": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.10, )"
             },
             "Microsoft.AspNetCore.SpaServices": {
               "target": "Package",
@@ -248,25 +328,25 @@
             },
             "Microsoft.AspNetCore.SpaServices.Extensions": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.10, )"
             },
             "Microsoft.TypeScript.MSBuild": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[5.2.2, )"
+              "version": "[5.6.2, )"
             },
             "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
               "target": "Package",
-              "version": "[8.0.0, )"
+              "version": "[8.0.6, )"
             },
             "MongoDB.Bson": {
               "target": "Package",
-              "version": "[2.22.0, )"
+              "version": "[3.0.0, )"
             },
             "MongoDB.Driver": {
               "target": "Package",
-              "version": "[2.22.0, )"
+              "version": "[3.0.0, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -274,7 +354,7 @@
             },
             "SixLabors.ImageSharp": {
               "target": "Package",
-              "version": "[3.0.2, )"
+              "version": "[3.1.5, )"
             }
           },
           "imports": [

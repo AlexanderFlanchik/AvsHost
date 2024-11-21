@@ -5,8 +5,8 @@ namespace Avs.StaticSiteHosting.Web.DTOs
 {
     public class ContentItemModel
     {
-        private readonly string[] EditableFormats = new string[] { ".txt", ".xml", ".xhtml", ".html", ".css", ".js" };
-        private readonly string[] ViewableFormats = new string[] { ".bmp", ".png", ".jpg", ".svg", ".gif" };
+        private readonly string[] EditableFormats = { ".txt", ".xml", ".xhtml", ".html", ".css", ".js" };
+        private readonly string[] ViewableFormats = { ".bmp", ".png", ".jpg", ".svg", ".gif" };
         
         public string Id { get; set; }
         public string FileName { get; set; }

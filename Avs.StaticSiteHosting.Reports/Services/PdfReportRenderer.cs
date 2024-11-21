@@ -16,8 +16,8 @@ namespace Avs.StaticSiteHosting.Reports.Services
         public Task<byte[]> RenderAsync(Report report)
         {
             using var ms = new MemoryStream();
-
             var writer = new PdfWriter(ms);
+
             var pdf = new PdfDocument(writer.SetSmartMode(true));
             var document = new Document(pdf, PageSize.A4);
 
@@ -25,7 +25,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
 
             if (!string.IsNullOrEmpty(report.Title))
             {
-                document.Add(new Paragraph(report.Title).SetFontSize(12f).SetBold());
+                document.Add(new Paragraph(report.Title).SetFontSize(12f).SimulateBold());
             }
             
             // Rendering of all report sections
@@ -68,7 +68,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
             // Header
             foreach (var column in columns)
             {
-                table.AddHeaderCell(new Cell().Add(new Paragraph(column).SetBold()));
+                table.AddHeaderCell(new Cell().Add(new Paragraph(column).SimulateBold()));
             }
 
             // Table body
@@ -98,7 +98,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
                         
                         if (totalCell.IsBold)
                         {
-                            paragraph = paragraph.SetBold();
+                            paragraph = paragraph.SimulateBold();
                         }
 
                         switch (totalCell.Align)

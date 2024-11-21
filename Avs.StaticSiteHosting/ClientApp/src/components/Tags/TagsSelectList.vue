@@ -1,5 +1,93 @@
-﻿<template>
-    <div class="tag-list-container">
+<script setup lang="ts">
+import { computed, inject, onMounted, reactive } from 'vue';
+import Tag, { TagData } from './Tag.vue';
+import { API_CLIENT } from '../../common/diKeys';
+
+interface TagsSelectListProps {
+    tagIds: Array<string>;
+    onTagsChanged: (selected: any) => void;
+    hideSelectedTags?: boolean;
+}
+
+interface TagsSelectListModel {
+    tagRemoving: boolean;
+    showOptions: boolean;
+    allTags: TagData[];
+}
+
+const props = defineProps<TagsSelectListProps>();
+const model = reactive<TagsSelectListModel>({
+    tagRemoving: false,
+    showOptions: false,
+    allTags: []
+});
+
+const apiClient = inject(API_CLIENT)!;
+
+onMounted(async () => {
+    const allTagsResponse: any = await apiClient.getAsync("api/tags");
+    model.allTags = allTagsResponse.data || [];
+});
+
+const openOptions = () => {
+    if (!model.tagRemoving) {
+        model.showOptions = true;
+    } else {
+        model.tagRemoving = false;
+    }
+};
+const selected = computed(() => {
+    if (!props.tagIds?.length) {
+        return [];
+    }
+
+    return model.allTags.filter((t: any) => props.tagIds.indexOf(t.id) >= 0);
+});
+
+const clear = () => {
+    if (!props.tagIds?.length) {
+        return;
+    }
+
+    let t = props.tagIds.pop();
+    while (t) {
+        t = props.tagIds.pop();
+    }
+
+   props.onTagsChanged(selected);
+};
+
+const removeTag = (tag: TagData) => {
+    model.tagRemoving = true;
+    const foundTag = selected.value.find((t: TagData) => t.id == tag.id);
+    if (foundTag) {
+        const tagIdx = selected.value.indexOf(foundTag);
+        selected.value.splice(tagIdx, 1);
+        props.onTagsChanged(selected);
+    }
+};
+
+const addOrRemoveTag = (tag: TagData) => {
+    const foundTag = selected.value.find((t: TagData) => t.id == tag.id);
+    if (!foundTag) {
+        selected.value.push(tag);
+        props.onTagsChanged(selected);
+    } else {
+        removeTag(tag);
+    }
+};
+
+const tagSelected = (tag: TagData) => {
+    const isSelected = selected.value.indexOf(tag) >= 0;
+    return {
+        "selected-tag": isSelected
+    };
+};
+
+defineExpose({ openOptions });
+</script>
+<template>
+<div class="tag-list-container">
         <div @click="() => openOptions()">
             <div class="no-selected-tags" v-if="!selected.length && !hideSelectedTags">-- Click here to add --</div>
             <ul class="selected-tags-container" v-if="selected.length && !hideSelectedTags">
@@ -9,108 +97,29 @@
                 </li>
             </ul>
         </div>
-        <div v-if="showOptions" class="tag-options-container">
-           <div class="options-list-container" v-if="allTags.length">
+        <div v-if="model.showOptions" class="tag-options-container">
+           <div class="options-list-container" v-if="model.allTags.length">
                 <ul class="options-list">
-                    <li v-for="tag of allTags" :key="tag.id" @click="addOrRemoveTag(tag)" v-bind:class="tagSelected(tag)">
+                    <li v-for="tag of model.allTags" :key="tag.id" @click="addOrRemoveTag(tag)" v-bind:class="tagSelected(tag)">
                         <Tag :tagData="tag" />
                     </li>
                 </ul>
             </div>
-            <div class="btn-bar" v-if="allTags.length">
+            <div class="btn-bar" v-if="model.allTags.length">
                 <button class="btn btn-primary clear-selected-tags-btn" @click="clear" v-if="selected.length">Clear</button>
-                <button class="btn btn-primary" @click="showOptions = false">OK</button>
+                <button class="btn btn-primary" @click="model.showOptions = false">OK</button>
             </div>
-            <div v-if="!allTags.length">
+            <div v-if="!model.allTags.length">
                 <span class="no-tags-message">--No tags found.</span>
+            </div>
+            <div v-if="!model.allTags.length" class="btn-bar">
+                <button class="btn btn-primary" @click="model.showOptions = false">OK</button>
             </div>
         </div>
     </div>
 </template>
-<script>
-    import Tag from './Tag.vue';
-   
-    export default {
-        props: {
-            tagIds: Object,
-            onTagsChanged: Object,
-            hideSelectedTags: Object
-        },
-        data: function () {
-            return {
-                tagRemoving: false,
-                showOptions: false,
-                allTags: [],
-            };
-        },
-        mounted: async function () {
-            let allTagsResponse = await this.$apiClient.getAsync("api/tags");
-            this.allTags = allTagsResponse.data || [];
-        },
-        methods: {
-            openOptions: function() {
-                if (!this.tagRemoving) {
-                    this.showOptions = true;
-                } else {
-                    this.tagRemoving = false;
-                }
-            },
-
-            clear: function() {
-                if (!this.tagIds) {
-                    return;
-                }
-
-                let t = this.tagIds.pop();
-                while (t) {
-                    t = this.tagIds.pop();
-                }
-
-                this.onTagsChanged(this.selected);
-            },
-
-            addOrRemoveTag: function(tag) {
-                let foundTag = this.selected.find(t => t.id == tag.id);
-                if (!foundTag) {
-                    this.selected.push(tag);
-                    this.onTagsChanged(this.selected);
-                } else {
-                    this.removeTag(tag);
-                }
-            },
-
-            removeTag: function(tag) {
-                this.tagRemoving = true;
-                let foundTag = this.selected.find(t => t.id == tag.id);
-                if (foundTag) {
-                    let tagIdx = this.selected.indexOf(foundTag);
-                    this.selected.splice(tagIdx, 1);
-                    this.onTagsChanged(this.selected);
-                }
-            },
-            tagSelected: function(tag) {
-                let isSelected = this.selected.indexOf(tag) >= 0;
-                return {
-                    "selected-tag": isSelected
-                };
-            }
-        },
-        computed: {
-            selected: function() {
-                if (!this.tagIds) {
-                    return [];
-                }
-
-                return this.allTags.filter(t => this.tagIds.indexOf(t.id) >= 0);
-            }
-        },
-        components: {
-            Tag
-        }
-    }
-</script>
 <style scoped>
-   .no-selected-tags {
+    .no-selected-tags {
         color: navy;
         font-style: italic;
         cursor: pointer;
@@ -182,5 +191,4 @@
     .selected-tag {
         background-color: darkgrey;
     }
-
 </style>

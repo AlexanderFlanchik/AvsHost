@@ -18,6 +18,7 @@ using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Microsoft.AspNetCore.SignalR;
 using Avs.StaticSiteHosting.Web.Hubs;
+using Avs.StaticSiteHosting.Shared.Common;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {
@@ -31,36 +32,31 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
         private const string NEW_SITE_VISIT = "site-visited";
         private const string SITE_ERROR_EVENT = "site-error";
         
-        private readonly ISiteService _siteService;
-        private readonly IContentManager _contentManager;
-        private readonly ISiteStatisticsService _siteStatisticsService;
         private readonly ICloudStorageProvider _cloudStorageProvider;
-        private readonly IEventLogsService _eventLogsService;
         private readonly CloudStorageSettings _cloudStorageSettings;
         private readonly IHubContext<UserNotificationHub> _notificationHub;
+        private readonly IOptions<StaticSiteOptions> _staticSiteOptions;
+        private readonly ILogger<StaticSiteMiddleware> _logger;
 
         public StaticSiteMiddleware(RequestDelegate next,
-            ISiteService siteService,
-            IContentManager contentManager,
-            ISiteStatisticsService siteStatisticsService,
+            IOptions<StaticSiteOptions> staticSiteOptions,
             ICloudStorageProvider cloudStorageProvider,
-            IEventLogsService eventLogsService,
             CloudStorageSettings cloudStorageSettings,
-            IHubContext<UserNotificationHub> notificationHub)
+            IHubContext<UserNotificationHub> notificationHub,
+            ILogger<StaticSiteMiddleware> logger)
         {
-            _siteService = siteService;
-            _contentManager = contentManager;
-            _siteStatisticsService = siteStatisticsService;
+            _staticSiteOptions = staticSiteOptions;
             _cloudStorageProvider = cloudStorageProvider;
-            _eventLogsService = eventLogsService;
             _cloudStorageSettings = cloudStorageSettings;
             _notificationHub = notificationHub;
+            _logger = logger;
         }
 
-        public async Task Invoke(HttpContext context, IOptions<StaticSiteOptions> staticSiteOptions, ILogger<StaticSiteMiddleware> logger)
+        public async Task Invoke(HttpContext context, ISiteService siteService, IContentManager contentManager, IEventLogsService eventLogsService, 
+            ISiteStatisticsService siteStatisticsService)
         {            
             var routeValues = context.GetRouteData().Values;
-            if (await HandleDashboardContent(context))
+            if (await HandleDashboardContent(contentManager, context))
             {
                 return;
             }
@@ -68,12 +64,12 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var siteName = (string)routeValues["sitename"];
             var sitePath = (string)routeValues["sitepath"];
 
-            var siteInfo = await GetSiteAsync(siteName);
-            var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
+            var siteInfo = await GetSiteAsync(eventLogsService, siteName, siteService);
+            var siteContentPath = Path.Combine(_staticSiteOptions.Value.ContentPath, siteName);
 
-            await CheckContentPathAndSiteStatus(siteContentPath, siteInfo);
+            await CheckContentPathAndSiteStatus(eventLogsService, siteContentPath, siteInfo);
 
-            var (contentItem, fileName) = await GetContentItem(siteInfo, siteName, sitePath);
+            var (contentItem, fileName) = await GetContentItem(contentManager, eventLogsService, siteInfo, siteName, sitePath);
             if (contentItem is not null)
             {
                 var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
@@ -81,21 +77,21 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
                 
                 if (!fileInfo.Exists)
                 {
-                    await ProcessCloudContent(context, siteInfo, contentItem, fileInfo);
+                    await ProcessCloudContent(context, eventLogsService, siteInfo, contentItem, fileInfo);
                     return;
                 }
 
-                await CheckIfSiteIsViewed(fileInfo, siteInfo, context);
+                await CheckIfSiteIsViewed(siteStatisticsService, fileInfo, siteInfo, context);
 
                 context.Response.ContentType = contentItem.ContentType;
 
                 await context.Response.SendFileAsync(fileInfo);
 
-                logger.LogInformation($"Content sent: {fileName}");
+                _logger.LogInformation($"Content sent: {fileName}");
             }
             else
             {
-                await HandleSiteErrorAsync(siteInfo, $"Resource with name '{fileName}' was not found.");
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, $"Resource with name '{fileName}' was not found.");
                 
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content with name {fileName} found.");
             }
@@ -103,9 +99,9 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
         #region Private Methods
 
-        private async Task<Site> GetSiteAsync(string siteName)
+        private async Task<Site> GetSiteAsync(IEventLogsService eventLogsService, string siteName, ISiteService siteService)
         {
-            var siteInfo = await _siteService.GetSiteByNameAsync(siteName);
+            var siteInfo = await siteService.GetSiteByNameAsync(siteName);
             if (siteInfo == null)
             {
                 throw new StaticSiteProcessingException(404, "Oops, no such site!", $"No site with name '{siteName}' found.");
@@ -113,7 +109,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
 
             if (!siteInfo.IsActive)
             {
-                await HandleSiteErrorAsync(siteInfo, "The site has been turned off.");
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, "The site has been turned off.");
 
                 throw new StaticSiteProcessingException(503, "Access Denied", "This site is not available.");
             }
@@ -121,12 +117,12 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             return siteInfo;
         }
 
-        private async ValueTask CheckContentPathAndSiteStatus(string siteContentPath, Site siteInfo)
+        private async ValueTask CheckContentPathAndSiteStatus(IEventLogsService eventLogsService, string siteContentPath, Site siteInfo)
         {
             if (!Directory.Exists(siteContentPath))
             {
                 var errMessage = $"No content folder found for site named '{siteInfo.Name}'";
-                await HandleSiteErrorAsync(siteInfo, errMessage);
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, errMessage);
 
                 throw new StaticSiteProcessingException(404, INVALID_SITE, errMessage);
             }
@@ -134,18 +130,18 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var siteOwner = siteInfo.CreatedBy;
             if (siteOwner.Status != UserStatus.Active)
             {
-                await HandleSiteErrorAsync(siteInfo, "Site cannot be processed because of lock of its owner.");
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, "Site cannot be processed because of lock of its owner.");
 
                 throw new StaticSiteProcessingException(400, INVALID_SITE, "This content cannot be provided because its owner has been blocked.");
             }
         }
 
-        private async Task<(ContentItemModel item, string fileName)> GetContentItem(Site siteInfo, string siteName, string sitePath)
+        private async Task<(ContentItemModel item, string fileName)> GetContentItem(IContentManager contentManager, IEventLogsService eventLogsService, Site siteInfo, string siteName, string sitePath)
         {
-            var contentItems = await _contentManager.GetUploadedContentAsync(siteInfo.Id);
+            var contentItems = await contentManager.GetUploadedContentAsync(siteInfo.Id);
             if (contentItems == null || !contentItems.Any())
             {
-                await HandleSiteErrorAsync(siteInfo, "Unable to find content for site.");
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, "Unable to find content for site.");
 
                 throw new StaticSiteProcessingException(404, "Oops, no content", $"No content found for site named '{siteName}'");
             }
@@ -159,7 +155,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             return (contentItem, fileName);
         }
 
-        private async Task ProcessCloudContent(HttpContext context, Site siteInfo, ContentItemModel contentItem, IFileInfo fileInfo)
+        private async Task ProcessCloudContent(HttpContext context, IEventLogsService eventLogsService, Site siteInfo, ContentItemModel contentItem, IFileInfo fileInfo)
         {
             if (!_cloudStorageSettings.Enabled)
             {
@@ -189,19 +185,19 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             async Task NoCloudContentError()
             {
                 var errorMessage = $"No content {fileInfo.Name} for site {siteInfo.Name}.";
-                await HandleSiteErrorAsync(siteInfo, errorMessage);
+                await HandleSiteErrorAsync(eventLogsService, siteInfo, errorMessage);
 
                 throw new StaticSiteProcessingException(404, "Oops, no content", errorMessage);
             }
         }
 
-        private async ValueTask CheckIfSiteIsViewed(IFileInfo fi, Site siteInfo, HttpContext context)
+        private async ValueTask CheckIfSiteIsViewed(ISiteStatisticsService siteStatisticsService, IFileInfo fi, Site siteInfo, HttpContext context)
         {
             var landingPage = siteInfo.LandingPage;
             if (!string.IsNullOrEmpty(landingPage) && fi.Name == landingPage)
             {
                 var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
-                var visited = await _siteStatisticsService.MarkSiteAsViewed(siteInfo.Id, visitor);
+                var visited = await siteStatisticsService.MarkSiteAsViewed(siteInfo.Id, visitor);
                 if (visited)
                 {
                     await _notificationHub.Clients.User(siteInfo.CreatedBy.Id).SendAsync(NEW_SITE_VISIT);
@@ -209,7 +205,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             }
         }
 
-        private async ValueTask<bool> HandleDashboardContent(HttpContext context)
+        private async ValueTask<bool> HandleDashboardContent(IContentManager contentManager, HttpContext context)
         {
             var distPath = Path.Combine(new DirectoryInfo("ClientApp").FullName, "dist");
             var reqPath = context.Request.Path;
@@ -220,7 +216,7 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             var fi = fileProvider.GetFileInfo(filePath);
             if (fi.Exists)
             {
-                context.Response.ContentType = _contentManager.GetContentType(fi.Name);
+                context.Response.ContentType = contentManager.GetContentType(fi.Name);
                 await context.Response.SendFileAsync(fi);
                 
                 return true;
@@ -229,9 +225,9 @@ namespace Avs.StaticSiteHosting.Web.Middlewares
             return false;
         }
 
-        private async Task HandleSiteErrorAsync(Site siteInfo, string errorMessage)
+        private async Task HandleSiteErrorAsync(IEventLogsService eventLogsService, Site siteInfo, string errorMessage)
         {
-            await _eventLogsService.InsertSiteEventAsync(siteInfo.Id, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
+            await eventLogsService.InsertSiteEventAsync(siteInfo.Id, INVALID_SITE, Models.SiteEventType.Error, errorMessage);
             await _notificationHub.Clients.User(siteInfo.CreatedBy.Id).SendAsync(SITE_ERROR_EVENT);
         }
 

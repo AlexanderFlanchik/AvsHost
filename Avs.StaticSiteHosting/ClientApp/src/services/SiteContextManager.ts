@@ -1,19 +1,20 @@
-﻿import { ContentFile } from "../common/ContentFile";
+import { ContentFile } from "../common/ContentFile";
 
 export interface SiteContext {
-    siteId: String;
-    siteName: String;
-    description: String;
-    landingPage: String;
-    isActive: Boolean;
+    siteId: string;
+    siteName: string;
+    description: string;
+    landingPage: string;
+    isActive: boolean;
     resourceMappings: Array<ResourceMapping>;
-    uploadSessionId: String;
+    uploadSessionId: string;
     uploadedFiles: Array<ContentFile>;
+    tagIds: Array<string>
 }
 
 export interface ResourceMapping {
-    name: String;
-    value: String;
+    name: string;
+    value: string;
 }
 
 export class SiteContextManager {
@@ -23,7 +24,7 @@ export class SiteContextManager {
         localStorage.setItem(this.siteContextKey, JSON.stringify(siteContext));
     }
 
-    public get(): SiteContext {
+    public get(): SiteContext | null | undefined {
         let jsonContext = localStorage.getItem(this.siteContextKey);
         if (!jsonContext) {
             return null;

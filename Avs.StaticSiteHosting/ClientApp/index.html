@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="dashboard.css" type="text/css" />
+    <title>Dashboard</title>
+    <style>
+        .highcharts-credits {
+            display: none !important;
+        }
+    </style>
+    <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div id="app">
+        </div>
+        <div id="footer">
+        </div>
+    </div>
+    <script>
+       (function () {
+            fetch('api/Footer')
+                .then(res => res.text())
+                .then(footerContent => {
+                    const footer = document.getElementById('footer');
+                    footer.innerHTML = footerContent;
+                });
+        })();
+    </script>
+     <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

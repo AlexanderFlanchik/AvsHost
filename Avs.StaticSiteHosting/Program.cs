@@ -10,6 +10,12 @@ using Avs.StaticSiteHosting.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
+using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Web.Messaging.SiteContent;
+using Avs.StaticSiteHosting.Web.Messaging.SiteEvents;
+using Avs.StaticSiteHosting.Web.Messaging.SettingsProvider;
+using Microsoft.Extensions.Configuration;
+using Avs.StaticSiteHosting.Web.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +40,13 @@ builder.Services.AddDashboardAuthentication();
 builder.Services.AddControllersWithViews().AddNewtonsoftJson();
 builder.Services.AddContentEditor();
 builder.Services.AddScoped<ResourcePreviewContentMiddleware>();
+builder.Services.AddMessaging(builder.Configuration, options =>
+{
+    options.AddConsumer<SiteErrorConsumer>();
+    options.AddConsumer<SiteContentRequestConsumer>();
+    options.AddConsumer<CloudSettingsRequestConsumer>();
+    options.AddConsumer<SiteVisitedConsumer>();
+});
 
 var app = builder.Build();
 
@@ -59,6 +72,14 @@ app.UseAuthorization();
 
 app.MapStaticSite("/{sitename:required}/{**sitepath}");
 app.MapControllers();
+app.MapGet("/well-known/config", (IConfiguration config) => {
+    return Results.Ok(
+        new ConfigModel() 
+        { 
+            ContentHostUrl = config["ContentHostUrl"] 
+        });
+});
+
 app.MapHub<UserNotificationHub>("/user-notification");
 
 var staticSiteOptions = (IOptions<StaticSiteOptions>)app.Services.GetService(typeof(IOptions<StaticSiteOptions>));

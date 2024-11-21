@@ -10,21 +10,21 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.301" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.405" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.1.32" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.0" />
-    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.2.2">
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="8.0.10" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.6.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
-    <PackageReference Include="MongoDB.Bson" Version="2.22.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.22.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
+    <PackageReference Include="MongoDB.Bson" Version="3.0.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
   </ItemGroup>
   
   <ItemGroup>
@@ -35,36 +35,27 @@
   </ItemGroup>
   
   <ItemGroup>
-    <None Remove="ClientApp\src\common\ContentFile.ts" />
     <None Remove="ClientApp\src\common\DateFormatter.ts" />
-    <None Remove="ClientApp\src\components\Register.vue" />
-    <None Remove="ClientApp\src\components\Registered.vue" />
-    <None Remove="ClientApp\src\components\Reports\ReportFilterTypes.ts" />
-    <None Remove="ClientApp\src\content-creation\html-elements.ts" />
-    <None Remove="ClientApp\src\content-creation\TagsProvider.ts" />
-    <None Remove="ClientApp\src\ConversationMessage.ts" />
-    <None Remove="ClientApp\src\services\ApiClient.ts" />
-    <None Remove="ClientApp\src\services\AuthService.ts" />
-    <None Remove="ClientApp\src\services\MarkReadMessagesQueue.ts" />
-    <None Remove="ClientApp\src\services\siteContextManager.ts" />
-    <None Remove="ClientApp\src\services\UserNotificationService.ts" />
+    <None Remove="ClientApp\src\common\diKeys.ts" />
+    <None Remove="ClientApp\src\services\api-client.ts" />
+    <None Remove="ClientApp\src\services\auth-service.ts" />
+    <None Remove="ClientApp\src\services\user-notification.ts" />
   </ItemGroup>
-  
+    
   <ItemGroup>
     <ProjectReference Include="..\Avs.StaticSiteHosting.ContentCreator\Avs.StaticSiteHosting.ContentCreator.csproj" />
     <ProjectReference Include="..\Avs.StaticSiteHosting.Reports\Avs.StaticSiteHosting.Reports.csproj" />
+    <ProjectReference Include="..\Avs.StaticSiteHosting.Shared\Avs.StaticSiteHosting.Shared.csproj" />
   </ItemGroup>
   
-  <ItemGroup>
-    <TypeScriptCompile Include="ClientApp\src\components\Register.vue" />
-    <TypeScriptCompile Include="ClientApp\src\components\Registered.vue" />
-    <TypeScriptCompile Include="ClientApp\src\services\AuthService.ts" />
-  </ItemGroup>
-
   <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="ClientApp\src\components\identity\" />
   </ItemGroup>
   
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
@@ -80,8 +71,8 @@
   <Target Name="BuildDashboardApp" AfterTargets="Build">
     <Message Importance="high" Text="Start running npm install and build..." />
 
-    <Exec WorkingDirectory="$(SpaRoot)" Command="set NODE_OPTIONS=--openssl-legacy-provider npm install" />
-    <Exec WorkingDirectory="$(SpaRoot)" Command="set NODE_OPTIONS=--openssl-legacy-provider npm run build --prod" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm install" />
+    <Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
 
     <!-- Include the newly-built files in the publish output -->
     <ItemGroup>

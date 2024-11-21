@@ -1,6 +1,7 @@
 ﻿using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
+using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Common;
 using Microsoft.Extensions.Logging;
 using System;

@@ -1,20 +1,17 @@
-﻿<template>
+<script setup lang="ts">
+import { Subject } from 'rxjs';
+import reportFilterTypeNames from './ReportFilterTypes';
+import { onMounted } from 'vue';
+    
+const props = defineProps<{ filterHasChanged$: Subject<any> }>();
+onMounted(() => {
+    setTimeout(() => props.filterHasChanged$?.next({ _filterType: reportFilterTypeNames.SiteGeneralInfoFilter }), 10);
+});
+
+</script>
+<template>
     <div class="no-op"></div>
 </template>
-<script lang="ts">
-    import reportFilterTypeNames from './ReportFilterTypes';
-    
-    export default {
-        props: {
-            filterHasChanged$: Object
-        },
-        mounted: function () {
-            console.log("SiteGeneralInfoFilter: ready");
-            setTimeout(() =>
-                this.filterHasChanged$.next({ _filterType: reportFilterTypeNames.SiteGeneralInfoFilter }), 10);
-        }
-    }
-</script>
 <style scoped>
     .no-op {
         display: none;

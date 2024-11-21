@@ -43,17 +43,24 @@ public class SiteVisitsStatisticsReportDataService : IReportDataService
         bool siteIdsSelected = false;
         var siteIdsValue = (JArray)reportParameters["siteIds"];
         var siteIds = siteIdsValue.Values<string>().ToArray();
-
+        var siteNames = Array.Empty<string>();
+        
         if (!siteIds.Any())
         {
-            var siteIdProjection = new ProjectionDefinitionBuilder<Site>().Expression(i => i.Id);
             var ownerSiteFilter = new FilterDefinitionBuilder<Site>().Where(s => s.CreatedBy.Id == reportParameters.SiteOwnerId);
-            var sIds = await _sites.Find(ownerSiteFilter).Project(siteIdProjection).ToListAsync();
+            var siteIdAndNameProjection = new ProjectionDefinitionBuilder<Site>().Expression(i => new { i.Id, i.Name });
+            var sites = await _sites.Find(ownerSiteFilter).Project(siteIdAndNameProjection).ToListAsync();
             
-            siteIds = sIds.ToArray();
+            siteIds = sites.Select(s => s.Id).ToArray();
+            siteNames = sites.Select(s => s.Name).ToArray();
         }
         else
         {
+            var siteIdsFilter = new FilterDefinitionBuilder<Site>().Where(s => siteIds.Contains(s.Id));
+            var siteNameProjection = new ProjectionDefinitionBuilder<Site>().Expression(i => i.Name);
+            siteNames = (await _sites.Find(siteIdsFilter).Project(siteNameProjection).ToListAsync())
+                .ToArray();
+            
             siteIdsSelected = true;
         }
 
@@ -82,13 +89,13 @@ public class SiteVisitsStatisticsReportDataService : IReportDataService
 
         var report = new Report() { Title = $"Site visits statistics" };
 
-        var siteNames = "All";
+        var siteNamesList = "All";
         if (siteIdsSelected)
         {
-            siteNames = string.Join(", ", visits.Select(v => v.SiteName).Distinct());
+            siteNamesList = string.Join(", ", siteNames.Distinct());
         }
 
-        report.Sections.Add(new TextSection { Content = $"Sites: {siteNames}" });
+        report.Sections.Add(new TextSection { Content = $"Sites: {siteNamesList}" });
         report.Sections.Add(new TextSection { Content = $"Visits from {dateFrom.ToShortDateString()} to {dateTo.ToShortDateString()}"});
         
         var rows = new List<TableRow>();

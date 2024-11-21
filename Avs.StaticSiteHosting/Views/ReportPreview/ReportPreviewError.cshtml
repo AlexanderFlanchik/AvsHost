@@ -1,0 +1,28 @@
+﻿@model Avs.StaticSiteHosting.Web.DTOs.ReportPreviewErrorModel
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div>
+        <div>Unable to generate the report preview because of error:</div>
+        <div>@Model.Error</div>
+    </div>
+}
+
+@if (Model.RequiredFilterMissing.Length > 1)
+{
+    <div class="filter-missing-errors">
+        <span>The following filters have not been set:</span>
+        <ul>
+            @foreach (var filter in Model.RequiredFilterMissing)
+            {
+                <li>@filter</li>
+            }
+        </ul>
+    </div>
+}
+else
+{
+    <div class="filter-missing-error">
+        <span>Please set the filter @Model.RequiredFilterMissing.First()</span>
+    </div>
+}

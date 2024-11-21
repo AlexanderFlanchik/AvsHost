@@ -1,51 +1,62 @@
+<script setup lang="ts">
+import { inject, onBeforeUnmount, onMounted, reactive } from 'vue';
+import { AUTH_SERVICE } from '../../common/diKeys';
+import { Subject } from 'rxjs';
+
+interface FileDownloadSectionModel {
+    reportType: any;
+    reportParameters: string;
+    filterReadySubscription: any;
+    hideSection: boolean;
+}
+
+const formAction = "api/report";
+const authService = inject(AUTH_SERVICE)!;
+const props = defineProps<{ generateReport$: Subject<any>}>();
+
+const model = reactive<FileDownloadSectionModel>({
+    reportType: null,
+    reportParameters: "{}",
+    filterReadySubscription: null,
+    hideSection: false
+});
+
+onMounted(() => {
+    model.filterReadySubscription = props.generateReport$?.subscribe((report: any) => {
+        if (report.isPreviewReady) {
+            model.reportType = report.reportType?.value;
+            model.reportParameters = JSON.stringify(Object.assign({}, report.filter));
+        }
+        model.hideSection = !report.isPreviewReady;
+    });
+});
+
+onBeforeUnmount(() => model.filterReadySubscription?.unsubscribe());
+
+const pdfLinkClick = () => {
+    const form = document.getElementById("download-form")! as HTMLFormElement;
+    form.action = `${formAction}/${model.reportType}/pdf?__accessToken=${authService.getToken()}`;
+                
+    form.submit();
+};
+
+const xlsxLinkClick = () => {
+    const form = document.getElementById("download-form") as HTMLFormElement;
+    form.action = `${formAction}/${model.reportType}/xlsx?__accessToken=${authService.getToken()}`;
+
+    form.submit();
+};
+
+</script>
 <template>
-    <div class="file-download-links-container">
+    <div class="file-download-links-container" v-if="!model.hideSection">
         <form id="download-form" method="POST" class="download-form">
-            <a href="javascript:void(0)" @click="pdfLinkClick"><img src="../../../public/icons8-pdf-32.png"> PDF</a>
-            <a href="javascript:void(0)" @click="xlsxLinkClick"><img src="../../../public/icons8-microsoft-excel-32.png"> Excel</a>
-            <input type="hidden" name="reportParameters" v-model="reportParameters" />
+            <a href="javascript:void(0)" @click="pdfLinkClick"><img src="./../../../public/icons8-pdf-32.png"> PDF</a>
+            <a href="javascript:void(0)" @click="xlsxLinkClick"><img src="./../../../public/icons8-microsoft-excel-32.png"> Excel</a>
+            <input type="hidden" name="reportParameters" v-model="model.reportParameters" />
         </form>
     </div>
 </template>
-<script>
-    const formAction = "api/report";
-
-    export default {
-        props: {
-            generateReport$: Object
-        },
-        data: function () {
-            return {
-                reportType: null,
-                reportParameters: "{}",
-                filterReadySubscription: null
-            };
-        },
-        mounted: function() {
-            this.filterReadySubscription = this.generateReport$?.subscribe(report => {
-                this.reportType = report.reportType?.value;
-                this.reportParameters = JSON.stringify(Object.assign({}, report.filter));
-            });
-        },
-        beforeDestroy: function() {
-            this.filterReadySubscription?.unsubscribe();
-        },
-        methods: {
-            pdfLinkClick: function() {
-                let form = document.getElementById("download-form");
-                form.action = `${formAction}/${this.reportType}/pdf?__accessToken=${this.$authService.getToken()}`;
-                
-                form.submit();
-            },
-            xlsxLinkClick: function() {
-                let form = document.getElementById("download-form");
-                form.action = `${formAction}/${this.reportType}/xlsx?__accessToken=${this.$authService.getToken()}`;
-
-                form.submit();
-            }
-        }
-    }
-</script>
 <style scoped>
     .file-download-links-container {
         padding: 5px;
