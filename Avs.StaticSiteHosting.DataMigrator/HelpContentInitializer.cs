@@ -5,20 +5,21 @@ using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 
 namespace Avs.StaticSiteHosting.DataMigrator
 {
-    public static class HelpContentInitializer
+    public class HelpContentInitializer(MongoEntityRepository entityRepository, ILogger<HelpContentInitializer> logger)
     {
         private const string SECTION_DATA_FILE = "helpsections.json";
         private const string TOPIC_DATA_FILE = "helptopics.json";
         private const string PARAGRAPH_DATA_FILE = "paragraphs.json";
 
-        public static async Task InitHelpData(MongoEntityRepository entityRepository)
+        public async Task InitHelpData()
         {
-            await ClearHelpData(entityRepository);
+            await ClearHelpData();
 
             var contentPath = Path.Combine(Directory.GetCurrentDirectory(), "Content");
             var sections = JsonConvert.DeserializeObject<List<Section>>(await File.ReadAllTextAsync(Path.Combine(contentPath, SECTION_DATA_FILE)));
@@ -29,7 +30,7 @@ namespace Avs.StaticSiteHosting.DataMigrator
             var topicCollection = entityRepository.GetEntityCollection<HelpTopic>(GeneralConstants.HELPTOPIC_COLLECTION);
             var paragraphCollection = entityRepository.GetEntityCollection<TopicParagraph>(GeneralConstants.TOPICPARAGRAPH_COLLECTION);
 
-            Console.WriteLine("Start processing help sections...");
+            logger.LogInformation("Start processing help sections...");
 
             foreach (var section in sections)
             {
@@ -62,14 +63,14 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 }
             }
 
-            Console.WriteLine("Processing help sections has been completed. Start processing help topics...");
+            logger.LogInformation("Processing help sections has been completed. Start processing help topics...");
 
             foreach (var topic in topics)
             {
                 var topicSection = (await sectionsCollection.FindAsync(s => s.ExternalID == topic.SectionExternalID)).FirstOrDefault();
                 if (topicSection == null)
                 {
-                    Console.WriteLine($"Invalid topic {topic.Name}. No section found.");
+                    logger.LogWarning($"Invalid topic {topic.Name}. No section found.");
                     continue;
                 }
 
@@ -96,21 +97,21 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 }
             }
 
-            Console.WriteLine("Processing help topics completed. Start processing topic paragraphs...");
+            logger.LogInformation("Processing help topics completed. Start processing topic paragraphs...");
 
             foreach (var paragraph in paragraphs)
             {
                 var topicSection = (await sectionsCollection.FindAsync(s => s.ExternalID == paragraph.SectionExternalID)).FirstOrDefault();
                 if (topicSection == null)
                 {
-                    Console.WriteLine($"Invalid section external ID: {paragraph.SectionExternalID}");
+                    logger.LogWarning($"Invalid section external ID: {paragraph.SectionExternalID}");
                     continue;
                 }
 
                 var paragraphTopic = (await topicCollection.FindAsync(t => t.SectionId == topicSection.Id && t.OrdinalNo == paragraph.TopicOrdinalNo)).FirstOrDefault();
                 if (paragraphTopic == null)
                 {
-                    Console.WriteLine($"No help topic for section with ID = {topicSection.Id} and OrdinalNo = {paragraph.TopicOrdinalNo} found.");
+                    logger.LogWarning($"No help topic for section with ID = {topicSection.Id} and OrdinalNo = {paragraph.TopicOrdinalNo} found.");
                     continue;
                 }
 
@@ -136,12 +137,12 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 }
             }
 
-            var imageFolder = new DirectoryInfo(Path.Combine(contentPath, "Images\\Help"));
+            var imageFolder = new DirectoryInfo(Path.Combine(contentPath, "Images", "Help"));
             var imagesToImport = imageFolder.GetFiles();
             var ctpProvider = new FileExtensionContentTypeProvider();
             var helpResources = entityRepository.GetEntityCollection<HelpResource>(GeneralConstants.HELPRESOURCE_COLLECTION);
 
-            Console.WriteLine("Processing help system images...");
+            logger.LogInformation("Processing help system images...");
 
             foreach (var img in imagesToImport)
             {
@@ -168,11 +169,11 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 }
             }
 
-            Console.WriteLine("Help images have been processed.");
-            Console.WriteLine("Help sub-system data initialization has completed successfully.");
+            logger.LogInformation("Help images have been processed.");
+            logger.LogInformation("Help sub-system data initialization has completed successfully.");
         }
 
-        private static async Task ClearHelpData(MongoEntityRepository entityRepository)
+        private async Task ClearHelpData()
         {
             await entityRepository.GetEntityCollection<TopicParagraph>(GeneralConstants.TOPICPARAGRAPH_COLLECTION)
                                   .DeleteManyAsync(new FilterDefinitionBuilder<TopicParagraph>().Empty);

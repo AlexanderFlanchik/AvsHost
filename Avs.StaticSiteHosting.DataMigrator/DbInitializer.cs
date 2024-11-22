@@ -1,16 +1,16 @@
 ﻿using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
-using System;
 using MongoDB.Driver;
 using System.Threading.Tasks;
 using System.Linq;
 using Avs.StaticSiteHosting.Web;
+using Microsoft.Extensions.Logging;
 
 namespace Avs.StaticSiteHosting.DataMigrator
 {
-    public static class DbInitialization
+    public class DbInitializer(MongoEntityRepository mongoRepository, PasswordHasher passwordHasher, ILogger<DbInitializer> logger)
     {
-        public static async Task InitDbAsync(MongoEntityRepository mongoRepository, PasswordHasher passwordHasher)
+        public async Task InitDbAsync()
         {
             // 1. Check roles
             var rolesCollection = mongoRepository.GetEntityCollection<Role>(GeneralConstants.ROLES_COLLECTION);
@@ -22,11 +22,11 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 var userRole = new Role { Name = GeneralConstants.DEFAULT_USER_ROLE };
                 var adminRole = new Role { Name = GeneralConstants.ADMIN_ROLE };
                 await rolesCollection.InsertManyAsync(new[] { userRole, adminRole });
-                Console.WriteLine("Base roles have been created.");
+                logger.LogInformation("Base roles have been created.");
             }
             else
             {
-                Console.WriteLine("Base roles already exist in database.");
+                logger.LogInformation("Base roles already exist in database.");
             }
 
             // 2. Check admin user
@@ -36,6 +36,8 @@ namespace Avs.StaticSiteHosting.DataMigrator
             if (!users.Any())
             {
                 var adminRole = (await rolesCollection.FindAsync(r => r.Name == GeneralConstants.ADMIN_ROLE)).First();
+                
+                // Of course, no one will create a real user with password like this, this is just for demo
                 var admin = new User()
                 {
                     Name = "Admin",
@@ -46,14 +48,14 @@ namespace Avs.StaticSiteHosting.DataMigrator
                 };
 
                 await usersCollection.InsertOneAsync(admin);
-                Console.WriteLine("Admin user has been created.");
+                logger.LogInformation("Admin user has been created.");
             }
             else
             {
-                Console.WriteLine("Admin user already exists.");
+                logger.LogInformation("Admin user already exists.");
             }
 
-            Console.WriteLine("Db initialization completed.");
+            logger.LogInformation("Db initialization completed.");
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
+using Microsoft.Extensions.Hosting;
 
 namespace Avs.StaticSiteHosting.DataMigrator
 {
@@ -12,31 +13,24 @@ namespace Avs.StaticSiteHosting.DataMigrator
     {
         static async Task Main(string[] args)
         {
-            var dbConnection = File.ReadAllText("db_connection.json");
+            var dbConnection = await File.ReadAllTextAsync("db_connection.json");
             var mongoDbSettings = JsonConvert.DeserializeObject<MongoDbSettings>(dbConnection);
-
-            var services = new ServiceCollection();
-            services.Configure<MongoDbSettings>(opt => {
-                opt.Database = mongoDbSettings.Database;
-                opt.Host = mongoDbSettings.Host;
-            });
-
-            services.AddTransient<PasswordHasher>();
-            services.AddSingleton<MongoEntityRepository>();
-
-            var serviceProvider = services.BuildServiceProvider();
-            var mongoEntityRepo = serviceProvider.GetRequiredService<MongoEntityRepository>();
-            var passwordHasher = serviceProvider.GetRequiredService<PasswordHasher>();
-
-            await DbInitialization.InitDbAsync(mongoEntityRepo, passwordHasher);
-            await HelpContentInitializer.InitHelpData(mongoEntityRepo);
-
-            if (serviceProvider is IDisposable disposable)
+            var host = new HostBuilder().ConfigureServices((_, services) =>
             {
-                disposable.Dispose();
-            }
+                services.Configure<MongoDbSettings>(opt => {
+                    opt.Database = mongoDbSettings.Database;
+                    opt.Host = mongoDbSettings.Host;
+                });
 
-            Console.WriteLine("Migration has completed.");
+                services.AddTransient<PasswordHasher>();
+                services.AddSingleton<MongoEntityRepository>();
+                services.AddSingleton<AppInitializer>();
+                services.AddSingleton<DbInitializer>();
+                services.AddSingleton<HelpContentInitializer>();
+                services.AddHostedService(sp => sp.GetRequiredService<AppInitializer>());
+            }).Build();
+            
+            await host.RunAsync();
         }
     }
 }
