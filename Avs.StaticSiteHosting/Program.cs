@@ -95,13 +95,14 @@ app.Run();
 
 static void InitStorage(string contentPath)
 {
-    if (!Directory.Exists(contentPath))
+    string path = Path.Combine(Directory.GetCurrentDirectory(), contentPath);
+    if (!Directory.Exists(path))
     {
-        Directory.CreateDirectory(contentPath);
-        Console.WriteLine($"{contentPath} has been created.");
+        Directory.CreateDirectory(path);
+        Console.WriteLine($"{path} has been created.");
     }
     else
     {
-        Console.WriteLine($"{contentPath} found.");
+        Console.WriteLine($"{path} found.");
     }
 }

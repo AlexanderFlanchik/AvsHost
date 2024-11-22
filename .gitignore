@@ -4,7 +4,6 @@
 
 /.vs
 /Avs.StaticSiteHosting/.vs/Avs.StaticSiteHosting
-/Avs.StaticSiteHosting/bin/Debug/netcoreapp3.1
 /Avs.StaticSiteHosting/ClientApp/dist
 /Avs.StaticSiteHosting/ClientApp/node_modules
 /Avs.StaticSiteHosting/Content/Test
@@ -43,6 +42,15 @@
 /Avs.StaticSiteHosting.Reports.Tests/bin/Debug/net8.0
 .DS_Store
 /Avs.StaticSiteHosting.ContentHost/bin/Debug/net8.0
-/Avs.StaticSiteHosting.ContentHost/obj
-/Avs.StaticSiteHosting.Shared/bin/Debug/net8.0
-/Avs.StaticSiteHosting.Shared/obj
+Avs.StaticSiteHosting.ContentHost/obj
+Avs.StaticSiteHosting.Shared/bin/Debug/net8.0
+Avs.StaticSiteHosting.Shared/obj
+Avs.StaticSiteHosting.Shared/bin/Debug/net9.0
+Avs.StaticSiteHosting/bin/Debug/net9.0
+Avs.StaticSiteHosting.ContentCreator/bin/Debug/net9.0
+Avs.StaticSiteHosting.ContentHost/bin/Debug/net9.0
+Avs.StaticSiteHosting.DataMigrator/bin/Debug/net9.0
+Avs.StaticSiteHosting.Reports/bin/Debug/net9.0
+Avs.StaticSiteHosting.Reports.Tests/bin/Debug/net9.0
+Avs.StaticSiteHosting/Avs.StaticSiteHosting.Web.csproj.user
+Avs.StaticSiteHosting/Storage
