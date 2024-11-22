@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\Avs.StaticSiteHosting.ContentHost.props" />
-</Project>
