@@ -14,7 +14,6 @@ using Avs.StaticSiteHosting.Web.Services.Reporting.SiteEvents;
 using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Services.Sites;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
-using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +31,7 @@ namespace Avs.StaticSiteHosting.Web.Common
         }
     }
 
-    public static class CoreServicesExternsions 
+    public static class CoreServicesExtensions 
     { 
         public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration configuration)
         {
