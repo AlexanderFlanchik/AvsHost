@@ -18,13 +18,18 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SettingsProvider
             if (settingsData == null)
             {
                 logger.LogWarning("No AWS Cloud settings found. Please set up.");
-                await context.RespondAsync(null);
+                await context.RespondAsync(new CloudSettingsResponse());
                 
                 return;
             }
 
             var settings = JsonConvert.DeserializeObject<CloudStorageSettings>(settingsData.Value);
-            await context.RespondAsync(settings);
+            var response = new CloudSettingsResponse()
+            {
+                StorageSettings = settings
+            };
+            
+            await context.RespondAsync(response);
         }
     }
 }
