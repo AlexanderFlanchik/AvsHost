@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Avs.StaticSiteHosting.Reports.Common;
 using Avs.StaticSiteHosting.Web.Services.Reporting;

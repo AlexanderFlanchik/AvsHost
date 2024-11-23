@@ -50,7 +50,9 @@ namespace Avs.StaticSiteHosting.Web.Common
                 options.TempContentPath = (!string.IsNullOrEmpty(envTempContentPath) ? envContentPath
                     : staticSiteOptions.TempContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
             });
-            
+
+            services.AddSingleton<StorageInitializer>();
+            services.AddHostedService(sp => sp.GetRequiredService<StorageInitializer>());
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbConnection"));
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();

@@ -72,36 +72,14 @@ app.UseAuthorization();
 
 app.MapStaticSite("/{sitename:required}/{**sitepath}");
 app.MapControllers();
-app.MapGet("/well-known/config", (IConfiguration config) => {
-    return Results.Ok(
+app.MapGet("/well-known/config", (IConfiguration config) => 
+    Results.Ok(
         new ConfigModel() 
         { 
             ContentHostUrl = config["ContentHostUrl"] 
-        });
-});
+        })
+    );
 
 app.MapHub<UserNotificationHub>("/user-notification");
 
-var staticSiteOptions = (IOptions<StaticSiteOptions>)app.Services.GetService(typeof(IOptions<StaticSiteOptions>));
-if (staticSiteOptions == null || staticSiteOptions.Value == null || string.IsNullOrEmpty(staticSiteOptions.Value.ContentPath))
-{
-    throw new Exception("Invalid application configuration. Static site options were not found or configured.");
-}
-
-InitStorage(staticSiteOptions.Value.ContentPath);
-InitStorage(staticSiteOptions.Value.TempContentPath);
-
 app.Run();
-
-static void InitStorage(string contentPath)
-{
-    if (!Directory.Exists(contentPath))
-    {
-        Directory.CreateDirectory(contentPath);
-        Console.WriteLine($"{contentPath} has been created.");
-    }
-    else
-    {
-        Console.WriteLine($"{contentPath} found.");
-    }
-}
