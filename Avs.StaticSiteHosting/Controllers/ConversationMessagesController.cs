@@ -57,7 +57,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             if (!message.IsAdminMessage)
             {
                 // Get IDs of Admin users
-                var receiverIds = await userRoleService.GetAdminUserIds().ConfigureAwait(false);
+                var receiverIds = await userRoleService.GetAdminUserIds();
                 
                 // Send notification to Admin UI through SignalR
                 await notificationHub.Clients.Users(receiverIds).SendAsync(NEW_MESSAGE, createdMessage);

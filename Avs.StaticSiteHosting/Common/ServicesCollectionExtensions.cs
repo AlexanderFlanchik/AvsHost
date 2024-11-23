@@ -1,4 +1,6 @@
-﻿using Avs.StaticSiteHosting.Reports.Contracts;
+﻿using System;
+using System.IO;
+using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Services;
 using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Services;
@@ -12,7 +14,6 @@ using Avs.StaticSiteHosting.Web.Services.Reporting.SiteEvents;
 using Avs.StaticSiteHosting.Web.Services.Settings;
 using Avs.StaticSiteHosting.Web.Services.Sites;
 using Avs.StaticSiteHosting.Web.Services.SiteStatistics;
-using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,11 +31,27 @@ namespace Avs.StaticSiteHosting.Web.Common
         }
     }
 
-    public static class CoreServicesExternsions 
+    public static class CoreServicesExtensions 
     { 
         public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<StaticSiteOptions>(configuration.GetSection("StaticSiteOptions"));
+            services.AddOptions<StaticSiteOptions>().Configure(options =>
+            {
+                var staticSiteSettingsSection = configuration.GetSection("StaticSiteOptions");
+                var staticSiteOptions = staticSiteSettingsSection.Get<StaticSiteOptions>();
+                
+                var envContentPath = Environment.GetEnvironmentVariable("CONTENT_PATH");
+                var envTempContentPath = Environment.GetEnvironmentVariable("TEMP_CONTENT_PATH");
+                
+                options.ContentPath = (!string.IsNullOrEmpty(envContentPath) ? envContentPath 
+                    : staticSiteOptions.ContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
+                
+                options.TempContentPath = (!string.IsNullOrEmpty(envTempContentPath) ? envContentPath
+                    : staticSiteOptions.TempContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
+            });
+
+            services.AddSingleton<StorageInitializer>();
+            services.AddHostedService(sp => sp.GetRequiredService<StorageInitializer>());
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbConnection"));
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();

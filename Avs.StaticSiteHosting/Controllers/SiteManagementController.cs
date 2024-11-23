@@ -22,11 +22,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 (null, ConflictException conflictException) => Conflict(conflictException.Message),
                 (null, BadRequestException badRequestException) => BadRequest(badRequestException.Message),
-                (CreateSiteResponseModel result, null) =>
-                    CreatedAtAction(
-                        "sitedetails",
-                        new { siteId = result.SiteId },
-                        result),
+                ({ } result, null) => Created($"/sitedetails/{result.SiteId}", result),
                 _ => BadRequest()
             };
         }
@@ -41,7 +37,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 (null, NotFoundException) => NotFound(),
                 (null, ConflictException exception) => Conflict(exception.Message),
                 (null, UnauthorizedAccessException) => Unauthorized(),
-                (UpdateSiteResponseModel result, null) => Ok(result),
+                ({ } result, null) => Ok(result),
                 _ => BadRequest()
             };
         }

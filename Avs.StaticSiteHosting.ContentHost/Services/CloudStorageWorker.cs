@@ -23,6 +23,13 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
                         try
                         {
                             var settings = await settingsProvider.GetCloudStorageSettingsAsync();
+                            if (settings is null)
+                            {
+                                logger.LogWarning("No cloud storage settings received. Cloud storage functionality is disabled.");
+
+                                return;
+                            }
+
                             storageSettings.CopyFrom(settings);
                             
                             _isInitialized = true;

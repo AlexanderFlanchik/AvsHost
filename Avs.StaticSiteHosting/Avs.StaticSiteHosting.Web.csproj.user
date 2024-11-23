@@ -25,25 +25,9 @@
   <ItemGroup />
   <ItemGroup />
   <ItemGroup />
-  <ItemGroup>
-    <TypeScriptCompile Update="ClientApp\src\common\DateFormatter.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Update="ClientApp\src\common\diKeys.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-  </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <TypeScriptCompile Update="ClientApp\src\services\auth-service.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Update="ClientApp\src\services\api-client.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup />
+  <ItemGroup />
+  <ItemGroup />
 </Project>

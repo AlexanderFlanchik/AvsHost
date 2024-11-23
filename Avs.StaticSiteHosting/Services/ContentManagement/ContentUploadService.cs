@@ -45,7 +45,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 return true;
             }
             
-            if (destinationPath.StartsWith('\\') || destinationPath.StartsWith('/'))
+            if (destinationPath.StartsWith(Path.DirectorySeparatorChar))
             {
                 return false;
             }
@@ -57,9 +57,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         {
             var newFilePath = GetNewFilePath(uploadSessionId, destinationPath, fileName);
             var fi = new FileInfo(newFilePath);
-            using var fiStream = fi.OpenWrite();
-
-            using (content)
+            await using var fiStream = fi.OpenWrite();
+            await using (content)
             {
                 await content.CopyToAsync(fiStream);
             }
@@ -76,7 +75,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         {
             var tempContentPath = _staticSiteOptions.TempContentPath;
             destinationPath ??= string.Empty;
-            destinationPath = destinationPath.Replace('/', '\\');
+            destinationPath = destinationPath.Replace('/', Path.DirectorySeparatorChar);
 
             string uploadFolderPath = Path.Combine(tempContentPath, uploadSessionId, destinationPath);
            
