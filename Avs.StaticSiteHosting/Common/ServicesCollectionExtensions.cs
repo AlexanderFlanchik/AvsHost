@@ -1,4 +1,6 @@
-﻿using Avs.StaticSiteHosting.Reports.Contracts;
+﻿using System;
+using System.IO;
+using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Services;
 using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Services;
@@ -34,7 +36,21 @@ namespace Avs.StaticSiteHosting.Web.Common
     { 
         public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<StaticSiteOptions>(configuration.GetSection("StaticSiteOptions"));
+            services.AddOptions<StaticSiteOptions>().Configure(options =>
+            {
+                var staticSiteSettingsSection = configuration.GetSection("StaticSiteOptions");
+                var staticSiteOptions = staticSiteSettingsSection.Get<StaticSiteOptions>();
+                
+                var envContentPath = Environment.GetEnvironmentVariable("CONTENT_PATH");
+                var envTempContentPath = Environment.GetEnvironmentVariable("TEMP_CONTENT_PATH");
+                
+                options.ContentPath = (!string.IsNullOrEmpty(envContentPath) ? envContentPath 
+                    : staticSiteOptions.ContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
+                
+                options.TempContentPath = (!string.IsNullOrEmpty(envTempContentPath) ? envContentPath
+                    : staticSiteOptions.TempContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
+            });
+            
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDbConnection"));
             services.AddTransient<PasswordHasher>();
             services.AddSingleton<MongoEntityRepository>();

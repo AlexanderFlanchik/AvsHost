@@ -82,20 +82,20 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
             GetFilesFromFolder(uploadFolder);
             FileExtensionContentTypeProvider ctpProvider = new FileExtensionContentTypeProvider();
-
+            var uploadFolderInfo = new DirectoryInfo(uploadFolder);
             foreach (var file in fileList)
             {
                 var fileInfo = new FileInfo(file);
                 var pathSegments = new List<string>();
 
                 var dir = fileInfo.Directory;
-                while (dir != null && dir.FullName != uploadFolder)
+                while (dir != null && dir.FullName != uploadFolderInfo.FullName)
                 {
                     pathSegments.Add(dir.Name);
                     dir = dir.Parent;
                 }
 
-                var segmentsPath = string.Join('\\', pathSegments.ToArray());
+                var segmentsPath = string.Join(Path.DirectorySeparatorChar, pathSegments.ToArray());
                 var destinationFolder = Path.Combine(siteFolder, segmentsPath);
                 Directory.CreateDirectory(destinationFolder);
 
