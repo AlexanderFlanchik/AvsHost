@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Options;
 using System.Net;
 using Avs.StaticSiteHosting.ContentHost.Common;
-using Avs.StaticSiteHosting.ContentHost.Configuration;
 using Avs.StaticSiteHosting.ContentHost.Services;
 using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Shared.Configuration;
 using Avs.StaticSiteHosting.Shared.Contracts;
 
 namespace Avs.StaticSiteHosting.ContentHost.Middlewares

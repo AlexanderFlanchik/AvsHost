@@ -1,4 +1,4 @@
-﻿namespace Avs.StaticSiteHosting.ContentHost.Configuration
+﻿namespace Avs.StaticSiteHosting.Shared.Configuration
 {
     public class StaticSiteOptions
     {

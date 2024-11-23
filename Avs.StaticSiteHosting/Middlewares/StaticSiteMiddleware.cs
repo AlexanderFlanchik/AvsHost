@@ -19,6 +19,7 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Microsoft.AspNetCore.SignalR;
 using Avs.StaticSiteHosting.Web.Hubs;
 using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Shared.Configuration;
 
 namespace Avs.StaticSiteHosting.Web.Middlewares
 {

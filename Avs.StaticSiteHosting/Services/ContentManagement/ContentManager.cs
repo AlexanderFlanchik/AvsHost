@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Shared.Configuration;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Microsoft.AspNetCore.StaticFiles;
