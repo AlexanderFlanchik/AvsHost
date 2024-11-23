@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Shared.Configuration;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

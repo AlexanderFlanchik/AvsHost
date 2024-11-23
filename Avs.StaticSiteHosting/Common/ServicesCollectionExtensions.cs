@@ -3,6 +3,7 @@ using System.IO;
 using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Services;
 using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Shared.Configuration;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
@@ -35,20 +36,7 @@ namespace Avs.StaticSiteHosting.Web.Common
     { 
         public static IServiceCollection AddCoreServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOptions<StaticSiteOptions>().Configure(options =>
-            {
-                var staticSiteSettingsSection = configuration.GetSection("StaticSiteOptions");
-                var staticSiteOptions = staticSiteSettingsSection.Get<StaticSiteOptions>();
-                
-                var envContentPath = Environment.GetEnvironmentVariable("CONTENT_PATH");
-                var envTempContentPath = Environment.GetEnvironmentVariable("TEMP_CONTENT_PATH");
-                
-                options.ContentPath = (!string.IsNullOrEmpty(envContentPath) ? envContentPath 
-                    : staticSiteOptions.ContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
-                
-                options.TempContentPath = (!string.IsNullOrEmpty(envTempContentPath) ? envContentPath
-                    : staticSiteOptions.TempContentPath)?.Replace('\\', Path.DirectorySeparatorChar);
-            });
+            services.AddStaticSiteOptions(configuration);
 
             services.AddSingleton<StorageInitializer>();
             services.AddHostedService(sp => sp.GetRequiredService<StorageInitializer>());

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using System.IO;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Shared.Configuration;
 
 namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 {

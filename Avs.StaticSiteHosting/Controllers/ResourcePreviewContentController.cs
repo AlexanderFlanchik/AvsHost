@@ -8,6 +8,7 @@ using System.Web;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
+using Avs.StaticSiteHosting.Shared.Configuration;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
@@ -51,19 +52,19 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 var site = await _siteService.GetSiteByIdAsync(siteId);
                 if (site is null)
                 {
-                    return BadRequest($"No site with Id = {siteId} has been found. Please make sure you send a correct site Id.");
+                    return BadRequest($"No site with Id = '{siteId}' has been found. Please make sure you send a correct site Id.");
                 }
 
                 var siteFolder = Path.Combine(options.ContentPath, site.Name);
                 resourcePath = contentPath.Replace($"/{GeneralConstants.EXIST_RESOURCE_PATTERN}", siteFolder);
             }
 
-            resourcePath = resourcePath.Replace('/', '\\');
+            resourcePath = resourcePath.Replace('/', Path.DirectorySeparatorChar);
             
             var fileInfo = new FileInfo(resourcePath);
             if (!fileInfo.Exists)
             {
-                _logger.LogWarning($"Unable to get a resource for preview. No content with path '{resourcePath}' found.");
+                _logger.LogWarning("Unable to get a resource for preview. No content with path '{resourcePath}' found.", resourcePath);
 
                 return NotFound();
             }
