@@ -330,7 +330,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         public async Task<IEnumerable<StorageUsedInfo>> GetUsedStorageAmountByUser(string userId)
         {
             var siteIds = await _siteService.GetSiteIdsByOwner(userId);
-            var siteIdsFilter = new FilterDefinitionBuilder<ContentItem>().In(s => s.Site.Id, siteIds);
+            var siteIdsFilter = new FilterDefinitionBuilder<ContentItem>().Where(s => siteIds.Contains(s.Site.Id));
             var projection = Builders<ContentItem>.Projection.Expression(ci =>
                 new StorageUsedInfo
                 {
@@ -340,18 +340,19 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 }
             );
 
-            var lst = await contentItems.Find(siteIdsFilter).Project(projection).ToListAsync();
-
-            // TODO: move aggregation to the query above
-            var result = lst
-                            .GroupBy(g => new { g.SiteId, g.SiteName })
-                            .Select(i => new StorageUsedInfo
-                            {
-                                SiteId = i.Key.SiteId,
-                                SiteName = i.Key.SiteName,
-                                Size = i.Sum(b => b.Size)
-                            }
-                            ).ToList();
+            var query = contentItems.Aggregate()
+                .Match(siteIdsFilter)
+                .Project(projection)
+                .Group(
+                    s => new { s.SiteId, s.SiteName }, 
+                    g => new StorageUsedInfo
+                    {
+                        SiteId = g.Key.SiteId,
+                        SiteName = g.Key.SiteName,
+                        Size = g.Sum(b => b.Size)
+                    });
+               
+            var result = await query.ToListAsync();
 
             return result;
         }
