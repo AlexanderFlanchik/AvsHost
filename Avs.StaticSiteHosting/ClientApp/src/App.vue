@@ -38,19 +38,18 @@ import { ConfigProvider } from './services/confg-provider';
 </script>
 
 <template>
-  <div id="app" v-bind:class="appClasses">
+  <div class="router-view-container" v-bind:class="appClasses">
     <router-view></router-view>
   </div>
 </template>
 
 <style scoped>
-    #app {
+    .router-view-container {
         font-family: Avenir, Helvetica, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         color: #2c3e50;
         height: 100%;
-        padding-bottom: 25px;
     }
     .default-padding{
         padding-top: 150px;
