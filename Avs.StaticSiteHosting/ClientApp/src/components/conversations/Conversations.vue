@@ -78,13 +78,13 @@ const sendMessage = () => {
         <NavigationMenu />
         <div class="conversations-content">
             <div class="left conversations-list">
-                <ConversationsList :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" ref="conversationsList" :onNewConversationsLoadedCallback="onNewUnreadConversations"/>
+                <ConversationsList :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" ref="conversationsListRef" :onNewConversationsLoadedCallback="onNewUnreadConversations"/>
                 <hr class="component-splitter" />
-                <ConversationSearch :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" :unreadConversationsSubject="<Subject<any>>model.unreadConversations$" ref="conversationSearch" />
+                <ConversationSearch :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" :unreadConversationsSubject="<Subject<any>>model.unreadConversations$" ref="conversationSearchRef" />
             </div>
 
             <div class="left conversation-message-list">
-                <ConversationMessagesWrapper ref="conversationMessagesList" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" :height="'calc(100vh - 375px)'" />
+                <ConversationMessagesWrapper ref="conversationMessagesListRef" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" :height="'calc(100vh - 375px)'" />
                 <div class="send-message-form-container">
                     <div>Enter a message:</div> 
                     
