@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, onMounted, inject } from 'vue';
+import { reactive, onMounted, inject, watch } from 'vue';
 import { Subject } from 'rxjs';
 import { API_CLIENT } from './../../common/diKeys';
 
@@ -31,16 +31,6 @@ onMounted(() => {
 });
 
 const getConversationIds =  () => model.conversations.map((c: { id: string}) => c.id);
-const onInput = (value: { id: string, name: string } | null | undefined) => {
-    if (value && !model.conversations.find((c: any) => c.id == value.id)) {
-        const conversation = { id: value.id, name: value.name };
-        
-        model.conversations.unshift(conversation);
-        model.search.selected = null;
-        model.search.options = [];
-    }
-};
-
 const apiClient = inject(API_CLIENT)!;
 
 const onSearch = (search: string, loading:(val: boolean) => void) => {
@@ -94,7 +84,15 @@ const updateConversation = (conversationId: string, readMessagesCount: number) =
 };
 
 defineExpose({ ignoreConversation, onNewMessage, updateConversation, getConversationIds })
-
+watch(() => model.search.selected, (value: { id: string, name: string } | null | undefined) => {
+    if (value && !model.conversations.find((c: any) => c.id == value.id)) {
+        const conversation = { id: value.id, name: value.name };
+        
+        model.conversations.unshift(conversation);
+        model.search.selected = null;
+        model.search.options = [];
+    }
+});
 </script>
 <template>
     <div>
@@ -103,7 +101,7 @@ defineExpose({ ignoreConversation, onNewMessage, updateConversation, getConversa
             <dl>
                 <dd class="name-label">Enter a name:</dd>
                 <dt>
-                    <v-select v-model="model.search.selected" label="name" :filterable="false" :options="model.search.options" @search="onSearch" @input="onInput">
+                    <v-select v-model="model.search.selected" label="name" :filterable="false" :options="model.search.options" @search="onSearch">
                         <template slot="no-options">
                             <div class="no-options-placeholder">Start enter a conversation name</div>
                         </template>
@@ -163,8 +161,9 @@ defineExpose({ ignoreConversation, onNewMessage, updateConversation, getConversa
     }
 
     .conversation-label {
-        color: Highlight;
+        color: Navy;
         font-style: italic;
+        padding-left: 5px;
     }
 
     .conversation-row {

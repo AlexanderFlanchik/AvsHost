@@ -78,22 +78,29 @@ const sendMessage = () => {
         <NavigationMenu />
         <div class="conversations-content">
             <div class="left conversations-list">
-                <ConversationsList :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" ref="conversationsListRef" :onNewConversationsLoadedCallback="onNewUnreadConversations"/>
+                <ConversationsList :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" 
+                    ref="conversationsListRef" 
+                    :onNewConversationsLoadedCallback="onNewUnreadConversations"/>
                 <hr class="component-splitter" />
-                <ConversationSearch :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" :unreadConversationsSubject="<Subject<any>>model.unreadConversations$" ref="conversationSearchRef" />
+                <ConversationSearch :selectedConversationIdSubject="<Subject<any>>model.selectedConversationId$" 
+                    :unreadConversationsSubject="<Subject<any>>model.unreadConversations$" 
+                    ref="conversationSearchRef" />
             </div>
 
             <div class="left conversation-message-list">
-                <ConversationMessagesWrapper ref="conversationMessagesListRef" :messagesToMakeReadHandler="messagesToMakeReadHandler" :conversationFilter="conversationFilter" :onUnreadConversation="onUnreadConversation" :height="'calc(100vh - 375px)'" />
+                <ConversationMessagesWrapper ref="conversationMessagesListRef" 
+                    :messagesToMakeReadHandler="messagesToMakeReadHandler" 
+                    :conversationFilter="conversationFilter" 
+                    :onUnreadConversation="onUnreadConversation" />
                 <div class="send-message-form-container">
                     <div>Enter a message:</div> 
                     
                     <div class="newMessage-input-container">
-                        <textarea v-model="model.newMessage" rows="3" :disabled="!model.buttonsEnabled"></textarea>
+                        <textarea v-model="model.newMessage" rows="10" :disabled="!model.buttonsEnabled"></textarea>
                     </div>                    
                 </div>
                 <div class="button-bar">
-                    <button class="btn btn-primary" :disabled="!model.newMessage || !model.buttonsEnabled" @click="sendMessage">Send..</button> &nbsp;
+                    <button class="btn btn-primary" :disabled="!model.newMessage || !model.buttonsEnabled" @click="sendMessage">Send..</button>
                     <button class="btn btn-default" :disabled="!model.newMessage|| !model.buttonsEnabled" @click="clearMessage">Clear</button>
                 </div>
             </div>
@@ -103,7 +110,7 @@ const sendMessage = () => {
 <style scoped>
     .conversations-content {
         background-color: azure;
-        height: calc(100% - 155px);
+        height: calc(100vh - 95px);
         padding-left: 10px;
         overflow-y: auto;
     }
@@ -122,7 +129,7 @@ const sendMessage = () => {
         padding-right: 10px;
         border-right-color: navy;
         border-right-style: solid;
-        height: calc(100vh - 205px);
+        height: calc(100vh - 105px);
         overflow-y: auto;
     }
 
@@ -133,7 +140,7 @@ const sendMessage = () => {
 
     .conversation-messages-container {
         margin-top: 5px;
-        height: calc(100vh - 375px);
+        height: calc(100vh - 345px);
         overflow-y: auto;
     }
 
@@ -148,7 +155,14 @@ const sendMessage = () => {
         margin-bottom: 15px;
     }
 
+    .newMessage-input-container textarea {
+        width: calc(100% - 20px);
+        resize: none;
+    }
+
     .button-bar {
         padding-bottom: 5px;
+        display: flex;
+        gap: 3px;
     }
 </style>

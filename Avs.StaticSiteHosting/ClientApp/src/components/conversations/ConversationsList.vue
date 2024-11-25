@@ -136,6 +136,6 @@ defineExpose({ getConversationIds, onNewMessage, updateConversation });
     
     .conversation-name {
         font-style: italic;
-        color: Highlight;
+        color: navy;
     }
 </style>
