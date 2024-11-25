@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { inject, onMounted, reactive, ref } from 'vue';
 import ConversationMessages from './ConversationMessages.vue';
 import { MarkReadMessagesQueue } from './../../services/MarkReadMessagesQueue';
 import { API_CLIENT, USER_NOTIFICATIONS_SERVICE } from '../../common/diKeys';
@@ -123,11 +123,6 @@ const processVisibleUnreadMessages = () => {
 };
 
 defineExpose({ dispatch, processVisibleUnreadMessages });
-
-onBeforeUnmount(() => {
-    const channel = userNotificationsService.NewConversationMessage;
-    userNotificationsService.unsubscribe(channel);
-});
 
 </script>
 <template>

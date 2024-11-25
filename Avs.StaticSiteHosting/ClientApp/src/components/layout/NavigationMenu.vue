@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { inject, onBeforeUnmount, onMounted, reactive } from 'vue';
+    import { inject, onMounted, reactive } from 'vue';
     import { API_CLIENT, AUTH_SERVICE, USER_NOTIFICATIONS_SERVICE } from '../../common/diKeys';
     import { useRoute } from 'vue-router';
 
@@ -25,11 +25,6 @@
                     nm.unreadConversations = response.data;
                 });  
             }
-    });
-
-    onBeforeUnmount(() => {
-        let channel = userNotificationsService.NewConversationMessage;
-        userNotificationsService.unsubscribe(channel); 
     });
 
 </script>

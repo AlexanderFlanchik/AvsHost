@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import { computed, inject, nextTick, onMounted, reactive, ref } from 'vue';
 import { API_CLIENT, AUTH_SERVICE, USER_NOTIFICATIONS_SERVICE } from '../../common/diKeys';
 import { useRouter } from 'vue-router';
 import LastSiteVisits from './LastSiteVisits.vue';
@@ -115,11 +115,6 @@ interface HomePageModel {
             model.visits = vm.totalSiteVisits;
         }).catch((e: Error) => console.log(e));
  });
-
-onBeforeUnmount(() => {
-    userNotificationsService.unsubscribe(userNotificationsService.SiteErrorEvent);
-    userNotificationsService.unsubscribe(userNotificationsService.NewSiteVisited);
-});
 
 const sitesTitle = computed(() => `Your Sites (${model.totalSites} total)`);
 const spaceUsedTitle = computed(() => `Storage Used ${model.totalSpaceKb.toFixed(2)} Kb`);

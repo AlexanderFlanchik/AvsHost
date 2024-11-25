@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { computed, provide } from 'vue';
+    import { computed, onBeforeUnmount, provide } from 'vue';
     import ApiClient from './services/api-client';
     import AuthService from './services/auth-service';
     import UserNotificationService from './services/user-notification-service';
@@ -35,6 +35,10 @@ import { ConfigProvider } from './services/confg-provider';
     provide(AUTH_SERVICE, authService);
     provide(USER_NOTIFICATIONS_SERVICE, userNotificationService);
     provide(CONFIG_PROVIDER, clientConfigProvider);
+
+    onBeforeUnmount(() => {
+      userNotificationService.unSubscribeAll();
+    });
 </script>
 
 <template>

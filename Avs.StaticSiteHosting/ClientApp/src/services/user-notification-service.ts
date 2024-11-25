@@ -55,4 +55,15 @@ export default class UserNotificationService {
 
         this.connection.off(event);
     }
+
+    public unSubscribeAll() {
+        if (!this.connection) {
+            console.log('No connection');
+            return;
+        }
+
+        for (const e of [this.UserStatusChanged, this.NewSiteVisited, this.UserStatusChanged, this.NewConversationMessage]) {
+            this.connection.off(e);
+        }
+    }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { inject, computed, onBeforeUnmount, ref } from 'vue';
+    import { inject, computed, ref } from 'vue';
     import { API_CLIENT, AUTH_SERVICE, USER_NOTIFICATIONS_SERVICE } from '../../common/diKeys';
     import { useRoute, useRouter } from 'vue-router';
 
@@ -60,15 +60,6 @@
         authService.signOut();
         router.replace({ path: '/login', query: { returnUrl: '/' }});
     };
-
-    onBeforeUnmount(() => {
-        if (!isAdmin) {
-            let channels = [userNotificationsService.UserStatusChanged, userNotificationsService.NewConversationMessage];
-            for (let channel of channels) {
-                userNotificationsService.unsubscribe(channel);
-            }
-        }
-    });
 </script>
 <template>
     <div class="user-info-bar" v-if="isUserInfoShown">
