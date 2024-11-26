@@ -33,26 +33,7 @@ public class SiteContentMiddleware(
         SiteContentInfo? siteInfo = await siteContentProvider.GetSiteContentByName(siteName);
         HandleContentResult handleResult = await handler.ValidateAndProcessContent(siteInfo, siteName, sitePath);
 
-        if (handleResult.StatusCode == (int)HttpStatusCode.OK)
-        {
-            context.Response.ContentType = handleResult.ContentType ?? CONTENT_TYPE_DEFAULT;
-
-            if (handleResult.Content is not null)
-            {
-                await context.Response.SendFileAsync(handleResult.Content);
-            }
-            else
-            {
-                await handleResult.ContentStream!.CopyToAsync(context.Response.Body);
-            }
-
-            if (siteInfo!.IsSiteVisited(sitePath))
-            {
-                var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
-                siteEventPublisher.PublishEvent(new SiteVisited(siteInfo!.Id, visitor, siteInfo.User.Id));
-            }
-        }
-        else
+        if (handleResult.StatusCode != (int)HttpStatusCode.OK)
         {
             logger.LogError(handleResult.ErrorMessage);
 
@@ -61,6 +42,27 @@ public class SiteContentMiddleware(
             {
                 siteEventPublisher.PublishEvent(handleResult.ToSiteError());
             }
+
+            return;
         }
+        
+        context.Response.ContentType = handleResult.ContentType ?? CONTENT_TYPE_DEFAULT;
+
+        if (handleResult.Content is not null)
+        {
+            await context.Response.SendFileAsync(handleResult.Content);
+        }
+        else
+        {
+            await handleResult.ContentStream!.CopyToAsync(context.Response.Body);
+        }
+
+        if (!siteInfo!.IsSiteVisited((sitePath)))
+        {
+            return;
+        }
+
+        var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
+        siteEventPublisher.PublishEvent(new SiteVisited(siteInfo!.Id, visitor, siteInfo.User.Id));
     }
 }

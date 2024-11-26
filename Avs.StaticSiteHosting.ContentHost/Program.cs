@@ -2,7 +2,6 @@ using Avs.StaticSiteHosting.ContentHost.Common;
 using Avs.StaticSiteHosting.ContentHost.Messaging.SiteContent;
 using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Shared.Contracts;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddStaticSiteOptions(builder.Configuration);
