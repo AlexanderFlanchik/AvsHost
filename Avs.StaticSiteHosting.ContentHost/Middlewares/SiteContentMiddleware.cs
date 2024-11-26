@@ -57,7 +57,7 @@ public class SiteContentMiddleware(
             await handleResult.ContentStream!.CopyToAsync(context.Response.Body);
         }
 
-        if (!siteInfo!.IsSiteVisited((sitePath)))
+        if (!siteInfo!.IsSiteVisited(sitePath))
         {
             return;
         }
