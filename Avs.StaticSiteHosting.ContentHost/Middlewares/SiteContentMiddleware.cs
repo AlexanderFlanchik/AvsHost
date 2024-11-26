@@ -10,6 +10,7 @@ public class SiteContentMiddleware(
     ISiteContentHandler handler,
     ISiteContentProvider siteContentProvider,
     ISiteEventPublisher siteEventPublisher,
+    IErrorPageHandler errorPageHandler,
     ILogger<SiteContentMiddleware> logger) : IMiddleware
 {
     private const string CONTENT_TYPE_DEFAULT = "application/octet-stream";
@@ -36,12 +37,13 @@ public class SiteContentMiddleware(
         if (handleResult.StatusCode != (int)HttpStatusCode.OK)
         {
             logger.LogError(handleResult.ErrorMessage);
-
             context.Response.StatusCode = handleResult.StatusCode;
             if (!string.IsNullOrEmpty(handleResult.SiteId))
             {
                 siteEventPublisher.PublishEvent(handleResult.ToSiteError());
             }
+
+            await errorPageHandler.Handle(context, handleResult.ErrorMessage!);
 
             return;
         }

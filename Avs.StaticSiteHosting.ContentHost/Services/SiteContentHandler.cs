@@ -32,7 +32,7 @@ public class SiteContentHandler(
     {
        if (siteInfo is null)
        {
-           return new HandleContentResult((int)HttpStatusCode.NotFound);
+           return new HandleContentResult((int)HttpStatusCode.NotFound, "The resource cannot be found. Please check URL.");
        }
 
        string siteOwner = siteInfo.User.UserName;

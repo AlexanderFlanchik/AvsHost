@@ -117,17 +117,17 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ErorPageTemplate" xml:space="preserve">
-    <value>&lt;html lang=""en""&gt;
+  <data name="ErrorPageTemplate" xml:space="preserve">
+    <value>&lt;html lang="en"&gt;
  &lt;head&gt;
   &lt;title&gt;Oops, there is a problem!&lt;/title&gt;
-  &lt;link rel=""stylesheet"" href=""/styles.css"" type=""text/css"" /&gt;
-. &lt;/head&gt;
+  &lt;link rel="stylesheet" href="/styles.css" type="text/css" /&gt;
+&lt;/head&gt;
  &lt;body&gt;
   &lt;div&gt;
-   &lt;div class=""error-title""&gt;The resource requested can not be delivered.&lt;/div&gt;
-   &lt;div class=""error-subtitle""&gt;Please find the reason why it happened: &lt;/div&gt;
-   &lt;div class=""error-description""&gt;{0}&lt;/div&gt;
+   &lt;div class="error-title"&gt;The resource requested can not be delivered.&lt;/div&gt;
+   &lt;div class="error-subtitle"&gt;Please find the reason why it happened: &lt;/div&gt;
+   &lt;div class="error-description"&gt;{0}&lt;/div&gt;
   &lt;/div&gt;
  &lt;/body&gt;
 &lt;/html&gt;</value>
