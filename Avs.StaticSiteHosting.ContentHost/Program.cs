@@ -17,16 +17,7 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 
 var app = builder.Build();
 
-app.MapGet("/favicon.ico", () => Results.NotFound());
-app.MapGet("/", () => "Content server is up and running...");
-app.MapGet("/styles.css", () =>
-{
-    var fileProvider = new PhysicalFileProvider(new DirectoryInfo("wwwroot").FullName);
-    IFileInfo? fi = fileProvider.GetFileInfo("styles.css");
-   
-    return !fi.Exists ? Results.NotFound() : Results.File(fi.PhysicalPath!,"text/css");
-});
-
+app.MapCommonEndpoints();
 app.MapSiteContent("/{sitename:required}/{**sitepath}");
 
 app.Run();
