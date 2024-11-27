@@ -16,8 +16,7 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 
 var app = builder.Build();
 
-app.MapGet("/favicon.ico", () => Results.NotFound());
-app.MapGet("/", () => "Content server is up and running...");
+app.MapCommonEndpoints();
 app.MapSiteContent("/{sitename:required}/{**sitepath}");
 
 app.Run();
