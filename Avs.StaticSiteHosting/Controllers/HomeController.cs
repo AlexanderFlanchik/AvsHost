@@ -42,14 +42,16 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             homeModel.TotalSites = siteAmounts[0];
             homeModel.ActiveSites = siteAmounts[1];
 
-            // We look for all error logs during the last 24 hours
-            var now = DateTime.UtcNow;
+            // We look for all error logs during the current day
+            var dateFrom =  DateTime.UtcNow.Date;
+            var dateTo = dateFrom.AddDays(1).AddMilliseconds(-1);
+            
             var errorLogsQuery = new EventLogsQuery() 
                 { 
                     CurrentUserId = CurrentUserId, 
                     Type = Models.SiteEventType.Error, 
-                    DateFrom = now.AddHours(-24), 
-                    DateTo = now 
+                    DateFrom = dateFrom, 
+                    DateTo = dateTo 
                 };
 
             var (errors, _) = await _eventLogsService.GetEventLogsAsync(errorLogsQuery);

@@ -118,18 +118,26 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorPageTemplate" xml:space="preserve">
-    <value>&lt;html lang="en"&gt;
- &lt;head&gt;
-  &lt;title&gt;Oops, there is a problem!&lt;/title&gt;
-  &lt;link rel="stylesheet" href="/styles.css" type="text/css" /&gt;
-&lt;/head&gt;
- &lt;body&gt;
-  &lt;div&gt;
-   &lt;div class="error-title"&gt;The resource requested can not be delivered.&lt;/div&gt;
-   &lt;div class="error-subtitle"&gt;Please find the reason why it happened: &lt;/div&gt;
-   &lt;div class="error-description"&gt;{0}&lt;/div&gt;
-  &lt;/div&gt;
- &lt;/body&gt;
+    <value>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+    &lt;head&gt;
+        &lt;title&gt;Oops, there is a problem!&lt;/title&gt;
+        &lt;link rel="stylesheet" href="/styles.css" type="text/css"/&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;div class="wrapper"&gt;
+            &lt;div class="content"&gt;
+                &lt;div class="content-inner"&gt;
+                    &lt;div class="error-title"&gt;The resource you have requested cannot be delivered.&lt;/div&gt;
+                    &lt;div class="error-subtitle"&gt;We are very sorry. Please find the reason(s) why it happened:&lt;/div&gt;
+                    &lt;div class="error-description"&gt;
+                        {0}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="footer"&gt;Copyright &amp;copy; {1} AVS Systems&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/body&gt;
 &lt;/html&gt;</value>
   </data>
 </root>

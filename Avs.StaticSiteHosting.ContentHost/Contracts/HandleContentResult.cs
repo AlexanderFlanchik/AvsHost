@@ -22,14 +22,14 @@ public record HandleContentResult(
             SiteOwnerId = OwnerId,
         };
 
-    public static HandleContentResult NotFound(string errorMessage, string? siteId = null, string? siteOwner = null)
+    public static HandleContentResult NotFound(string errorMessage, string? siteId = null, string? siteOwnerId = null)
     {
-        return new HandleContentResult((int)HttpStatusCode.NotFound, errorMessage, siteId, null, siteOwner);
+        return new HandleContentResult((int)HttpStatusCode.NotFound, errorMessage, siteId, null,  OwnerId: siteOwnerId);
     }
 
-    public static HandleContentResult ContentBlocked(string errorMessage, string siteId, string? siteOwner = null)
+    public static HandleContentResult ContentBlocked(string errorMessage, string siteId, string? siteOwnerId = null)
     {
-        return new HandleContentResult((int)HttpStatusCode.BadRequest, errorMessage, siteId, null, siteOwner);
+        return new HandleContentResult((int)HttpStatusCode.BadRequest, errorMessage, siteId, null, OwnerId: siteOwnerId);
     }
 
     public static HandleContentResult Success(string siteId, IFileInfo fileInfo, string contentType)

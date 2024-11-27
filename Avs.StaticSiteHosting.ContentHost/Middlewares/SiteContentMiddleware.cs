@@ -38,7 +38,7 @@ public class SiteContentMiddleware(
         {
             logger.LogError(handleResult.ErrorMessage);
             context.Response.StatusCode = handleResult.StatusCode;
-            if (!string.IsNullOrEmpty(handleResult.SiteId))
+            if (!string.IsNullOrEmpty(handleResult.SiteId) && !string.IsNullOrEmpty(handleResult.OwnerId))
             {
                 siteEventPublisher.PublishEvent(handleResult.ToSiteError());
             }

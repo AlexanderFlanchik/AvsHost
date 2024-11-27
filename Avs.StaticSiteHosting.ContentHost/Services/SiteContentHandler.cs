@@ -35,10 +35,10 @@ public class SiteContentHandler(
            return new HandleContentResult((int)HttpStatusCode.NotFound, "The resource cannot be found. Please check URL.");
        }
 
-       string siteOwner = siteInfo.User.UserName;
+       string siteOwnerId = siteInfo.User.Id;
        if (!siteInfo.User.IsActive)
        {
-           return HandleContentResult.ContentBlocked("Cannot provide content. Site owner is blocked.", siteInfo.Id, siteOwner);
+           return HandleContentResult.ContentBlocked("Cannot provide content. Site owner is blocked.", siteInfo.Id, siteOwnerId);
        }
 
        var (contentItem, fileName) = siteInfo.GetContentItem(sitePath);
@@ -47,7 +47,7 @@ public class SiteContentHandler(
            return HandleContentResult.NotFound(
                string.Format("No content with path '{0}' found.", sitePath), 
                siteInfo.Id, 
-               siteOwner);
+               siteOwnerId);
        }
 
        var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
@@ -60,7 +60,7 @@ public class SiteContentHandler(
                return HandleContentResult.NotFound(
                    string.Format("No physical file found for path '{0}'.", sitePath),
                    siteInfo.Id, 
-                   siteOwner);
+                   siteOwnerId);
            }
 
            using var cloudStream = await cloudStorageProvider.GetCloudContent(siteInfo.User.UserName, siteInfo.Name, fileInfo.Name);
@@ -69,7 +69,7 @@ public class SiteContentHandler(
                return HandleContentResult.NotFound(
                    string.Format("No content file found: '{0}'.", fileInfo.Name),
                    siteInfo.Id, 
-                   siteOwner);
+                   siteOwnerId);
            }
 
            storageWorker.Add(new SyncContentTask(fileInfo.Name, fileInfo.PhysicalPath!, siteInfo.User.UserName, siteInfo.Name));

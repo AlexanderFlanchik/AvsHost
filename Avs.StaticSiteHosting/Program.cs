@@ -1,5 +1,4 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,36 +46,25 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 
 var app = builder.Build();
 
-if (!builder.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler(
-        new ExceptionHandlerOptions() 
-        { 
-            AllowStatusCode404Response = true, 
-            ExceptionHandlingPath = $"/{GeneralConstants.ERROR_ROUTE}" 
-        });
-}
-
 app.UseMiddleware<ResourcePreviewContentMiddleware>();
 app.UseRouting();
 
 app.UseSession();
 app.UseDashboard();
 
-// Auth is only required for dashboard Web API
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticSite("/{sitename:required}/{**sitepath}");
-app.MapControllers();
 app.MapGet("/well-known/config", (IConfiguration config) => 
     Results.Ok(
-        new ConfigModel() 
-        { 
-            ContentHostUrl = config["ContentHostUrl"] 
+        new ConfigModel()
+        {
+            ContentHostUrl = Environment.GetEnvironmentVariable("CONTENT_HOST_URL") 
+                         ?? config["ContentHostUrl"]
         })
     );
 
+app.MapControllers();
 app.MapHub<UserNotificationHub>("/user-notification");
 
 app.Run();
