@@ -270,7 +270,7 @@ onMounted(async () => {
                             <a href="javascript:void(0)" 
                                 v-bind:class="{ asc: model.sortField == 'LaunchedOn' && model.sortState?.order == 'Asc', desc: model.sortField == 'LaunchedOn' && model.sortState?.order == 'Desc' }"   
                                 @click="sort('LaunchedOn')">Launched On</a></th>
-                        <th class="w-300" v-if="model.isAdmin">
+                        <th class="w-160" v-if="model.isAdmin">
                             User Name
                         </th>
                         <th class="is-active-column">Is Active</th>
@@ -297,7 +297,7 @@ onMounted(async () => {
                             <td class="name-column">{{site.name}}</td>
                             <td class="description-column">{{site.description}}</td>
                             <td class="launched-on-column centered-cell">{{site.launchedOn}}</td>
-                            <td class="w-300" v-if="model.isAdmin">
+                            <td class="w-160 centered-cell" v-if="model.isAdmin">
                                 <router-link :to="{ path: '/user-profile/' + site.owner.id }">{{site.owner.name}}</router-link>
                             </td>
                             <td class="is-active-column centered-cell">
