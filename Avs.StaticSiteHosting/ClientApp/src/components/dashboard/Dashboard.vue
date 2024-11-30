@@ -244,7 +244,7 @@ onMounted(async () => {
             <table class="table table-striped columns-holder" v-if="model.totalFound > 0 || model.nameFilter || model.tags.length">
                 <thead>
                     <tr>
-                        <th class="w-300">
+                        <th class="name-column">
                             <div>
                                 <a href="javascript:void(0)" 
                                         v-bind:class="{ asc: model.sortField == 'Name' && model.sortState?.order == 'Asc', desc: model.sortField == 'Name' && model.sortState?.order == 'Desc' }" 
@@ -265,15 +265,15 @@ onMounted(async () => {
                                 </div>
                             </div>
                         </th>
-                        <th class="w-300">Description</th>
-                        <th class="w-300">
+                        <th class="description-column">Description</th>
+                        <th class="launched-on-column">
                             <a href="javascript:void(0)" 
                                 v-bind:class="{ asc: model.sortField == 'LaunchedOn' && model.sortState?.order == 'Asc', desc: model.sortField == 'LaunchedOn' && model.sortState?.order == 'Desc' }"   
                                 @click="sort('LaunchedOn')">Launched On</a></th>
                         <th class="w-300" v-if="model.isAdmin">
                             User Name
                         </th>
-                        <th class="w-150">Is Active</th>
+                        <th class="is-active-column">Is Active</th>
                         <th class="tags-column" v-if="!model.isAdmin">
                             <div>Tags <span v-if="model.tags.length">({{model.tags.length}})</span> &nbsp;
                                 <a href="javascript:void(0)" @click="openTagsFilter">
@@ -285,7 +285,7 @@ onMounted(async () => {
                                 <TagsSelectList ref="tagsFilterRef" :tagIds="model.tags" :onTagsChanged="applySelectedTags" :hideSelectedTags="true" />
                             </div>
                         </th>
-                        <th>Actions</th>
+                        <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
             </table>
@@ -294,13 +294,13 @@ onMounted(async () => {
                 <table class="table table-striped sites-table">
                     <tbody>
                         <tr v-for="site in model.sites" :key="site" class="site-row">
-                            <td class="w-300">{{site.name}}</td>
-                            <td class="w-300">{{site.description}}</td>
-                            <td class="w-300 centered-cell">{{site.launchedOn}}</td>
+                            <td class="name-column">{{site.name}}</td>
+                            <td class="description-column">{{site.description}}</td>
+                            <td class="launched-on-column centered-cell">{{site.launchedOn}}</td>
                             <td class="w-300" v-if="model.isAdmin">
                                 <router-link :to="{ path: '/user-profile/' + site.owner.id }">{{site.owner.name}}</router-link>
                             </td>
-                            <td class="w-150 centered-cell">
+                            <td class="is-active-column centered-cell">
                                 <input type="checkbox" v-model="site.isActive" :disabled="true" />
                             </td>
                             <td class="tags-column" v-if="!model.isAdmin">
@@ -308,7 +308,7 @@ onMounted(async () => {
                                    <Tag v-for="tag in site.tags" :key="tag.id" :tagData="tag" />
                                 </div>
                             </td>
-                            <td class="centered-cell">
+                            <td class="actions-column">
                                 <span><a href="javascript:void(0)" @click="toggleSiteStatus(site.id)">{{ site.isActive ? 'Turn Off' : 'Turn On&nbsp;'}}</a> | </span>
                                 <span v-if="!model.isAdmin"><a href="javascript:void(0)" @click="updateSite(site.id)">Update</a> | </span>
                                 <span><a href="javascript:void(0)" @click="deleteSite(site.id)">Delete</a></span>
@@ -441,6 +441,7 @@ onMounted(async () => {
 
     .dashboard-content {
         background-color: azure;
+        overflow-x: hidden;
     }
 
     .page-size-select {
@@ -462,25 +463,98 @@ onMounted(async () => {
         column-gap: 2px;
     }
 
-    @media screen and (max-width: 1024px)
-    {
-        .tags-column {
-            width: 280px;
+    .actions-column {
+        min-width: 200px;
+        width: 200px;
+    }
+    .name-column {
+        min-width: 300px;
+        width: 300px;
+    }
+    .description-column {
+        min-width: 250px;
+        width: 250px;
+    }
+    .launched-on-column {
+        min-width: 190px;
+        width: 190px;
+    }
+    .is-active-column {
+        min-width: 85px;
+        width: 85px;
+    }
+    .tags-column {
+        width: 300px;
+        min-width: 300px;
+    }
+    
+    @media screen and (max-width: 1051px) {
+        .name-column {
+            min-width: 150px;
+            width: 150px;
         }
 
-        .tags-holder {
-            width: 280px;
+        .description-column {
+            min-width: 140px;
+            width: 140px;
+        }
+        .launched-on-column {
+            min-width: 140px;
+            width: 140px;
+        }
+        .is-active-column {
+            min-width: 55px;
+            width: 55px;
+        }
+        .tags-column {
+            width: 160px;
+            min-width: 160px;
+        }
+        .actions-column {
+            min-width: 80px;
+            width: 80px;
+        }   
+    }
+
+    @media screen and (max-width: 691px) {
+        .site-list-container {
+            height: calc(100vh - 325px);
+            overflow: hidden;
         }
     }
 
-    @media screen and (min-width: 1025px)
-    {
-        .tags-column {
-            width: 380px;
+    @media screen and (max-width: 1256px) and (min-width: 1052px) {
+        .name-column {
+            min-width: 180px;
+            width: 180px;
         }
 
-        .tags-holder {
-            width: 380px;
+        .description-column {
+            min-width: 170px;
+            width: 170px;
+        }
+        .launched-on-column {
+            min-width: 190px;
+            width: 190px;
+        }
+        
+        .actions-column {
+            min-width: 120px;
+            width: 120px;
+        }
+    }
+
+    @media screen and (max-width: 1368px) {
+        .tags-column {
+            width: 180px;
+            min-width: 180px;
+        }
+    }
+
+    @media screen and (min-width: 1053px) and (max-width: 1420px) {
+        .actions-column {
+            min-width: 160px;
+            width: 160px;
         }
     }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, reactive } from 'vue';
+import { computed, inject, onMounted, reactive, Ref } from 'vue';
 import { ContentFile } from '../../common/ContentFile';
 import { useRoute, useRouter } from 'vue-router';
 import { ResourceMapping, SiteContextManager } from '../../services/SiteContextManager';
@@ -179,8 +179,8 @@ onMounted(async () => {
     }
 });
 
-const tagsChanged = (selectedTags: Array<{ id: string }>) => {
-    model.tagIds = selectedTags.map(t => t.id);
+const tagsChanged = (selectedTags: Ref<Array<{ id: string }>>) => {
+    model.tagIds = selectedTags.value.map(t => t.id);
 };
 
 const validateSiteName = async () => {
