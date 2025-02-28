@@ -1,13 +1,12 @@
-﻿using Amazon.Runtime.Internal.Auth;
+﻿using Avs.StaticSiteHosting.Shared.Contracts;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
-using iText.Layout.Element;
+using MassTransit;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,17 +18,20 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
         private readonly IUserService _userService;
         private readonly IContentManager _contentManager;
         private readonly IEventLogsService _eventLogsService;
+        private IPublishEndpoint _publishEndpoint;
 
         public SiteManagementService(
-            ISiteService siteService, 
-            IUserService userService, 
-            IContentManager contentManager, 
-            IEventLogsService eventLogsService)
+            ISiteService siteService,
+            IUserService userService,
+            IContentManager contentManager,
+            IEventLogsService eventLogsService,
+            IPublishEndpoint publishEndpoint)
         {
             _siteService = siteService;
             _userService = userService;
             _contentManager = contentManager;
             _eventLogsService = eventLogsService;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task<(CreateSiteResponseModel, Exception)> CreateSiteAndProcessContentAsync(SiteDetailsModel siteDetails, string userId)
@@ -130,6 +132,8 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
             {
                 siteFileList.AddRange(await _contentManager.ProcessSiteContentAsync(siteToUpdate, siteDetails.UploadSessionId));
             }
+
+            await _publishEndpoint.Publish(new ContentUpdatedEvent { SiteId = siteId });
 
             return (new UpdateSiteResponseModel { Uploaded = siteFileList.ToArray() }, null);
         }

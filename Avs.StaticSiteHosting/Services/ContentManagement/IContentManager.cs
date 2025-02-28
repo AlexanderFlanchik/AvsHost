@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -42,8 +43,9 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         /// </summary>
         /// <param name="contentItemId">Content item ID</param>
         /// <param name="content">Content</param>
+        /// <param name="cacheDuration">Cache duration (optional)</param>
         /// <returns></returns>
-        Task<long> UpdateContentItem(string contentItemId, string content);
+        Task<long> UpdateContentItem(string contentItemId, string content, TimeSpan? cacheDuration);
 
         /// <summary>
         /// Deletes content using content item ID.

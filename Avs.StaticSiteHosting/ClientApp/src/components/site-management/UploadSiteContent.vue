@@ -2,6 +2,7 @@
 import { inject, onMounted, ref, reactive } from 'vue';
 import { ContentFile } from '../../common/ContentFile';
 import { API_CLIENT } from '../../common/diKeys';
+import TimeSpanInput from './TimeSpanInput.vue';
 
 interface UploadSiteContentProps {
     uploaded: Array<ContentFile>;
@@ -15,26 +16,31 @@ interface UploadSiteContentModel {
     useDestinationPath: boolean;
     destinationPath?: string;
     readyToUpload: boolean;
+    cacheDuration?: string;
 }
 
 const props = defineProps<UploadSiteContentProps>();
 const model = reactive<UploadSiteContentModel>({
     errorMessage: '',
     useDestinationPath: false,
-    readyToUpload: false
+    readyToUpload: false,
+    cacheDuration: undefined
 });
 
 const apiClient = inject(API_CLIENT)!;
 const fileRef = ref<File | null>(null);
+const uploadInputRef = ref<HTMLInputElement | null>(null);
 
 const clear = () => {
     model.errorMessage = '';
     fileRef.value = null;
     model.useDestinationPath = false;
     model.destinationPath = '';
+    model.cacheDuration = undefined;
+    uploadInputRef.value!.value = "";
 };
 
-const uploadFile = async() => {
+const uploadFile = async () => {
     const file = fileRef.value!;
     
     if (!model.sessionId) {
@@ -47,7 +53,10 @@ const uploadFile = async() => {
 
     const formData = new FormData();
     formData.append('contentFile', <any>file);
-    
+    if (model.cacheDuration) {
+        formData.append('cacheDuration', model.cacheDuration);
+    }
+
     let uploadUrl = `api/contentupload?uploadSessionId=${model.sessionId}`;
     if (model.useDestinationPath && model.destinationPath) {
         uploadUrl += `&destinationPath=${model.destinationPath}`;
@@ -66,7 +75,8 @@ const uploadFile = async() => {
                 false,
                 false,
                 new Date(),
-                null
+                null,
+                model.cacheDuration
             );
                             
             props.uploaded.push(cf);
@@ -103,17 +113,21 @@ const onFileChanged = ($event: Event) => {
     <div class="upload-form">
         <span class="form-title">Upload files</span>
         <div class="mrg-tp-10x">
-            <input type="file" class="file-input" @change="onFileChanged($event)" />
+            <input type="file" class="file-input" @change="onFileChanged($event)" ref="uploadInputRef" />
         </div>
         <div class="mrg-tp-10x">
-            <input type="checkbox" v-model="model.useDestinationPath" name="useDestinationPath"/>
+            <label for="cacheDurationInput">Cache this content during:</label>
+            <TimeSpanInput v-model="model.cacheDuration" />
+        </div>
+        <div class="mrg-tp-10x">
+            <input type="checkbox" v-model="model.useDestinationPath" name="useDestinationPath" />
             <label for="useDestinationPath">Use destination path</label>
         </div>
         <div class="upload-bottom-bar">
             <div class="upload-bottom-bar-left">
                 <input v-model="model.destinationPath" :disabled="!model.useDestinationPath" />
             </div>
-             <div class="upload-bottom-bar-right">
+            <div class="upload-bottom-bar-right">
                 <button class="btn btn-primary" @click="uploadFile" :disabled="!model.readyToUpload">Upload..</button>
             </div>
         </div>

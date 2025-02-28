@@ -21,5 +21,10 @@
         /// Content type
         /// </summary>
         public string ContentType { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Shows how long this content item could be cached
+        /// </summary>
+        public TimeSpan? CacheDuration { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Avs.StaticSiteHosting.Web
 {
-    public class GeneralConstants
+    public static class GeneralConstants
     {
         #region MongoDb collections
 
@@ -18,6 +18,7 @@
         public const string SITE_VIEWED_INFO_COLLECTION = "ViewedSiteInfos";
         public const string APP_SETTINGS_COLLECTION = "AppSettings";
         public const string TAGS_COLLECTION = "Tags";
+        public const string CONTENT_UPLOADS_COLLECTION = "ContentUploads";
 
         #endregion
 

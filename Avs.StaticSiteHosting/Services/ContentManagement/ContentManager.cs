@@ -24,6 +24,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
         private readonly ISiteService _siteService;
         private readonly CloudStorageSettings _cloudStorageSettings;
         private readonly ICloudStorageProvider _cloudStorageProvider;
+        private readonly IContentUploadService _contentUploadService;
 
         public ContentManager(
             MongoEntityRepository entityRepository,
@@ -31,7 +32,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             ISiteService siteService,
             ILogger<ContentManager> logger,
             ICloudStorageProvider cloudStorageProvider,
-            CloudStorageSettings cloudStorageSettings)
+            CloudStorageSettings cloudStorageSettings,
+            IContentUploadService contentUploadService)
         {
             contentItems = entityRepository.GetEntityCollection<ContentItem>(GeneralConstants.CONTENT_ITEMS_COLLECTION);
             options = staticSiteOptions.Value;
@@ -40,6 +42,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             _cloudStorageSettings = cloudStorageSettings ?? throw new ArgumentNullException(nameof(cloudStorageSettings));
 
             _cloudStorageProvider = cloudStorageProvider;
+            _contentUploadService = contentUploadService;
         }
 
         public async Task<IEnumerable<ContentItemModel>> ProcessSiteContentAsync(Site site, string uploadSessionId)
@@ -56,7 +59,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
             if (!string.IsNullOrEmpty(site.Id))
             {
-                contentInfos = (await contentItems.FindAsync(s => s.Site.Id == site.Id).ConfigureAwait(false)).ToList();
+                contentInfos = (await contentItems.FindAsync(s => s.Site.Id == site.Id)).ToList();
             }
 
             void GetFilesFromFolder(string folder)
@@ -84,6 +87,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             GetFilesFromFolder(uploadFolder);
             FileExtensionContentTypeProvider ctpProvider = new FileExtensionContentTypeProvider();
             var uploadFolderInfo = new DirectoryInfo(uploadFolder);
+            var uploadInfos = await _contentUploadService.GetUploadInfoAsync(uploadSessionId);
+
             foreach (var file in fileList)
             {
                 var fileInfo = new FileInfo(file);
@@ -96,6 +101,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                     dir = dir.Parent;
                 }
 
+                pathSegments.Reverse();
                 var segmentsPath = string.Join(Path.DirectorySeparatorChar, pathSegments.ToArray());
                 var destinationFolder = Path.Combine(siteFolder, segmentsPath);
                 Directory.CreateDirectory(destinationFolder);
@@ -127,6 +133,23 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                         contentType = "application/octet-stream";
                     }
 
+                    var contentUploadInfo = uploadInfos.FirstOrDefault(
+                        u =>
+                        {
+                            bool matched = u.FileName == fileInfo.Name;
+                            if (u.DestinationPath is null)
+                            {
+                                matched = matched && !pathSegments.Any();
+                            }
+                            else
+                            {
+                                var dpSegments = u.DestinationPath.Split(['/', '\\'], StringSplitOptions.RemoveEmptyEntries).Order();
+                                matched = matched && dpSegments.SequenceEqual(pathSegments.Order());
+                            }
+
+                            return matched;
+                        });
+                    
                     // Insert a record about new content item uploaded
                     contentItemList.Add(new ContentItem()
                     {
@@ -135,7 +158,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                         ContentType = contentType,
                         UploadedAt = DateTime.UtcNow,
                         Size = Math.Round((decimal)fileInfo.Length / 1024, 1),
-                        FullName = destinationPath
+                        FullName = destinationPath,
+                        CacheDuration = contentUploadInfo?.CacheDuration
                     });
                 }
                 else
@@ -176,8 +200,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
 
         public async Task<IEnumerable<ContentItemModel>> GetUploadedContentAsync(string siteId)
         {
-            var ciCursor = await contentItems.FindAsync(i => i.Site.Id == siteId).ConfigureAwait(false);
-            var contentList = await ciCursor.ToListAsync().ConfigureAwait(false);
+            var ciCursor = await contentItems.FindAsync(i => i.Site.Id == siteId);
+            var contentList = await ciCursor.ToListAsync();
 
             return contentList.Select(FromEntity);
         }
@@ -244,7 +268,7 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             return (fileInfo.Name, contentItem.ContentType, stream);
         }
 
-        public async Task<long> UpdateContentItem(string contentItemId, string content)
+        public async Task<long> UpdateContentItem(string contentItemId, string content, TimeSpan? cacheDuration)
         {
             var ciCursor = await contentItems.FindAsync(i => i.Id == contentItemId).ConfigureAwait(false);
             var contentItem = await ciCursor.FirstOrDefaultAsync().ConfigureAwait(false);
@@ -276,7 +300,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
             await contentItems.UpdateOneAsync(
                     new FilterDefinitionBuilder<ContentItem>().Where(i => i.Id == contentItem.Id),
                     new UpdateDefinitionBuilder<ContentItem>().Set(c => c.UpdateDate, DateTime.UtcNow)
-                                                                .Set(c => c.Size, Math.Round((decimal) fileInfo.Length / 1024, 2)));
+                                                              .Set(c => c.Size, Math.Round((decimal) fileInfo.Length / 1024, 2))
+                                                              .Set(c => c.CacheDuration, cacheDuration));
 
             return contentFile.Length;
         }
@@ -457,7 +482,8 @@ namespace Avs.StaticSiteHosting.Web.Services.ContentManagement
                 UploadedAt = entity.UploadedAt,
                 Size = entity.Size,
                 UpdateDate = entity.UpdateDate,
-                DestinationPath = destinationPath.Length > 1 ? destinationPath.Substring(1) : destinationPath
+                DestinationPath = destinationPath.Length > 1 ? destinationPath.Substring(1) : destinationPath,
+                CacheDuration = entity.CacheDuration
             };
         }
     }

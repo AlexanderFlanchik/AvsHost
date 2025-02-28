@@ -2,6 +2,6 @@
 {
     public class ContentUpdatedEvent
     {
-        public SiteContentInfo SiteContent { get; set; } = default!;
+        public string SiteId { get; set; } = default!;
     }
 }

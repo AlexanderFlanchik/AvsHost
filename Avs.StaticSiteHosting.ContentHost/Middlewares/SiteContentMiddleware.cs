@@ -8,6 +8,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Middlewares;
 
 public class SiteContentMiddleware(
     ISiteContentHandler handler,
+    ContentCacheService cacheService,
     ISiteContentProvider siteContentProvider,
     ISiteEventPublisher siteEventPublisher,
     IErrorPageHandler errorPageHandler,
@@ -15,20 +16,22 @@ public class SiteContentMiddleware(
 {
     private const string CONTENT_TYPE_DEFAULT = "application/octet-stream";
     private const string LOCAL_IP = "::1";
+    private const string SITE_NAME = "sitename";
+    private const string SITE_PATH = "sitepath";
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
     {
-        var routeValues = context.GetRouteData().Values;
-        string siteName = string.Empty, sitePath = string.Empty;
-
-        if (routeValues.TryGetValue("sitename", out var sn) && sn is not null)
+        if (context.Request.Method != HttpMethods.Get)
         {
-            siteName = sn.ToString()!;
+            await next(context);
+            return;
         }
 
-        if (routeValues.TryGetValue("sitepath", out var sp) && sp is not null)
+        var (siteName, sitePath) = GetRouteParameters(context);
+        string contentCacheKey = ContentCacheHelper.GetContentCacheKey(siteName, sitePath);
+        if (await HandleCachedContentAsync(context.Response, contentCacheKey))
         {
-            sitePath = sp.ToString()!;
+            return;
         }
 
         SiteContentInfo? siteInfo = await siteContentProvider.GetSiteContentByName(siteName);
@@ -48,15 +51,20 @@ public class SiteContentMiddleware(
             return;
         }
         
-        context.Response.ContentType = handleResult.ContentType ?? CONTENT_TYPE_DEFAULT;
+        Stream contentStream = handleResult.Content is not null ? handleResult.Content.CreateReadStream() : handleResult.ContentStream!;
 
-        if (handleResult.Content is not null)
+        await WriteStreamAsync(contentStream, context.Response, handleResult.ContentType);
+        if (handleResult.CacheDuration.HasValue)
         {
-            await context.Response.SendFileAsync(handleResult.Content);
+            cacheService.AddContentToCache(
+                contentCacheKey,
+                handleResult.ContentType!,
+                contentStream,
+                handleResult.CacheDuration.Value); // the stream will be disposed later
         }
         else
         {
-            await handleResult.ContentStream!.CopyToAsync(context.Response.Body);
+            contentStream.Dispose();
         }
 
         if (!siteInfo!.IsSiteVisited(sitePath))
@@ -66,5 +74,47 @@ public class SiteContentMiddleware(
 
         var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
         siteEventPublisher.PublishEvent(new SiteVisited(siteInfo!.Id, visitor, siteInfo.User.Id));
+    }
+
+    private (string siteName, string sitePath) GetRouteParameters(HttpContext context)
+    {
+        var routeValues = context.GetRouteData().Values;
+        string siteName = string.Empty, sitePath = string.Empty;
+
+        if (routeValues.TryGetValue(SITE_NAME, out var sn) && sn is not null)
+        {
+            siteName = sn.ToString()!;
+        }
+
+        if (routeValues.TryGetValue(SITE_PATH, out var sp) && sp is not null)
+        {
+            sitePath = sp.ToString()!;
+        }
+
+        return (siteName, sitePath);
+    }
+
+    private async Task<bool> HandleCachedContentAsync(HttpResponse response, string contentCacheKey)
+    {
+        var cachedContent = await cacheService.GetContentCacheAsync(contentCacheKey);
+        if (cachedContent is null)
+        {
+            return false;
+        }
+
+        using var ms = new MemoryStream(cachedContent.Content);
+        await WriteStreamAsync(ms, response, cachedContent.ContentType);
+
+        return true;
+    }
+
+    private async Task WriteStreamAsync(Stream stream, HttpResponse response, string? contentType)
+    {
+        response.StatusCode = (int)HttpStatusCode.OK;
+        response.ContentType = contentType ?? CONTENT_TYPE_DEFAULT;
+        await stream.CopyToAsync(response.Body);
+        stream.Position = 0;
+
+        await response.Body.FlushAsync();
     }
 }

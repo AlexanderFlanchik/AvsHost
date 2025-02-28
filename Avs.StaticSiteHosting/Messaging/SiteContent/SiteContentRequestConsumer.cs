@@ -42,7 +42,8 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
                         Id = i.Id,
                         FileName = i.FileName,
                         DestinationPath = i.DestinationPath,
-                        ContentType = i.ContentType
+                        ContentType = i.ContentType,
+                        CacheDuration = i.CacheDuration
                     }).ToArray(),
             };
 

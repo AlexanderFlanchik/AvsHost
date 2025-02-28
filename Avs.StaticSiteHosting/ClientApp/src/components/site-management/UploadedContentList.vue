@@ -65,17 +65,19 @@ const edit = async (file: ContentFile) => {
         await props.openPageEditor(file);
     } else {
         const fileResponse = await apiClient.getAsync(
-            `api/sitecontent?contentItemId=${file.id}&__accessToken=${authService.getToken()}`
+            `api/sitecontent/get?contentItemId=${file.id}&__accessToken=${authService.getToken()}`
         ) as any;
 
-        const dlgSubject = editContentDialogRef.value?.showDialog(file.name, fileResponse.data);
-        dlgSubject.subscribe(async (newContent: any) => {
-            const updateResponse = await apiClient.putAsync(`api/sitecontent/${file.id}`, { content: newContent }) as any;
+        const dlgSubject = editContentDialogRef.value?.showDialog(file.name, fileResponse.data, undefined, file.cacheDuration);
+        dlgSubject.subscribe(async ({ content, cacheDuration } : { content: string, cacheDuration: string | undefined }) => {
+            
+            const updateResponse = await apiClient.putAsync(`api/sitecontent/content-edit/${file.id}`, { content, cacheDuration }) as any;
                 if (updateResponse.status == 200) {
                     const updatedItem = props.uploaded!.find((i: ContentFile) => i.id == file.id);
 
                     if (updatedItem) {
                         updatedItem.updateDate = new Date();
+                        updatedItem.cacheDuration = cacheDuration;
                     }
                 }
             });    

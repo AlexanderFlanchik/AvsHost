@@ -8,7 +8,8 @@
         public isEditable: boolean,
         public isViewable: boolean,
         public uploadedAt: Date,
-        public updateDate: Date |  null) { }
+        public updateDate: Date |  null,
+        public cacheDuration: string | undefined) { }
 
     public fullName(): String {
         if (!this.destinationPath) {

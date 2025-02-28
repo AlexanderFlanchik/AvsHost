@@ -15,6 +15,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         public DateTime UploadedAt { get; set; }
         public decimal Size { get; set; }
         public DateTime? UpdateDate { get; set; }
+        public TimeSpan? CacheDuration { get; set; }
         public bool IsEditable => EditableFormats.Any(f => FileName != null && FileName.EndsWith(f));
         public bool IsViewable => ViewableFormats.Any(f => FileName != null && FileName.EndsWith(f));
     }

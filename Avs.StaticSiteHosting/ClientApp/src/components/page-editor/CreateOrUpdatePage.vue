@@ -16,6 +16,7 @@ import EditContentDialog from '../site-management/EditContentDialog.vue';
 import Loader from '../Loader.vue';
 import { PageContextProvider } from './PageContext';
 import { NewCreatedContentHolder } from '../../services/NewCreatedContentHolder';
+import TimeSpanInput from '../site-management/TimeSpanInput.vue';
 
 const editIconSrc = '../icons8-edit-16.png';
 const removeIconSrc = '../icons8-remove-16.png';
@@ -47,6 +48,7 @@ interface CreateOrUpdatePageModel {
     htmlTree: Html | null;
     error: string | null;
     processing: boolean;
+    cacheDuration: string | undefined;
 }
 
 const model = reactive<CreateOrUpdatePageModel>({
@@ -58,7 +60,8 @@ const model = reactive<CreateOrUpdatePageModel>({
     previewSessionId: null,
     htmlTree: null,
     error: null,
-    processing: false
+    processing: false,
+    cacheDuration: undefined
 });
 
 const createEmptyTree = () => {
@@ -467,7 +470,8 @@ const save = async () => {
             contentId: model.contentId,
             destinationPath: model.contentDestinationPath,
             fileName: model.contentName,
-            uploadSessionId: model.uploadSessionId
+            uploadSessionId: model.uploadSessionId,
+            cacheDuration: model.cacheDuration
         };
         const requestData = mapTree(model.htmlTree!);
 
@@ -490,6 +494,7 @@ const save = async () => {
                 if (item) {
                     item.size = contentSize;
                     item.updateDate = data.updateDate;
+                    item.cacheDuration = model.cacheDuration;
                 }
             } else {
                 newPageCreated.value = true;
@@ -498,6 +503,7 @@ const save = async () => {
                 if (item) {
                     item.size = contentSize;
                     item.uploadedAt = data.uploadedAt;
+                    item.cacheDuration = model.cacheDuration;
                 } else {
                     const cf = new ContentFile(
                         null,
@@ -508,7 +514,8 @@ const save = async () => {
                         true,
                         false,
                         data.uploadedAt,
-                        null
+                        null,
+                        model.cacheDuration
                     );
                             
                     uploadedFiles.push(cf);
@@ -602,15 +609,15 @@ const editHtml = async () => {
                         if (errorNode) {
                             return errorNode.textContent;
                         }
-                    });
+                    }, model.cacheDuration);
                                     
-    dlgSubject.subscribe(async(newContent: any) => {
+    dlgSubject.subscribe(async({ newContent, cacheDuration } : { newContent: string, cacheDuration: string | undefined}) => {
         model.processing = true;
         const dom = new DOMParser().parseFromString(newContent.toString(), 'text/html');
 
         try {
-            processLoadedContent(dom);
-        
+             processLoadedContent(dom);
+             model.cacheDuration = cacheDuration;
              await updatePageState();
         } finally {
             model.processing = false;
@@ -627,6 +634,7 @@ onMounted(async () => {
     model.contentId = pageContext.contentId as string;
     model.contentName = pageContext.contentName as string;
     model.contentDestinationPath = pageContext.contentDestinationPath as string;
+    model.cacheDuration = pageContext.cacheDuration as string;
     
     let pageHtml: string;
     if (model.siteId && model.contentId) {
@@ -667,6 +675,7 @@ onMounted(async () => {
                 <button class="btn btn-primary" @click="() => toSite()">&lt;&lt; To Site</button>&nbsp;
                 <button class="btn btn-primary" @click="() => editHtml()">Edit HTML</button>&nbsp;
                 <button class="btn btn-primary" @click="() => save()">Save</button>
+                <span class="cache-duration-container"> Cache duration: <TimeSpanInput v-model="model.cacheDuration" /></span>
                 <Loader :processing="model.processing"/>
             </div>
             <div class="content-inputs-container">
@@ -784,5 +793,9 @@ onMounted(async () => {
 .page-editor-container {
     height: calc(100% - 68px);
     background-color: azure;
+}
+
+.cache-duration-container {
+    margin-left: 15px;
 }
 </style>

@@ -12,6 +12,8 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using System.IO;
+using MassTransit;
+using Avs.StaticSiteHosting.Shared.Contracts;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {
@@ -172,7 +174,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var content = await pageRenderingService.RenderAsync(htmlTree);
             if (!string.IsNullOrEmpty(contentId))
             {
-                var contentSize = Math.Round((decimal) await _contentManager.UpdateContentItem(contentId, content) / 1024, 2);
+                var contentSize = Math.Round((decimal) await _contentManager.UpdateContentItem(contentId, content, savePageModel.CacheDuration) / 1024, 2);
                 result = new SavePageResponse(contentId, contentSize, null, DateTime.UtcNow);
 
                 _logger.LogInformation("The content with ID = '{0}' has been successfully updated.", contentId);
@@ -186,7 +188,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
                 }
 
-                await _contentUploadService.UploadContent(uploadSessionId, fileName, destinationPath, content);
+                await _contentUploadService.UploadContent(uploadSessionId, fileName, destinationPath, content, savePageModel.CacheDuration);
                 var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(fileName, uploadSessionId) / 1024, 2);
                 
                 result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);

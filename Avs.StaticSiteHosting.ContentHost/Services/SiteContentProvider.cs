@@ -14,6 +14,13 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         Task<SiteContentInfo?> GetSiteContentByName(string siteName);
 
         /// <summary>
+        /// Returns a site content instance by Id looking into local set of sites
+        /// </summary>
+        /// <param name="siteId">Site ID</param>
+        /// <returns>Site info if locally there is a site with ID specified, or null otherwise.</returns>
+        SiteContentInfo? GetSiteContentById(string siteId);
+
+        /// <summary>
         /// Adds or updates site content info in the memory or other configuration storage
         /// </summary>
         /// <param name="siteContent"></param>
@@ -54,6 +61,9 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
 
             return siteContentInfo;
         }
+
+        public SiteContentInfo? GetSiteContentById(string siteId)
+            => _sites.Values.FirstOrDefault(s => s.Id == siteId);
 
         public Task SetSiteConfig(SiteContentInfo? siteContent)
         {

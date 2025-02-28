@@ -74,9 +74,9 @@ public class SiteContentHandler(
 
            storageWorker.Add(new SyncContentTask(fileInfo.Name, fileInfo.PhysicalPath!, siteInfo.User.UserName, siteInfo.Name));
 
-           return HandleContentResult.Success(siteInfo.Id, cloudStream, contentItem.ContentType);
+           return HandleContentResult.Success(siteInfo.Id, cloudStream, contentItem.ContentType, contentItem.CacheDuration);
        }
 
-       return HandleContentResult.Success(siteInfo.Id, fileInfo, contentItem.ContentType);
+       return HandleContentResult.Success(siteInfo.Id, fileInfo, contentItem.ContentType, contentItem.CacheDuration);
     }
 }

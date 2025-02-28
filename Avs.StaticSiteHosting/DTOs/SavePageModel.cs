@@ -8,7 +8,8 @@ public record SavePageModel(
     string ContentId, 
     string UploadSessionId, 
     string FileName,
-    string DestinationPath
+    string DestinationPath,
+    TimeSpan? CacheDuration
 );
 
 public record SavePageResponse(

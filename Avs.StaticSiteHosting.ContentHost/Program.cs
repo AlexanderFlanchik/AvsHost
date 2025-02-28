@@ -5,6 +5,7 @@ using Avs.StaticSiteHosting.Shared.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddStaticSiteOptions(builder.Configuration);
+builder.Services.AddMemoryCache();
 builder.Services.AddCloudStorage();
 builder.Services.AddSiteContent(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration, options =>

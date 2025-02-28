@@ -53,13 +53,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("content-edit/{contentItemId}")]
         public async Task<IActionResult> EditContent([Required] string contentItemId, EditContentModel model)
         {
-            await contentManager.UpdateContentItem(contentItemId, model.Content);
+            await contentManager.UpdateContentItem(contentItemId, model.Content, model.CacheDuration);
 
             return Ok();
         }
 
         [HttpDelete]
-        [Route("content-delete")]
         public async Task<IActionResult> DeleteContent(string contentItemId, string contentItemName, string uploadSessionId)
         {
             if (!string.IsNullOrEmpty(contentItemName) && string.IsNullOrEmpty(uploadSessionId))

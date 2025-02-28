@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, reactive, Ref } from 'vue';
+import { computed, inject, onMounted, reactive, Ref, watch } from 'vue';
 import { ContentFile } from '../../common/ContentFile';
 import { useRoute, useRouter } from 'vue-router';
 import { ResourceMapping, SiteContextManager } from '../../services/SiteContextManager';
@@ -96,7 +96,8 @@ const mapUploaded = (uploaded: Array<any>) : Array<ContentFile> => {
             u.isEditable,
             u.isViewable,
             u.uploadedAt,
-            u.updateDate
+            u.updateDate,
+            u.cacheDuration
         );
                     
         lst.push(uploadedFile);
@@ -105,10 +106,13 @@ const mapUploaded = (uploaded: Array<any>) : Array<ContentFile> => {
     return lst;
 };
 
+watch(() => model.siteId, (newSiteId) => {
+    model.title = model.siteId ? "Edit Site" : "Create New Site";
+});
+
 onMounted(async () => {
     model.siteId = route.params["siteId"] as string;
-    model.title = model.siteId ? "Edit Site" : "Create New Site";
-
+   
     const cachedSite = stateManager.get()!;
     const getSiteDataFromCache = () => {
         model.siteId = cachedSite.siteId;
@@ -129,7 +133,8 @@ onMounted(async () => {
                 f.isEditable,
                 f.isViewable,
                 f.uploadedAt,
-                f.updateDate
+                f.updateDate,
+                f.cacheDuration
         ));
 
         contextHolder.set(getFormContext());
@@ -238,7 +243,7 @@ const createOrUpdateSite = async () => {
     try {
         if (isNew) {
             const newSiteData = (await apiClient.postAsync('api/sitemanagement', siteDetailsModel) as any)?.data;
-            model.siteId = newSiteData.id;
+            model.siteId = newSiteData.siteId;
             for (const up of model.uploaded) {
                 newContentHolder.removeContent(up.name);    
             }
@@ -349,7 +354,8 @@ const openPageEditor = async (file: ContentFile) => {
         contentId: file.id,
         contentName: file.name,
         contentDestinationPath: file.destinationPath, 
-        uploadSessionId: model.uploadSessionId
+        uploadSessionId: model.uploadSessionId,
+        cacheDuration: file.cacheDuration
     } as PageContext);
 
     router.push({ 

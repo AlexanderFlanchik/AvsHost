@@ -38,10 +38,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             }
             catch (NoRequiredFitlerException ex)
             {
-                errorModel = new ReportPreviewErrorModel()
-                {
-                    RequiredFilterMissing = ex.FilterNames
-                };
+                errorModel = new ReportPreviewErrorModel() { RequiredFilterMissing = ex.FilterNames };
             }
             catch (ReportPreviewException ex)
             {

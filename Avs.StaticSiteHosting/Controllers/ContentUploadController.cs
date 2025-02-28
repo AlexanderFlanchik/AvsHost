@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Shared.Configuration;
+using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,17 +41,26 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadContent([Required] string uploadSessionId, string destinationPath, [Required] IFormFile contentFile)
+        public async Task<IActionResult> UploadContent([Required] string uploadSessionId, string destinationPath, ContentUploadRequest uploadRequest)
         { 
             if (!_contentUploadService.ValidateDestinationPath(destinationPath))
             {
                 return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
             }
-           
+            
+            var contentFile = uploadRequest.ContentFile;
+            var contentFileName = contentFile.FileName;
+
             try
             {
                 // Create folder and upload file
-                await _contentUploadService.UploadContent(uploadSessionId, contentFile.FileName, destinationPath, contentFile.OpenReadStream());
+                await _contentUploadService.UploadContent(
+                    uploadSessionId, 
+                    contentFileName, 
+                    destinationPath, 
+                    contentFile.OpenReadStream(),
+                    uploadRequest.CacheDuration
+                );
             }
             catch (Exception ex)
             {
@@ -61,8 +71,10 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
                 _logger.LogError(ex.Message);
                 
-                return Problem($"Unable to upload {contentFile.FileName}. Server error.");
+                return Problem($"Unable to upload {contentFileName}. Server error.");
             }
+
+            _logger.LogInformation("Content file uploaded: {fileName}", contentFileName);
            
             return Ok();
         }

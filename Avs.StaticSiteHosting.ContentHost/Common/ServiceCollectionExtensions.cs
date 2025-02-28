@@ -22,7 +22,8 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
             services.AddSingleton<ISiteContentHandler, SiteContentHandler>();
             services.AddHostedService(sp => sp.GetRequiredService<ISiteEventPublisher>());
             services.AddSingleton<IErrorPageHandler, ErrorPageHandler>();
-            
+            services.AddSingleton<ContentCacheService>();
+            services.AddHostedService(sp => sp.GetRequiredService<ContentCacheService>());
             return services;
         }
 

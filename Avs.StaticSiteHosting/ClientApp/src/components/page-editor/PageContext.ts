@@ -6,6 +6,7 @@ export interface PageContext {
     uploadSessionId: NullableString;
     contentName: NullableString;
     contentDestinationPath: NullableString;
+    cacheDuration: NullableString;
 }
 
 export class PageContextProvider {

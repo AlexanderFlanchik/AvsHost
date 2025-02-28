@@ -10,5 +10,6 @@ namespace Avs.StaticSiteHosting.Web.Models
         public string FullName { get; set; }
         public decimal Size { get; set; } // content file size in KB
         public DateTime? UpdateDate { get; set; }
+        public TimeSpan? CacheDuration { get; set; }
     }
 }
