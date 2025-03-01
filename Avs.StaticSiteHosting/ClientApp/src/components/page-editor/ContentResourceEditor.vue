@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, reactive, ref } from 'vue';
+import { inject, reactive, ref, watch } from 'vue';
 import { GenericElement, Html, Link, Script } from './html-elements';
 import { API_CLIENT, AUTH_SERVICE } from '../../common/diKeys';
 import ModalDialog from '../ModalDialog.vue';
@@ -150,10 +150,7 @@ const contentResourceEditor_Ok = async () => {
     addScriptContentModal.value?.close();
 }; 
 
-const addScriptOrStylesheet = async (element: any) => {
-    model.element = element;
-    onOpen();
-
+const loadResources = async () => {
     let filesUrl = 'api/ResourceContent';
     let queryParameterSet =  false;
     if (props.siteId) {
@@ -178,6 +175,13 @@ const addScriptOrStylesheet = async (element: any) => {
         // no-op
         model.error = 'Unable to get files list from the server due to server error.';
     }
+};
+
+const addScriptOrStylesheet = async (element: any) => {
+    model.element = element;
+    onOpen();
+
+    await loadResources();
 
     model.contentList = model.contentList.filter(
         (i: any) => !props.htmlTree.head.scripts.find((s: any) => s.src && s.src.indexOf(i.contentFilePath) >= 0) && 
@@ -189,6 +193,8 @@ const addScriptOrStylesheet = async (element: any) => {
     model.ok = contentResourceEditor_Ok;
     addScriptContentModal.value?.open();
 };
+
+watch(() => model.contentResourceType, () => loadResources());
 
 defineExpose({ addScriptOrStylesheet });
 </script>
