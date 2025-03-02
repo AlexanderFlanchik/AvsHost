@@ -12,8 +12,11 @@ using Avs.StaticSiteHosting.Web.Messaging.SiteEvents;
 using Avs.StaticSiteHosting.Web.Messaging.SettingsProvider;
 using Microsoft.Extensions.Configuration;
 using Avs.StaticSiteHosting.Web.DTOs;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 builder.Services.AddSession(options => {
     options.Cookie.HttpOnly = true;
@@ -45,6 +48,8 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseMiddleware<ResourcePreviewContentMiddleware>();
 app.UseRouting();
