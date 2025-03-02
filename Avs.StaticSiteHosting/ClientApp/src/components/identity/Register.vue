@@ -128,7 +128,6 @@ const onEmailChanged = async () => {
     try {
         const validationResponse = await authService.validateUserData(null, model.email);
         model.remoteValidation.email.success = validationResponse;
-        console.log(model.remoteValidation.email.success);
     } finally {
         model.remoteValidation.email.inProcess = false;
     }
@@ -173,7 +172,7 @@ const onEmailChanged = async () => {
          </table>
       </div>
       <div class="button-bar">
-        <button v-on:click="register" :disabled="isFormInvalid" class="btn btn-primary">Register..</button> &nbsp;
+        <button v-on:click="register" :disabled="isFormInvalid" class="btn btn-primary">Register..</button>
         <button v-on:click="login" class="btn btn-primary">Login..</button>
       </div>
    </div>
@@ -181,5 +180,7 @@ const onEmailChanged = async () => {
 <style scoped>
     .button-bar {
         margin-top: 5px;
+        display: flex;
+        gap: 3px;
     }
 </style>

@@ -83,7 +83,7 @@ const register = (e: any) => {
                     </div>
                 </div>
                 <div class="button-bar">
-                    <button v-on:click="login" class="btn btn-primary">Login</button> &nbsp;
+                    <button v-on:click="login" class="btn btn-primary">Login</button>
                     <button v-on:click="register" class="btn btn-primary">Register..</button>
                 </div>
             </form>
@@ -102,5 +102,7 @@ const register = (e: any) => {
  }
 .button-bar {
      margin-top: 5px;
+    display: flex;
+    gap: 3px;
 }
 </style>

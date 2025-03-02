@@ -18,6 +18,14 @@
     font-style: italic;
 }
 
+.btn-primary {
+    color: white;
+    background-color: #007bff;
+    border: 0;
+    border-radius: 5px;
+    padding: 5px;
+}
+
 .centered {
     margin-left: 25%;
     margin-right: 25%;

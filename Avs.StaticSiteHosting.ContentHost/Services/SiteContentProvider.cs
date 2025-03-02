@@ -36,7 +36,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
 
     public class SiteContentProvider : ISiteContentProvider
     {
-        private readonly ConcurrentDictionary<string, SiteContentInfo> _sites = new ConcurrentDictionary<string, SiteContentInfo>();
+        private readonly ConcurrentDictionary<string, SiteContentInfo> _sites = new();
         private readonly ISiteContentRequester _contentRequester;
 
         public SiteContentProvider(ISiteContentRequester contentRequester)

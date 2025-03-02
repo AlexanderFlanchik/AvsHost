@@ -116,7 +116,7 @@ const onFileChanged = ($event: Event) => {
             <input type="file" class="file-input" @change="onFileChanged($event)" ref="uploadInputRef" />
         </div>
         <div class="mrg-tp-10x">
-            <label for="cacheDurationInput">Cache this content during:</label>
+            <label for="cacheDurationInput">Cache this content during: &nbsp;</label>
             <TimeSpanInput v-model="model.cacheDuration" />
         </div>
         <div class="mrg-tp-10x">
@@ -142,12 +142,13 @@ const onFileChanged = ($event: Event) => {
         max-width: 550px;
     }
     .file-input {
-        background-color: yellow;
-        border: 1px solid red;
+        background-color: #e6e6fa;
+        border: 0;
         width: -webkit-fill-available;
         height: 30px;
         line-height: 30px;
         padding-left: 5px;
+        border-radius: 5px;
     }
     .mrg-tp-10x {
         margin-top: 10px;

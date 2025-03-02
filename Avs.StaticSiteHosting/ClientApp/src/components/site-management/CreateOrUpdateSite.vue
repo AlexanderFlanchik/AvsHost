@@ -551,4 +551,8 @@ const applyValidationErrorClass = computed(() => {
         vertical-align: top;
         padding-top: 16px !important;
     }
+    
+    textarea {
+      resize: none;
+    }
 </style>
