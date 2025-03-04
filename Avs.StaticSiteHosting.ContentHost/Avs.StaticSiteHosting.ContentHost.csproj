@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Avs.StaticSiteHosting.AppHost\Avs.StaticSiteHosting.ServiceDefaults\Avs.StaticSiteHosting.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Avs.StaticSiteHosting.Shared\Avs.StaticSiteHosting.Shared.csproj" />
   </ItemGroup>
 

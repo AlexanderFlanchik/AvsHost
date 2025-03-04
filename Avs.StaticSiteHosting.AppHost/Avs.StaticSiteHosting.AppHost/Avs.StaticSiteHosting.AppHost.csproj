@@ -12,11 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.1.0" />
     <PackageReference Include="Aspire.Hosting.MongoDB" Version="9.1.0" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Avs.StaticSiteHosting.ContentHost\Avs.StaticSiteHosting.ContentHost.csproj" />
+    <ProjectReference Include="..\..\Avs.StaticSiteHosting.DataMigrator\Avs.StaticSiteHosting.DataMigrator.csproj" />
     <ProjectReference Include="..\..\Avs.StaticSiteHosting\Avs.StaticSiteHosting.Web.csproj" />
   </ItemGroup>
 
