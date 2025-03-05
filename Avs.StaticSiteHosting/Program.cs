@@ -24,6 +24,7 @@ builder.Services.AddSession(options => {
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
+builder.AddMongoDBClient("mongo");
 builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddSignalRServices();
 builder.Services.AddIdentityServices();

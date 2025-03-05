@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 
 namespace Avs.StaticSiteHosting.Web
 {
@@ -8,18 +7,16 @@ namespace Avs.StaticSiteHosting.Web
     /// </summary>
     public class MongoEntityRepository
     {
-        private readonly IMongoDatabase database;
+        private readonly IMongoDatabase _database;
 
-        public MongoEntityRepository(IOptions<MongoDbSettings> mongoDbOptions)
+        public MongoEntityRepository(IMongoDatabase database)
         {
-            var settings = mongoDbOptions.Value;
-            var mongoClient = new MongoClient(settings.Host);
-            database = mongoClient.GetDatabase(settings.Database);
+            _database = database;
         }
 
         public IMongoCollection<T> GetEntityCollection<T>(string collectionName)
         {
-            var collection = database.GetCollection<T>(collectionName);
+            var collection = _database.GetCollection<T>(collectionName);
 
             return collection;
         }
