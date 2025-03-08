@@ -9,9 +9,9 @@ namespace Avs.StaticSiteHosting.Web
     {
         private readonly IMongoDatabase _database;
 
-        public MongoEntityRepository(IMongoDatabase database)
+        public MongoEntityRepository(IMongoClient client)
         {
-            _database = database;
+            _database = client.GetDatabase("StaticSiteDb");
         }
 
         public IMongoCollection<T> GetEntityCollection<T>(string collectionName)

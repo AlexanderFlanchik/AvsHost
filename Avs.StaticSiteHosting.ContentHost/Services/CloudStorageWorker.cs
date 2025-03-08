@@ -14,41 +14,31 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         private ConcurrentQueue<SyncContentTask> _tasks = new ConcurrentQueue<SyncContentTask>();
 
         public void Add(SyncContentTask task) => _tasks.Enqueue(task);
-
-        public override Task StartAsync(CancellationToken cancellationToken)
-        {
-            Task.Run(
-                    async () => 
-                    {
-                        try
-                        {
-                            var settings = await settingsProvider.GetCloudStorageSettingsAsync();
-                            if (settings is null)
-                            {
-                                logger.LogWarning("No cloud storage settings received. Cloud storage functionality is disabled.");
-
-                                return;
-                            }
-
-                            storageSettings.CopyFrom(settings);
-                            
-                            _isInitialized = true;
-
-                            logger.LogInformation("The cloud storage feature has been initialized successfully.");
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(ex, "Unable to initialize cloud storage. Cloud storage functionality is disabled.");
-                        }
-                    },
-                    cancellationToken
-            );
-
-            return base.StartAsync(cancellationToken);
-        }
-
+        
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            try
+            {
+                await Task.Delay(30_000, stoppingToken);
+                var settings = await settingsProvider.GetCloudStorageSettingsAsync();
+                if (settings is null)
+                {
+                    logger.LogWarning("No cloud storage settings received. Cloud storage functionality is disabled.");
+
+                    return;
+                }
+
+                storageSettings.CopyFrom(settings);
+                            
+                _isInitialized = true;
+
+                logger.LogInformation("The cloud storage feature has been initialized successfully.");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Unable to initialize cloud storage. Cloud storage functionality is disabled.");
+            }
+
             if (!_isInitialized)
             {
                 return;
