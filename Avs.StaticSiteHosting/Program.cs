@@ -12,8 +12,11 @@ using Avs.StaticSiteHosting.Web.Messaging.SiteEvents;
 using Avs.StaticSiteHosting.Web.Messaging.SettingsProvider;
 using Microsoft.Extensions.Configuration;
 using Avs.StaticSiteHosting.Web.DTOs;
+using Microsoft.Extensions.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 
 builder.Services.AddSession(options => {
     options.Cookie.HttpOnly = true;
@@ -21,6 +24,7 @@ builder.Services.AddSession(options => {
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
+builder.AddMongoDBClient("mongo");
 builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddSignalRServices();
 builder.Services.AddIdentityServices();
@@ -45,6 +49,8 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.UseMiddleware<ResourcePreviewContentMiddleware>();
 app.UseRouting();

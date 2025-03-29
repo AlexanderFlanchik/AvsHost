@@ -4,6 +4,8 @@ using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Shared.Contracts;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 builder.Services.AddStaticSiteOptions(builder.Configuration);
 builder.Services.AddMemoryCache();
 builder.Services.AddCloudStorage();
@@ -16,6 +18,8 @@ builder.Services.AddMessaging(builder.Configuration, options =>
 });
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 app.MapCommonEndpoints();
 app.MapSiteContent("/{sitename:required}/{**sitepath}");

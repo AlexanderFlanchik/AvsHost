@@ -56,3 +56,8 @@ Avs.StaticSiteHosting/Avs.StaticSiteHosting.Web.csproj.user
 Avs.StaticSiteHosting/Storage
 Avs.StaticSiteHosting/.idea/.idea.Avs.StaticSiteHosting/.idea/indexLayout.xml
 Avs.StaticSiteHosting/.idea/.idea.Avs.StaticSiteHosting/.idea/vcs.xml
+/Avs.StaticSiteHosting.AppHost/obj
+/Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.AppHost/bin/Debug/net9.0
+/Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.AppHost/obj
+/Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.ServiceDefaults/bin/Debug/net9.0
+/Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.ServiceDefaults/obj

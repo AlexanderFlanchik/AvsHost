@@ -7,10 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.RabbitMQ.Client.v7" Version="9.1.0" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.407.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Avs.StaticSiteHosting.AppHost\Avs.StaticSiteHosting.ServiceDefaults\Avs.StaticSiteHosting.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Avs.StaticSiteHosting.Shared\Avs.StaticSiteHosting.Shared.csproj" />
   </ItemGroup>
 

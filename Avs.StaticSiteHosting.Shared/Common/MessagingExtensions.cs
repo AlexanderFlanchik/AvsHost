@@ -24,11 +24,9 @@ public static class MessagingExtensions
         {
             options.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqSettings.Host, host =>
-                {
-                    host.Username(rabbitMqSettings.User);
-                    host.Password(rabbitMqSettings.Password);
-                });
+                var rabbitMqHost = configuration.GetConnectionString("AvsBroker");
+                Console.WriteLine($"RabbitMQ Host: {rabbitMqHost}");
+                cfg.Host(rabbitMqHost);
 
                 cfg.ConfigureEndpoints(context);
             });
