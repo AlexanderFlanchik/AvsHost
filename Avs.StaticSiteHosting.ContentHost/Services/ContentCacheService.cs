@@ -13,9 +13,9 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         /// Adds a content (through stream) for on-demand cache processing.
         /// The stream will be disposed in worker.
         /// </summary>
-        /// <param name="CacheKey">Cache key</param>
-        /// <param name="ContentType">Content type</param>
-        /// <param name="ContentStream">Content stream</param>
+        /// <param name="cacheKey">Cache key</param>
+        /// <param name="contentType">Content type</param>
+        /// <param name="contentStream">Content stream</param>
         public void AddContentToCache(string cacheKey, string contentType, Stream contentStream, TimeSpan cacheDuration)
         {
            _channel.Writer.TryWrite(new ContentCache(cacheKey, contentType, contentStream, cacheDuration));
@@ -24,11 +24,11 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         /// <summary>
         /// Returns site content from memory cache
         /// </summary>
-        /// <param name="CacheKey">Cache key</param>
+        /// <param name="cacheKey">Cache key</param>
         /// <returns>A task which returns a content if it exists in cache or null otherwise.</returns>
-        public ValueTask<ContentCacheEntry?> GetContentCacheAsync(string CacheKey)
+        public ValueTask<ContentCacheEntry?> GetContentCacheAsync(string cacheKey)
         {
-            if (memoryCache.TryGetValue(CacheKey, out ContentCacheEntry? entry))
+            if (memoryCache.TryGetValue(cacheKey, out ContentCacheEntry? entry))
             {
                 return ValueTask.FromResult(entry);
             }

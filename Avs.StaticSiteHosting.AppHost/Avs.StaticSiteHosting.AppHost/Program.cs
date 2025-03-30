@@ -16,7 +16,8 @@ var mongo = builder.AddMongoDB("mongo", 27017, dbUsername, dbPassword)
     .WithDataVolume();
 
 var mongoDb = mongo.AddDatabase(databaseName);
-var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword,55720);
+var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword,55720)
+    .WithLifetime(ContainerLifetime.Persistent);
 
 builder.AddProject<Projects.Avs_StaticSiteHosting_DataMigrator>("avs-staticsitehosting-datamigrator")
     .WithReference(mongoDb)

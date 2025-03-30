@@ -30,11 +30,11 @@ public class SiteContentHandler(
 {
     public async ValueTask<HandleContentResult> ValidateAndProcessContent(SiteContentInfo? siteInfo, string siteName, string sitePath)
     {
-       if (siteInfo is null)
+       if (siteInfo is null || !siteInfo.IsActive)
        {
-           return new HandleContentResult((int)HttpStatusCode.NotFound, "The resource cannot be found. Please check URL.");
+           return new HandleContentResult((int)HttpStatusCode.NotFound, "The resource cannot be found or its inactive. Please check URL.");
        }
-
+       
        string siteOwnerId = siteInfo.User.Id;
        if (!siteInfo.User.IsActive)
        {
@@ -45,7 +45,7 @@ public class SiteContentHandler(
        if (contentItem is null)
        {
            return HandleContentResult.NotFound(
-               string.Format("No content with path '{0}' found.", sitePath), 
+               $"No content with path '{sitePath}' found.", 
                siteInfo.Id, 
                siteOwnerId);
        }
@@ -53,30 +53,30 @@ public class SiteContentHandler(
        var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
        var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
        IFileInfo fileInfo = fileProvider.GetFileInfo(fileName);
-       if (!fileInfo.Exists)
+       if (fileInfo.Exists)
        {
-           if (!cloudStorageSettings.Enabled)
-           {
-               return HandleContentResult.NotFound(
-                   string.Format("No physical file found for path '{0}'.", sitePath),
-                   siteInfo.Id, 
-                   siteOwnerId);
-           }
-
-           using var cloudStream = await cloudStorageProvider.GetCloudContent(siteInfo.User.UserName, siteInfo.Name, fileInfo.Name);
-           if (cloudStream is null)
-           {
-               return HandleContentResult.NotFound(
-                   string.Format("No content file found: '{0}'.", fileInfo.Name),
-                   siteInfo.Id, 
-                   siteOwnerId);
-           }
-
-           storageWorker.Add(new SyncContentTask(fileInfo.Name, fileInfo.PhysicalPath!, siteInfo.User.UserName, siteInfo.Name));
-
-           return HandleContentResult.Success(siteInfo.Id, cloudStream, contentItem.ContentType, contentItem.CacheDuration);
+           return HandleContentResult.Success(siteInfo.Id, fileInfo, contentItem.ContentType, contentItem.CacheDuration);
        }
 
-       return HandleContentResult.Success(siteInfo.Id, fileInfo, contentItem.ContentType, contentItem.CacheDuration);
+       if (!cloudStorageSettings.Enabled)
+       {
+           return HandleContentResult.NotFound(
+               $"No physical file found for path '{sitePath}'.",
+               siteInfo.Id, 
+               siteOwnerId);
+       }
+
+       using var cloudStream = await cloudStorageProvider.GetCloudContent(siteInfo.User.UserName, siteInfo.Name, fileInfo.Name);
+       if (cloudStream is null)
+       {
+           return HandleContentResult.NotFound(
+               $"No content file found: '{fileInfo.Name}'.",
+               siteInfo.Id, 
+               siteOwnerId);
+       }
+
+       storageWorker.Add(new SyncContentTask(fileInfo.Name, fileInfo.PhysicalPath!, siteInfo.User.UserName, siteInfo.Name));
+
+       return HandleContentResult.Success(siteInfo.Id, cloudStream, contentItem.ContentType, contentItem.CacheDuration);
     }
 }

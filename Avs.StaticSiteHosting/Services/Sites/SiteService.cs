@@ -1,7 +1,9 @@
-﻿using Avs.StaticSiteHosting.Web.Common;
+﻿using Avs.StaticSiteHosting.Shared.Contracts;
+using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Models.Identity;
+using MassTransit;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -14,9 +16,13 @@ namespace Avs.StaticSiteHosting.Web.Services
     public class SiteService : ISiteService
     {
         private readonly IMongoCollection<Site> _sites;
+        private readonly IPublishEndpoint _publishEndpoint;
 
-        public SiteService(MongoEntityRepository entityRepository)
-            => _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
+        public SiteService(MongoEntityRepository entityRepository, IPublishEndpoint publishEndpoint)
+        {
+            _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
+            _publishEndpoint = publishEndpoint;
+        }
 
         public async Task<IEnumerable<string>> GetSiteIdsByOwner(string ownerId)
         {
@@ -173,7 +179,8 @@ namespace Avs.StaticSiteHosting.Web.Services
         public async Task<bool> ToggleSiteStatusAsync(Site site)
         {
             site.IsActive = !site.IsActive;
-            await UpdateSiteAsync(site).ConfigureAwait(false);
+            await UpdateSiteAsync(site);
+            await _publishEndpoint.Publish(new ContentUpdatedEvent { SiteId = site.Id });
 
             return site.IsActive;
         }
