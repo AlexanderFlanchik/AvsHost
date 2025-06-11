@@ -13,6 +13,7 @@ builder.Services.AddSiteContent(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration, options =>
 {
     options.AddConsumer<SiteContentUpdatedConsumer>();
+    options.AddConsumer<ClearSiteCacheConsumer>();
     options.AddRequestClient<GetSiteContentRequestMessage>();
     options.AddRequestClient<CloudSettingsRequest>();
 });

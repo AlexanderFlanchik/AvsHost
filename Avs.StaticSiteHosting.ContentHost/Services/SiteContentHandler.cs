@@ -44,10 +44,7 @@ public class SiteContentHandler(
        var (contentItem, fileName) = siteInfo.GetContentItem(sitePath);
        if (contentItem is null)
        {
-           return HandleContentResult.NotFound(
-               $"No content with path '{sitePath}' found.", 
-               siteInfo.Id, 
-               siteOwnerId);
+           return HandleContentResult.NotFound($"No content with path '{sitePath}' found.", siteInfo.Id, siteOwnerId);
        }
 
        var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
@@ -60,19 +57,13 @@ public class SiteContentHandler(
 
        if (!cloudStorageSettings.Enabled)
        {
-           return HandleContentResult.NotFound(
-               $"No physical file found for path '{sitePath}'.",
-               siteInfo.Id, 
-               siteOwnerId);
+           return HandleContentResult.NotFound($"No physical file found for path '{sitePath}'.", siteInfo.Id, siteOwnerId);
        }
 
-       using var cloudStream = await cloudStorageProvider.GetCloudContent(siteInfo.User.UserName, siteInfo.Name, fileInfo.Name);
+       await using var cloudStream = await cloudStorageProvider.GetCloudContent(siteInfo.User.UserName, siteInfo.Name, fileInfo.Name);
        if (cloudStream is null)
        {
-           return HandleContentResult.NotFound(
-               $"No content file found: '{fileInfo.Name}'.",
-               siteInfo.Id, 
-               siteOwnerId);
+           return HandleContentResult.NotFound($"No content file found: '{fileInfo.Name}'.", siteInfo.Id, siteOwnerId);
        }
 
        storageWorker.Add(new SyncContentTask(fileInfo.Name, fileInfo.PhysicalPath!, siteInfo.User.UserName, siteInfo.Name));
