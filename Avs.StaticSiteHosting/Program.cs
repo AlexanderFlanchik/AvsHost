@@ -1,4 +1,8 @@
 using System;
+using Avs.Messaging;
+using Avs.Messaging.RabbitMq;
+using Avs.StaticSiteHosting.Shared.Common;
+using Avs.StaticSiteHosting.Shared.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +10,6 @@ using Avs.StaticSiteHosting.Web;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.Middlewares;
 using Avs.StaticSiteHosting.Web.Hubs;
-using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Messaging.SiteContent;
 using Avs.StaticSiteHosting.Web.Messaging.SiteEvents;
 using Avs.StaticSiteHosting.Web.Messaging.SettingsProvider;
@@ -40,12 +43,24 @@ builder.Services.AddDashboardAuthentication();
 builder.Services.AddControllersWithViews().AddNewtonsoftJson();
 builder.Services.AddContentEditor();
 builder.Services.AddScoped<ResourcePreviewContentMiddleware>();
-builder.Services.AddMessaging(builder.Configuration, options =>
+
+builder.Services.AddMessaging(x =>
 {
-    options.AddConsumer<SiteErrorConsumer>();
-    options.AddConsumer<SiteContentRequestConsumer>();
-    options.AddConsumer<CloudSettingsRequestConsumer>();
-    options.AddConsumer<SiteVisitedConsumer>();
+    x.AddConsumer<SiteErrorConsumer>();
+    x.AddConsumer<SiteContentRequestConsumer>();
+    x.AddConsumer<CloudSettingsRequestConsumer>();
+    x.AddConsumer<SiteVisitedConsumer>();
+    
+    x.UseRabbitMq(cfg =>
+    {
+        var rabbitMqSettings = builder.Configuration.GetSection("RabbitMQSettings").Get<RabbitMqSettings>()!;
+        cfg.Host = rabbitMqSettings.Host;
+        cfg.Port = rabbitMqSettings.Port;
+        
+        cfg.ConfigureRequestReply<GetSiteContentRequestMessage, SiteContentInfoResponse>();
+        cfg.ConfigureRequestReply<CloudSettingsRequest, CloudSettingsResponse>();
+        cfg.ConfigureExchangeOptions<SiteVisited>(o => o.ExchangeName = "SiteVisited");
+    });
 });
 
 var app = builder.Build();

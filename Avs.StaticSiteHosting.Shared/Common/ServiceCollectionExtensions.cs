@@ -16,7 +16,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddStaticSiteOptions(this IServiceCollection services, IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.AddOptions<StaticSiteOptions>().Configure(options =>
+        services.Configure<StaticSiteOptions>(options =>
         {
             var staticSiteSettingsSection = configuration.GetSection("StaticSiteOptions");
             var staticSiteOptions = staticSiteSettingsSection.Get<StaticSiteOptions>();

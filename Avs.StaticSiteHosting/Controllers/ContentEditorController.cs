@@ -12,8 +12,6 @@ using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
 using System.IO;
-using MassTransit;
-using Avs.StaticSiteHosting.Shared.Contracts;
 
 namespace Avs.StaticSiteHosting.Web.Controllers
 {

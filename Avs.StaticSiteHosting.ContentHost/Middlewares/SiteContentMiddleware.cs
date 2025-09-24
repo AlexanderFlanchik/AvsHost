@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Avs.Messaging.Contracts;
 using Avs.StaticSiteHosting.ContentHost.Common;
 using Avs.StaticSiteHosting.ContentHost.Contracts;
 using Avs.StaticSiteHosting.ContentHost.Services;
@@ -11,6 +12,7 @@ public class SiteContentMiddleware(
     ContentCacheService cacheService,
     ISiteContentProvider siteContentProvider,
     ISiteEventPublisher siteEventPublisher,
+    IMessagePublisher messagePublisher,
     IErrorPageHandler errorPageHandler,
     ILogger<SiteContentMiddleware> logger) : IMiddleware
 {
@@ -50,7 +52,7 @@ public class SiteContentMiddleware(
 
             return;
         }
-        
+
         Stream contentStream = handleResult.Content is not null ? handleResult.Content.CreateReadStream() : handleResult.ContentStream!;
 
         await WriteStreamAsync(contentStream, context.Response, handleResult.ContentType);

@@ -1,14 +1,15 @@
+using Avs.Messaging.Contracts;
+using Avs.Messaging.Core;
 using Avs.StaticSiteHosting.ContentHost.Services;
 using Avs.StaticSiteHosting.Shared.Contracts;
-using MassTransit;
 
 namespace Avs.StaticSiteHosting.ContentHost.Messaging.SiteContent;
 
-public class ClearSiteCacheConsumer(ISiteContentProvider siteContentProvider) : IConsumer<ClearSiteCacheRequest>
+public class ClearSiteCacheConsumer(ISiteContentProvider siteContentProvider) : ConsumerBase<ClearSiteCacheRequest>
 {
-    public Task Consume(ConsumeContext<ClearSiteCacheRequest> context)
+    protected override Task Consume(MessageContext<ClearSiteCacheRequest> messageContext)
     {
-        siteContentProvider.ClearSiteCache(context.Message.Duration);
+        siteContentProvider.ClearSiteCache(messageContext.Message.Duration);
         return Task.CompletedTask;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Avs.StaticSiteHosting.Shared.Contracts;
-using MassTransit;
+using Avs.Messaging.Contracts;
+using Avs.Messaging.RabbitMq;
 
 namespace Avs.StaticSiteHosting.ContentHost.Messaging.SiteContent
 {
@@ -23,11 +24,11 @@ namespace Avs.StaticSiteHosting.ContentHost.Messaging.SiteContent
             };
 
             using var scope = serviceProvider.CreateScope();
-            var client = scope.ServiceProvider.GetRequiredService<IRequestClient<GetSiteContentRequestMessage>>();
+            var client = scope.ServiceProvider.GetRequiredKeyedService<IRpcClient>(RabbitMqOptions.TransportName);
 
-            var response = await client.GetResponse<SiteContentInfoResponse>(request);
+            var response = await client.RequestAsync<GetSiteContentRequestMessage, SiteContentInfoResponse>(request);
 
-            return response.Message.SiteContent;
+            return response.SiteContent;
         }
     }
 }

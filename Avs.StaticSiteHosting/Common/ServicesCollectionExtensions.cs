@@ -1,9 +1,6 @@
-﻿using System;
-using System.IO;
-using Avs.StaticSiteHosting.Reports.Contracts;
+﻿using Avs.StaticSiteHosting.Reports.Contracts;
 using Avs.StaticSiteHosting.Reports.Services;
 using Avs.StaticSiteHosting.Shared.Common;
-using Avs.StaticSiteHosting.Shared.Configuration;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;

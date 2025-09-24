@@ -2,20 +2,21 @@
 using Avs.StaticSiteHosting.Web.Models.Identity;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
-using MassTransit;
 using System.Linq;
 using System.Threading.Tasks;
+using Avs.Messaging.Contracts;
+using Avs.Messaging.Core;
 
 namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
 {
-    public class SiteContentRequestConsumer(ISiteService siteService, IContentManager contentManager) : IConsumer<GetSiteContentRequestMessage>
+    public class SiteContentRequestConsumer(ISiteService siteService, IContentManager contentManager) : ConsumerBase<GetSiteContentRequestMessage>
     {
-        public async Task Consume(ConsumeContext<GetSiteContentRequestMessage> context)
+        protected override async Task Consume(MessageContext<GetSiteContentRequestMessage> context)
         {
             var siteInfo = await siteService.GetSiteByNameAsync(context.Message.SiteName);
             if (siteInfo is null)
             {
-                await context.RespondAsync(new SiteContentInfoResponse());
+                await RespondAsync(new SiteContentInfoResponse(), context);
 
                 return;
             }
@@ -47,7 +48,7 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
                     }).ToArray(),
             };
 
-            await context.RespondAsync(new SiteContentInfoResponse { SiteContent = siteContent });
+            await RespondAsync(new SiteContentInfoResponse { SiteContent = siteContent }, context);
         }
     }
 }

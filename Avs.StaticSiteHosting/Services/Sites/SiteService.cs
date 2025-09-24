@@ -3,12 +3,11 @@ using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using Avs.StaticSiteHosting.Web.Models.Identity;
-using MassTransit;
 using MongoDB.Driver;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avs.Messaging.Contracts;
 using Tag = Avs.StaticSiteHosting.Web.Models.Tags.Tag;
 
 namespace Avs.StaticSiteHosting.Web.Services
@@ -16,9 +15,9 @@ namespace Avs.StaticSiteHosting.Web.Services
     public class SiteService : ISiteService
     {
         private readonly IMongoCollection<Site> _sites;
-        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IMessagePublisher _publishEndpoint;
 
-        public SiteService(MongoEntityRepository entityRepository, IPublishEndpoint publishEndpoint)
+        public SiteService(MongoEntityRepository entityRepository, IMessagePublisher publishEndpoint)
         {
             _sites = entityRepository.GetEntityCollection<Site>(GeneralConstants.SITES_COLLECTION);
             _publishEndpoint = publishEndpoint;
@@ -180,7 +179,7 @@ namespace Avs.StaticSiteHosting.Web.Services
         {
             site.IsActive = !site.IsActive;
             await UpdateSiteAsync(site);
-            await _publishEndpoint.Publish(new ContentUpdatedEvent { SiteId = site.Id });
+            await _publishEndpoint.PublishAsync(new ContentUpdatedEvent { SiteId = site.Id });
 
             return site.IsActive;
         }

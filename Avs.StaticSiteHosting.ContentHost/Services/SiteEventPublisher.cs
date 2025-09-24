@@ -1,5 +1,6 @@
-﻿using MassTransit;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
+using Avs.Messaging.Contracts;
+using Avs.Messaging.Core;
 
 namespace Avs.StaticSiteHosting.ContentHost.Services;
 
@@ -34,14 +35,14 @@ public class SiteEventPublisher(IServiceProvider serviceProvider) : ISiteEventPu
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
-    {        
+    {
         return Task.CompletedTask;
     }
 
     private async Task RunAsync(CancellationToken cancellationToken)
     {
         using var scope = serviceProvider.CreateScope();
-        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+        var publishEndpoint = scope.ServiceProvider.GetRequiredService<IMessagePublisher>();
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -52,8 +53,8 @@ public class SiteEventPublisher(IServiceProvider serviceProvider) : ISiteEventPu
                 {
                     continue;
                 }
-
-                await publishEndpoint.Publish(message, cancellationToken);
+                
+                await publishEndpoint.PublishAsync(message, message.GetType(), cancellationToken: cancellationToken);
             }
             catch (Exception)
             {

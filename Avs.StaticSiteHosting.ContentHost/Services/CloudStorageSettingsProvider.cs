@@ -1,6 +1,7 @@
-﻿using Avs.StaticSiteHosting.Shared.Common;
+﻿using Avs.Messaging.Contracts;
+using Avs.Messaging.RabbitMq;
+using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Shared.Contracts;
-using MassTransit;
 
 namespace Avs.StaticSiteHosting.ContentHost.Services
 {
@@ -14,10 +15,12 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         public async Task<CloudStorageSettings?> GetCloudStorageSettingsAsync()
         {
             using var scope = serviceProvider.CreateScope();
-            var requestClient = scope.ServiceProvider.GetRequiredService<IRequestClient<CloudSettingsRequest>>();
-            var settingsResponse = await requestClient.GetResponse<CloudSettingsResponse>(new CloudSettingsRequest());
+            var requestClient = scope.ServiceProvider.GetRequiredKeyedService<IRpcClient>(RabbitMqOptions.TransportName); //<IRequestClient<CloudSettingsRequest>>();
+            var settingsResponse =
+                await requestClient.RequestAsync<CloudSettingsRequest, CloudSettingsResponse>(
+                    new CloudSettingsRequest());
             
-            return settingsResponse.Message.StorageSettings;
+            return settingsResponse.StorageSettings;
         }
     }
 }
