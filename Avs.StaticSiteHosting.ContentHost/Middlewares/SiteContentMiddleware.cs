@@ -12,7 +12,6 @@ public class SiteContentMiddleware(
     ContentCacheService cacheService,
     ISiteContentProvider siteContentProvider,
     ISiteEventPublisher siteEventPublisher,
-    IMessagePublisher messagePublisher,
     IErrorPageHandler errorPageHandler,
     ILogger<SiteContentMiddleware> logger) : IMiddleware
 {
