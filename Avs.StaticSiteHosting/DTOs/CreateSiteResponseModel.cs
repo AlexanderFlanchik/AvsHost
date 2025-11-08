@@ -44,6 +44,11 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         /// Site landing page
         /// </summary>
         public string LandingPage { get; set; }
+        
+        /// <summary>
+        /// Site database (MongoDb)
+        /// </summary>
+        public string DatabaseName { get; set; }
 
         /// <summary>
         /// Gets or sets a collection with site tag Ids

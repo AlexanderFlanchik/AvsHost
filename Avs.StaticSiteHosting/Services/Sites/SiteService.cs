@@ -89,6 +89,7 @@ namespace Avs.StaticSiteHosting.Web.Services
                     Description = s.Description,
                     LandingPage = s.LandingPage,
                     LaunchedOn = s.LaunchedOn,
+                    DatabaseName = s.DatabaseName,
                     Owner = new UserModel { Id = s.CreatedBy.Id, UserName = s.CreatedBy.Name },
                     IsActive = s.IsActive,
                     Tags = s.Tags?.Select(t => new TagModel(t.Id, t.Name, t.BackgroundColor, t.TextColor)).ToArray()
@@ -170,6 +171,7 @@ namespace Avs.StaticSiteHosting.Web.Services
                                       .Set(s => s.IsActive, siteToUpdate.IsActive)
                                       .Set(s => s.Mappings, siteToUpdate.Mappings)
                                       .Set(s => s.LandingPage, siteToUpdate.LandingPage)
+                                      .Set(s => s.DatabaseName, siteToUpdate.DatabaseName)
                                       .Set(s => s.TagIds, siteToUpdate.TagIds);
             
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);

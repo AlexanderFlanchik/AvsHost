@@ -30,6 +30,7 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
                 LaunchedOn = siteInfo.LaunchedOn,
                 LastStopped = siteInfo.LastStopped,
                 LandingPage = siteInfo.LandingPage,
+                DatabaseName = siteInfo.DatabaseName,
                 Mappings = siteInfo.Mappings,
                 User = new UserDetails
                 {

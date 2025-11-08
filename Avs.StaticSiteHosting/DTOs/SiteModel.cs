@@ -11,6 +11,7 @@ public class SiteModel
     public UserModel Owner { get; set; }
     public bool IsActive { get; set; }
     public string LandingPage { get; set; }
+    public string DatabaseName { get; set; }
     public TagModel[] Tags { get; set; }
 }
 

@@ -15,6 +15,7 @@ import UploadSiteContent from './UploadSiteContent.vue';
 import UploadedContentList from './UploadedContentList.vue';
 import { PageContext, PageContextProvider } from '../page-editor/PageContext';
 import { NewCreatedContentHolder } from '../../services/NewCreatedContentHolder';
+import DatabaseNameInput from './DatabaseNameInput.vue';
 
 interface CreateOrUpdateSiteModel {
     title: string;
@@ -23,6 +24,7 @@ interface CreateOrUpdateSiteModel {
     description: string;
     isActive: boolean;
     landingPage: string;
+    databaseName: string | null;
     processError: string;
     tagIds: Array<string>;
     resourceMappings: Array<ResourceMapping>
@@ -45,6 +47,7 @@ const model = reactive<CreateOrUpdateSiteModel>({
     description: '',
     isActive: true,
     landingPage: '',
+    databaseName: null,
     processError: '',
     tagIds: [],
     resourceMappings: [],
@@ -120,6 +123,7 @@ onMounted(async () => {
         model.description = cachedSite.description;
         model.isActive = cachedSite.isActive;
         model.landingPage = cachedSite.landingPage;
+        model.databaseName = cachedSite.databaseName;
         model.tagIds = cachedSite.tagIds;
         model.resourceMappings = cachedSite.resourceMappings;
         model.uploadSessionId = cachedSite.uploadSessionId;
@@ -154,6 +158,7 @@ onMounted(async () => {
                 model.description = data.description;
                 model.isActive = data.isActive;
                 model.landingPage = data.landingPage;
+                model.databaseName = data.databaseName;
                 model.tagIds = data.tagIds;
                 model.uploaded = mapUploaded(data.uploaded);
                 model.resourceMappings = [];
@@ -235,6 +240,7 @@ const createOrUpdateSite = async () => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         tagIds: model.tagIds,
         resourceMappings: getResourceMappings()
     };
@@ -321,6 +327,7 @@ const newHtmlPage = async () => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         resourceMappings: model.resourceMappings,
         tagIds: model.tagIds,
         uploadedFiles: model.uploaded
@@ -344,6 +351,7 @@ const openPageEditor = async (file: ContentFile) => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         tagIds: model.tagIds,
         resourceMappings: model.resourceMappings,
         uploadedFiles: model.uploaded
@@ -446,6 +454,15 @@ const applyValidationErrorClass = computed(() => {
                     <td class="vertical-tex-align">Landing page:</td>
                     <td>
                         <input type="text" class="landing-page-input" v-model="model.landingPage" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="vertical-tex-align">Database:</td>
+                    <td>
+                        <DatabaseNameInput 
+                            :databaseName="model.databaseName" 
+                            :siteId="model.siteId"
+                            @update:databaseName="(newDbName: string | null) => model.databaseName = newDbName"/>
                     </td>
                 </tr>
                 <tr>

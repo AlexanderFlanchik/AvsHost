@@ -7,15 +7,15 @@
     cancelLabel?: string;
     ok?: () => any;
     onClose?: () => void;
-    width?: string;
-    height?: string;
+    dialogWidth?: string;
+    dialogHeight?: string;
  } 
  
  const props = defineProps<ModalDialogProps>();
- const model = reactive<{ isOpen: boolean, width: string, height: string }>({
+ const model = reactive<{ isOpen: boolean, dialogWidth: string, dialogHeight: string }>({
     isOpen: false,
-    width: "450px",
-    height: "auto"
+    dialogWidth: "450px",
+    dialogHeight: "auto"
  });
 
  const close = () => {
@@ -36,12 +36,12 @@
 };
 
 onMounted(() => {
-   if (props.width) {
-     model.width = props.width;
+   if (props.dialogWidth) {
+     model.dialogWidth = props.dialogWidth;
    }
 
-   if (props.height) {
-    model.height = props.height;
+   if (props.dialogHeight) {
+    model.dialogHeight = props.dialogHeight;
    }
 });
 
@@ -50,7 +50,7 @@ onMounted(() => {
 </script>
 <template>
     <div v-if="model.isOpen" class="modal-dialog-wrapper">
-        <div class="modal-dialog-container" ref="dialogContainerRef" :style="{ width: model.width, height: model.height }">
+        <div class="modal-dialog-container" ref="dialogContainerRef" :style="{ width: model.dialogWidth, height: model.dialogHeight }">
             <div class="modal-dialog-header">
                 {{ props.title }}
             </div>

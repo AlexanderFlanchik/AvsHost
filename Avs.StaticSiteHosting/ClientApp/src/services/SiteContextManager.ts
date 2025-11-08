@@ -5,6 +5,7 @@ export interface SiteContext {
     siteName: string;
     description: string;
     landingPage: string;
+    databaseName: string | null;
     isActive: boolean;
     resourceMappings: Array<ResourceMapping>;
     uploadSessionId: string;

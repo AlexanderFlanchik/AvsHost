@@ -28,6 +28,11 @@
         public DateTime? LaunchedOn { get; set; }
         
         /// <summary>
+        /// Site database
+        /// </summary>
+        public string? DatabaseName { get; set; }
+        
+        /// <summary>
         /// Date of the latest site stopping
         /// </summary>
         public DateTime? LastStopped { get; set; }

@@ -17,6 +17,7 @@ namespace Avs.StaticSiteHosting.Web.Models
         public string LandingPage { get; set; }
         public EntityRef[] TagIds { get; set; }
         public Tag[] Tags { get; set; }
+        public string DatabaseName { get; set; }
 
         #region Navigation properties
         

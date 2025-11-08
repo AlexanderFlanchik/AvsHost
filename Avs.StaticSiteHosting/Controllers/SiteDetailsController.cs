@@ -53,7 +53,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     ResourceMappings = site.Mappings,
                     LandingPage = site.LandingPage,
                     Uploaded = uploadedFiles.ToList(),
-                    TagIds = site.TagIds?.Select(x => x.Id).ToArray()
+                    TagIds = site.TagIds?.Select(x => x.Id).ToArray(),
+                    DatabaseName = site.DatabaseName,
                 };
 
             return siteDetailsResponse;

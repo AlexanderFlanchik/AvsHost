@@ -18,7 +18,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
         private readonly IUserService _userService;
         private readonly IContentManager _contentManager;
         private readonly IEventLogsService _eventLogsService;
-        private IMessagePublisher _publishEndpoint;
+        private readonly IMessagePublisher _publishEndpoint;
 
         public SiteManagementService(
             ISiteService siteService,
@@ -57,6 +57,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
                 LaunchedOn = DateTime.UtcNow,
                 Mappings = siteDetails.ResourceMappings,
                 LandingPage = siteDetails.LandingPage,
+                DatabaseName = siteDetails.DatabaseName,
                 TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray()
             };
 
@@ -74,6 +75,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
                 LaunchedOn = DateTime.UtcNow,
                 Mappings = siteDetails.ResourceMappings,
                 LandingPage = siteDetails?.LandingPage,
+                DatabaseName = siteDetails?.DatabaseName,
                 TagIds = siteDetails.TagIds,
                 Uploaded = contentItems
             };
@@ -107,6 +109,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
             siteToUpdate.Description = siteDetails.Description;
             siteToUpdate.Mappings = siteDetails.ResourceMappings;
             siteToUpdate.LandingPage = siteDetails.LandingPage;
+            siteToUpdate.DatabaseName = siteDetails.DatabaseName;
             siteToUpdate.TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray();
 
             bool siteStateChanged = siteToUpdate.IsActive != siteDetails.IsActive;
