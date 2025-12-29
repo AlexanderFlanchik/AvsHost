@@ -6,16 +6,20 @@ import EditContentDialog from './EditContentDialog.vue';
 import ViewContentDialog from './ViewContentDialog.vue';
 import { formatDate } from '../../common/DateFormatter';
 import { NewCreatedContentHolder } from '../../services/NewCreatedContentHolder';
+import UploadContentDialog from './UploadContentDialog.vue';
 
 interface UploadedContentListProps {
     uploaded: Array<ContentFile>;
     uploadSessionId: string;
     openPageEditor?: (file: ContentFile) => Promise<void>;
+    onNewSessionHanlder: (newSessionId: string) => void;
+    onUploaded: (files: ContentFile[]) => void;
 }
 
 const authService = inject(AUTH_SERVICE)!;
 const apiClient = inject(API_CLIENT)!;
 
+const uploadContentDialogRef = ref<typeof UploadContentDialog | null>(null);
 const editContentDialogRef = ref<typeof EditContentDialog | null>(null);
 const viewContentDialogRef = ref<typeof ViewContentDialog | null>(null);
 
@@ -90,8 +94,17 @@ const view = (file: ContentFile) =>
 </script>
 <template>
     <div>
+        <UploadContentDialog ref="uploadContentDialogRef"
+            :upload-session-id="props.uploadSessionId"
+            :uploaded="props.uploaded"
+            v-on:new-session-hanlder="props.onNewSessionHanlder"
+            v-on:close="props.onUploaded">           
+        </UploadContentDialog>
         <ViewContentDialog ref="viewContentDialogRef" />    
-        <EditContentDialog ref="editContentDialogRef" /> 
+        <EditContentDialog ref="editContentDialogRef" />
+        <div class="upload-file-link-container">
+            <a href="javascript:void(0)" @click="() => uploadContentDialogRef?.open()">Upload New Content..</a>
+        </div> 
         <div v-if="props.uploaded?.length > 0">
             <table class="table table-hover uploaded-files-table">
                 <thead>
@@ -147,5 +160,9 @@ const view = (file: ContentFile) =>
         max-width: 550px;
         font-weight: bold;
         text-align: center;
+    }
+    .upload-file-link-container {
+        width: 100%;
+        text-align: right;
     }
 </style>

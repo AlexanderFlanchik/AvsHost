@@ -9,12 +9,14 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Avs.Messaging.Contracts;
+using System.Collections.Generic;
 
 namespace Avs.StaticSiteHosting.Web.Services.Sites
 {
     public class SiteManagementService : ISiteManagementService
     {
         private readonly ISiteService _siteService;
+        private readonly ICustomRouteHandlerService _customRouteHandlerService;
         private readonly IUserService _userService;
         private readonly IContentManager _contentManager;
         private readonly IEventLogsService _eventLogsService;
@@ -25,13 +27,15 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
             IUserService userService,
             IContentManager contentManager,
             IEventLogsService eventLogsService,
-            IMessagePublisher publishEndpoint)
+            IMessagePublisher publishEndpoint,
+            ICustomRouteHandlerService customRouteHandlerService)
         {
             _siteService = siteService;
             _userService = userService;
             _contentManager = contentManager;
             _eventLogsService = eventLogsService;
             _publishEndpoint = publishEndpoint;
+            _customRouteHandlerService = customRouteHandlerService;
         }
 
         public async Task<(CreateSiteResponseModel, Exception)> CreateSiteAndProcessContentAsync(SiteDetailsModel siteDetails, string userId)
@@ -58,12 +62,30 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
                 Mappings = siteDetails.ResourceMappings,
                 LandingPage = siteDetails.LandingPage,
                 DatabaseName = siteDetails.DatabaseName,
-                TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray()
+                TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray(),
+                CustomHandlerIds = siteDetails.CustomRouteHandlers?.Select(h => new EntityRef { Id = h.Id }).ToList() ?? [],
             };
 
             var newSite = await _siteService.CreateSiteAsync(siteData);
             var contentItems = (await _contentManager.ProcessSiteContentAsync(newSite, siteDetails.UploadSessionId))
                 .ToArray();
+                        
+            var customRouteHandlers = new List<CustomRouteHandlerModel>();
+            if (siteDetails.CustomRouteHandlers!.Count > 0)
+            {
+                foreach(var newHandler in siteDetails.CustomRouteHandlers)
+                {
+                    var newHandlerId = await _customRouteHandlerService.CreateCustomRouteHandlerAsync(new CreateCustomRouteHandlerRequest(
+                        newSite.Id,
+                        newHandler.Name,
+                        newHandler.Method,
+                        newHandler.Path,
+                        newHandler.Body));
+                    customRouteHandlers.Add(newHandler with { Id = newHandlerId });
+                }
+
+                await _siteService.UpdateHandlerReferencesAsync(newSite.Id, customRouteHandlers.Select(h => h.Id));
+            }
 
             var newSiteResponse = new CreateSiteResponseModel()
             {
@@ -77,7 +99,8 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
                 LandingPage = siteDetails?.LandingPage,
                 DatabaseName = siteDetails?.DatabaseName,
                 TagIds = siteDetails.TagIds,
-                Uploaded = contentItems
+                Uploaded = contentItems,
+                CustomRouteHandlers = customRouteHandlers
             };
 
             await _eventLogsService.InsertSiteEventAsync(newSiteResponse.SiteId, "Site Created", SiteEventType.Information,
@@ -112,6 +135,42 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
             siteToUpdate.DatabaseName = siteDetails.DatabaseName;
             siteToUpdate.TagIds = siteDetails.TagIds?.Select(id => new EntityRef { Id = id }).ToArray();
 
+            var customRouteHandlers = new List<CustomRouteHandlerModel>();
+            if (siteDetails.CustomRouteHandlers.Count > 0)
+            {                
+                var newHandlers = siteDetails.CustomRouteHandlers.Where(h => string.IsNullOrEmpty(h.Id)).ToList();
+                
+                foreach (var newHandler in newHandlers)
+                {
+                    var handlerId = await _customRouteHandlerService.CreateCustomRouteHandlerAsync(new CreateCustomRouteHandlerRequest(
+                        siteToUpdate.Id,
+                        newHandler.Name,
+                        newHandler.Method,
+                        newHandler.Path,
+                        newHandler.Body));
+                    customRouteHandlers.Add(newHandler with { Id = handlerId });
+                }
+
+                var existingHandlers = siteDetails.CustomRouteHandlers.Where(h => !string.IsNullOrEmpty(h.Id)).ToList();
+                foreach (var existingHandler in existingHandlers)
+                {
+                    await _customRouteHandlerService.UpdateCustomRouteHandlerAsync(existingHandler);
+                    customRouteHandlers.Add(existingHandler);
+                }
+
+                var handlersToDelete = siteToUpdate.CustomRouteHandlers
+                    .Where(h => !siteDetails.CustomRouteHandlers.Any(sh => sh.Id == h.Id))
+                    .ToList();
+
+                await _customRouteHandlerService.DeleteCustomRouteHandlersAsync(handlersToDelete.Select(h => h.Id));
+                siteToUpdate.CustomHandlerIds = customRouteHandlers.Select(h => new EntityRef { Id = h.Id }).ToList();
+            }
+            else
+            {
+                // If no handlers provided, remove all existing handlers for the site
+                await _customRouteHandlerService.DeleteCustomRouteHandlersAsync(siteToUpdate.CustomRouteHandlers.Select(h => h.Id));
+            }
+
             bool siteStateChanged = siteToUpdate.IsActive != siteDetails.IsActive;
             if (siteStateChanged)
             {
@@ -138,7 +197,7 @@ namespace Avs.StaticSiteHosting.Web.Services.Sites
 
             await _publishEndpoint.PublishAsync(new ContentUpdatedEvent { SiteId = siteId });
 
-            return (new UpdateSiteResponseModel { Uploaded = siteFileList.ToArray() }, null);
+            return (new UpdateSiteResponseModel { Uploaded = siteFileList.ToArray(), CustomRouteHandlers = customRouteHandlers }, null);
         }
     }
 }

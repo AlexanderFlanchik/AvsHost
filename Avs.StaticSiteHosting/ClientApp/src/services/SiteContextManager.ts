@@ -1,4 +1,5 @@
 import { ContentFile } from "../common/ContentFile";
+import { CustomRouteHandler } from "../components/site-management/CustomRouteHandler";
 
 export interface SiteContext {
     siteId: string;
@@ -10,6 +11,7 @@ export interface SiteContext {
     resourceMappings: Array<ResourceMapping>;
     uploadSessionId: string;
     uploadedFiles: Array<ContentFile>;
+    customRouteHandlers: Array<CustomRouteHandler>;
     tagIds: Array<string>
 }
 

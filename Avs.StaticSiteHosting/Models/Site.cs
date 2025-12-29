@@ -19,10 +19,13 @@ namespace Avs.StaticSiteHosting.Web.Models
         public Tag[] Tags { get; set; }
         public string DatabaseName { get; set; }
 
+        public List<EntityRef> CustomHandlerIds { get; set; } = [];
+
         #region Navigation properties
         
         public IList<ContentItem> ContentItems { get; set; }
         public IList<ViewedSiteInfo> Visits { get; set; }
+        public IList<CustomRouteHandler> CustomRouteHandlers { get; set; }
 
         #endregion
     }

@@ -17,6 +17,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
         {
             services.AddSingleton<ISiteContentProvider, SiteContentProvider>();
             services.AddSingleton<ISiteContentRequester, SiteContentRequester>();
+            services.AddSingleton<SiteMiddleware>();
             services.AddSingleton<SiteContentMiddleware>();
             services.AddSingleton<ISiteEventPublisher, SiteEventPublisher>();
             services.AddSingleton<ISiteContentHandler, SiteContentHandler>();

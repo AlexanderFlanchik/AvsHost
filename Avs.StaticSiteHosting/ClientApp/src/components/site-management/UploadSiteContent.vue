@@ -40,7 +40,12 @@ const clear = () => {
     uploadInputRef.value!.value = "";
 };
 
-const uploadFile = async () => {
+const uploadFile = async (): Promise<boolean> => {
+    if (!fileRef.value) {
+        model.errorMessage = 'No file selected to upload.';
+        return false;
+    }
+
     const file = fileRef.value!;
     
     if (!model.sessionId) {
@@ -93,6 +98,7 @@ const uploadFile = async () => {
     }
 
     model.readyToUpload = false;
+    return true;
 };
 
 onMounted(() => {
@@ -100,6 +106,7 @@ onMounted(() => {
 });
 
 const onFileChanged = ($event: Event) => {
+    model.errorMessage = '';
     const target = $event.target as HTMLInputElement;
     if (target && target.files) {
         const file = target.files[0];
@@ -108,10 +115,12 @@ const onFileChanged = ($event: Event) => {
     }
 };
 
+defineExpose({ uploadFile });
+
 </script>
 <template>
     <div class="upload-form">
-        <span class="form-title">Upload files</span>
+        <span>Please select a file to upload:</span>
         <div class="mrg-tp-10x">
             <input type="file" class="file-input" @change="onFileChanged($event)" ref="uploadInputRef" />
         </div>
@@ -126,10 +135,7 @@ const onFileChanged = ($event: Event) => {
         <div class="upload-bottom-bar">
             <div class="upload-bottom-bar-left">
                 <input v-model="model.destinationPath" :disabled="!model.useDestinationPath" />
-            </div>
-            <div class="upload-bottom-bar-right">
-                <button class="btn btn-primary" @click="uploadFile" :disabled="!model.readyToUpload">Upload..</button>
-            </div>
+            </div>           
         </div>
         <div v-if="model.errorMessage" class="upload-error-holder">
             {{model.errorMessage}}
@@ -140,6 +146,7 @@ const onFileChanged = ($event: Event) => {
     .upload-form {
         padding-top: 2px;
         max-width: 550px;
+        height: 180px;
     }
     .file-input {
         background-color: #e6e6fa;
@@ -158,7 +165,7 @@ const onFileChanged = ($event: Event) => {
         width: 100%;
     }
     .upload-bottom-bar-left {
-        width: calc(100% - 90px);
+        width: calc(100% - 8px);
         min-width: 150px;
         float: left;
     }

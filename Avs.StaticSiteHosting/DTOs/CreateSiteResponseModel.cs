@@ -59,6 +59,11 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         /// Gets or sets a collection with site uploaded files
         /// </summary>
         public ContentItemModel[] Uploaded { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection with custom route handlers
+        /// </summary>
+        public List<CustomRouteHandlerModel> CustomRouteHandlers { get; set; } = new();
     }
 
     public record ContentFileModel(

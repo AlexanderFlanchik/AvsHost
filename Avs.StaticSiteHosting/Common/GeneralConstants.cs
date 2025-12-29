@@ -19,6 +19,7 @@
         public const string APP_SETTINGS_COLLECTION = "AppSettings";
         public const string TAGS_COLLECTION = "Tags";
         public const string CONTENT_UPLOADS_COLLECTION = "ContentUploads";
+        public const string CUSTOM_ROUTE_HANDLER_COLLECTION = "CustomRouteHandlers";
 
         #endregion
 

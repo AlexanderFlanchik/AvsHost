@@ -8,6 +8,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
         public static IEndpointConventionBuilder MapSiteContent(this IEndpointRouteBuilder endpoints, string pattern) 
         {
             var applicationBuilder = endpoints.CreateApplicationBuilder()
+                .UseMiddleware<SiteMiddleware>()
                 .UseMiddleware<SiteContentMiddleware>()
                 .Build();
 

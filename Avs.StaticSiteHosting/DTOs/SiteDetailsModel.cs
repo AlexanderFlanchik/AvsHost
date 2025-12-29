@@ -14,6 +14,7 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         public string LandingPage { get; set; }
         public string[] TagIds { get; set; }
         public string DatabaseName { get; set; }
+        public List<CustomRouteHandlerModel> CustomRouteHandlers { get; set; } = [];
     }
 
     public class SiteDetailsResponse : SiteDetailsModel
