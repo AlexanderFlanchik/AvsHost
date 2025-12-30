@@ -13,7 +13,6 @@ public class SiteContentMiddleware(
     IErrorPageHandler errorPageHandler,
     ILogger<SiteContentMiddleware> logger) : IMiddleware
 {
-    private const string CONTENT_TYPE_DEFAULT = "application/octet-stream";
     private const string LOCAL_IP = "::1";
 
     public async Task InvokeAsync(HttpContext context, RequestDelegate next)
@@ -29,30 +28,50 @@ public class SiteContentMiddleware(
 
         if (handleResult.StatusCode != (int)HttpStatusCode.OK)
         {
-            logger.LogError(handleResult.ErrorMessage);
-            context.Response.StatusCode = handleResult.StatusCode;
-            if (!string.IsNullOrEmpty(handleResult.SiteId) && !string.IsNullOrEmpty(handleResult.OwnerId))
-            {
-                siteEventPublisher.PublishEvent(handleResult.ToSiteError());
-            }
-
-            await errorPageHandler.Handle(context, handleResult.ErrorMessage!);
+            await HandleContentErrorAsync(handleResult, context);
 
             return;
         }
 
         var contentStream = handleResult.Content is not null ? handleResult.Content.CreateReadStream() : handleResult.ContentStream!;
 
-        await WriteStreamAsync(contentStream, context.Response, handleResult.ContentType);
+        await StreamWriterHelper.WriteStreamAsync(contentStream, context.Response, handleResult.ContentType);
+        await HandleContentCachingAsync(siteItem, handleResult, contentStream);
+        CheckSiteVisited(siteItem, context);
+    }
+
+    private async Task HandleContentErrorAsync(HandleContentResult handleResult, HttpContext context)
+    {
+        logger.LogError("Request failed: {errorMessage}", handleResult.ErrorMessage);
+        context.Response.StatusCode = handleResult.StatusCode;
+            
+        if (!string.IsNullOrEmpty(handleResult.SiteId) && !string.IsNullOrEmpty(handleResult.OwnerId))
+        {
+            siteEventPublisher.PublishEvent(handleResult.ToSiteError());
+        }
+
+        await errorPageHandler.Handle(context, handleResult.ErrorMessage!);
+    }
+    
+    private async Task HandleContentCachingAsync(SiteInfoItem siteItem, HandleContentResult handleResult,
+        Stream contentStream)
+    {
         if (handleResult.CacheDuration.HasValue)
         {
-            cacheService.AddContentToCache(siteItem.ContentCacheKey!, handleResult.ContentType!, contentStream, handleResult.CacheDuration.Value); 
+            cacheService.AddContentToCache(
+                siteItem.ContentCacheKey!,
+                handleResult.ContentType!,
+                contentStream,
+                handleResult.CacheDuration.Value); 
         }
         else
         {
             await contentStream.DisposeAsync();
         }
-
+    }
+    
+    private void CheckSiteVisited(SiteInfoItem siteItem, HttpContext context)
+    {
         if (!siteItem.SiteContentInfo!.IsSiteVisited(siteItem.SitePath!))
         {
             return;
@@ -60,15 +79,5 @@ public class SiteContentMiddleware(
 
         var visitor = context.Connection.RemoteIpAddress?.ToString() ?? LOCAL_IP;
         siteEventPublisher.PublishEvent(new SiteVisited(siteItem.SiteContentInfo!.Id, visitor, siteItem.SiteContentInfo.User.Id));
-    }
-    
-    private async Task WriteStreamAsync(Stream stream, HttpResponse response, string? contentType)
-    {
-        response.StatusCode = (int)HttpStatusCode.OK;
-        response.ContentType = contentType ?? CONTENT_TYPE_DEFAULT;
-        await stream.CopyToAsync(response.Body);
-        stream.Position = 0;
-
-        await response.Body.FlushAsync();
     }
 }

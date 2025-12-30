@@ -1,4 +1,3 @@
-using System.Net;
 using Avs.StaticSiteHosting.ContentHost.Common;
 using Avs.StaticSiteHosting.ContentHost.Services;
 using Avs.StaticSiteHosting.Shared.Contracts;
@@ -7,7 +6,6 @@ namespace Avs.StaticSiteHosting.ContentHost.Middlewares;
 
 public class SiteMiddleware(ContentCacheService cacheService, ISiteContentProvider siteContentProvider) : IMiddleware
 {
-    private const string CONTENT_TYPE_DEFAULT = "application/octet-stream";
     private const string SITE_NAME = "sitename";
     private const string SITE_PATH = "sitepath";
     
@@ -59,15 +57,10 @@ public class SiteMiddleware(ContentCacheService cacheService, ISiteContentProvid
         {
             return false;
         }
-
+        
         using var ms = new MemoryStream(cachedContent.Content);
-        response.StatusCode = (int)HttpStatusCode.OK;
-        response.ContentType = cachedContent.ContentType ?? CONTENT_TYPE_DEFAULT;
-        await ms.CopyToAsync(response.Body);
-        ms.Position = 0;
-
-        await response.Body.FlushAsync();
-
+        await StreamWriterHelper.WriteStreamAsync(ms, response, cachedContent.ContentType);
+        
         return true;
     }
 }

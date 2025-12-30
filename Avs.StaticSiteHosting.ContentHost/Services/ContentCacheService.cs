@@ -28,12 +28,9 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
         /// <returns>A task which returns a content if it exists in cache or null otherwise.</returns>
         public ValueTask<ContentCacheEntry?> GetContentCacheAsync(string cacheKey)
         {
-            if (memoryCache.TryGetValue(cacheKey, out ContentCacheEntry? entry))
-            {
-                return ValueTask.FromResult(entry);
-            }
-
-            return ValueTask.FromResult<ContentCacheEntry?>(null);
+            return memoryCache.TryGetValue(cacheKey, out ContentCacheEntry? entry) ? 
+                ValueTask.FromResult(entry) :
+                ValueTask.FromResult<ContentCacheEntry?>(null);
         }
 
         public void RemoveCacheEntry(string cacheKey)
@@ -48,10 +45,10 @@ namespace Avs.StaticSiteHosting.ContentHost.Services
                 try
                 {
                     var contentCache = await _channel.Reader.ReadAsync(stoppingToken);
-                    using (contentCache.ContentStream)
+                    await using (contentCache.ContentStream)
                     {
                         using var ms = new MemoryStream();
-                        await contentCache.ContentStream.CopyToAsync(ms);
+                        await contentCache.ContentStream.CopyToAsync(ms, stoppingToken);
                         var content = ms.ToArray();
 
                         var cacheEntry = new ContentCacheEntry(content, contentCache.ContentType);
