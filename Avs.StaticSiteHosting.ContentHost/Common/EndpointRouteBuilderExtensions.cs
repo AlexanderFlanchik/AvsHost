@@ -9,6 +9,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
         {
             var applicationBuilder = endpoints.CreateApplicationBuilder()
                 .UseMiddleware<SiteMiddleware>()
+                .UseMiddleware<CustomRouteMiddleware>()
                 .UseMiddleware<SiteContentMiddleware>()
                 .Build();
 

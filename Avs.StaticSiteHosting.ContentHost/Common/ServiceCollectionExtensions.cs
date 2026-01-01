@@ -18,6 +18,7 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
             services.AddSingleton<ISiteContentProvider, SiteContentProvider>();
             services.AddSingleton<ISiteContentRequester, SiteContentRequester>();
             services.AddSingleton<SiteMiddleware>();
+            services.AddSingleton<CustomRouteMiddleware>();
             services.AddSingleton<SiteContentMiddleware>();
             services.AddSingleton<ISiteEventPublisher, SiteEventPublisher>();
             services.AddSingleton<ISiteContentHandler, SiteContentHandler>();
@@ -25,6 +26,11 @@ namespace Avs.StaticSiteHosting.ContentHost.Common
             services.AddSingleton<IErrorPageHandler, ErrorPageHandler>();
             services.AddSingleton<ContentCacheService>();
             services.AddHostedService(sp => sp.GetRequiredService<ContentCacheService>());
+            services.AddHttpClient<CustomRouteHandlerApiClient>((_, client) =>
+            {
+                client.BaseAddress = new Uri(configuration.GetValue<string>("CustomRouteHandlerApiUrl")!);
+            });
+            
             return services;
         }
 
