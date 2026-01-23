@@ -1,0 +1,16 @@
+{
+  "name": "avs.staticsitehosting.customrouteapi",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "mongodb": "^7.0.0"
+  }
+}
