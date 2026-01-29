@@ -17,6 +17,7 @@ await handlerProvider.loadHandlers();
 
 const server = Bun.serve({
     port: servicePort,
+    hostname: "0.0.0.0",
     routes: {
         "/health": {
             GET: async (_) => Response.json({ status: "healthy" })
