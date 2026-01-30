@@ -24,11 +24,13 @@ class CustomRouteHandlerProvider {
         const collection = db.collection("CustomRouteHandlers");
         const docs = await collection.find().toArray();
         
-        docs.forEach(doc => {
-            if (doc._id && doc.body) {
-                this.handlers.set(doc._id.toString(), doc.body);
+        docs.forEach(doc => {            
+            if (doc._id && doc.Body) {
+                this.handlers.set(doc._id.toString(), doc.Body);
             }
         });
+
+        console.log(`Found ${this.handlers.size} custom route handler(s).`);
     }
 }
 
