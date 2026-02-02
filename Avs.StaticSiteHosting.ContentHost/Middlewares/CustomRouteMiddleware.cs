@@ -43,7 +43,9 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
                 await PrepareRequest(routeMethod, siteItem.SiteContentInfo.DatabaseName, routeMatched, context);
             using var routeResponse = await apiClient.SendAsync(request);
             context.Response.StatusCode = (int)routeResponse.StatusCode;
-
+            
+            SetResponseHeaders(routeResponse, context.Response);
+            
             await routeResponse.Content.CopyToAsync(context.Response.Body);
             await context.Response.Body.FlushAsync();
         }
@@ -106,6 +108,17 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
             }
             
             return dictionary.Count > 0 ? dictionary : null;
+        }
+    }
+
+    private void SetResponseHeaders(HttpResponseMessage apiResponse, HttpResponse response)
+    {
+        var headers = apiResponse.Headers.ToList();
+        headers.AddRange(apiResponse.Content.Headers);
+        
+        foreach (var contentHeader in headers)
+        {
+            response.Headers[contentHeader.Key] = string.Join(",", contentHeader.Value!);    
         }
     }
 }
