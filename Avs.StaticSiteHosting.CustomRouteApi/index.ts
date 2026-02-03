@@ -50,11 +50,13 @@ const server = Bun.serve({
                     return headers;
                 };
 
-                if (response.content) {                    
-                    return new Response(response.content, {
-                        status: response.status,
-                        headers: getResponseHeaders()
-                    });
+                if (response.content) {
+                    return new Response(
+                        typeof response.content === "string" ? response.content : JSON.stringify(response.content), {
+                            status: response.status,
+                            headers: getResponseHeaders()
+                        }
+                    );
                 } else if (response.stream) {
                     return new Response(response.stream, {
                         status: response.status,

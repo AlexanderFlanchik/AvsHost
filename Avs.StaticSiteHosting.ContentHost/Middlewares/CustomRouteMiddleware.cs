@@ -36,18 +36,18 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
         }
 
         var apiClient = serviceProvider.GetRequiredService<CustomRouteHandlerApiClient>();
-        
+        var cancellationToken = context.RequestAborted;
         try
         {
             using var request =
                 await PrepareRequest(routeMethod, siteItem.SiteContentInfo.DatabaseName, routeMatched, context);
-            using var routeResponse = await apiClient.SendAsync(request);
+            using var routeResponse = await apiClient.SendAsync(request, cancellationToken);
             context.Response.StatusCode = (int)routeResponse.StatusCode;
             
             SetResponseHeaders(routeResponse, context.Response);
             
-            await routeResponse.Content.CopyToAsync(context.Response.Body);
-            await context.Response.Body.FlushAsync();
+            await routeResponse.Content.CopyToAsync(context.Response.Body, cancellationToken);
+            await context.Response.Body.FlushAsync(cancellationToken);
         }
         catch (Exception ex)
         {
@@ -60,7 +60,7 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
         }
     }
 
-    private async Task<HttpRequestMessage> PrepareRequest(string routeMethod, string? dbName, CustomRouteInfo routeMatched, HttpContext context)
+    private async ValueTask<HttpRequestMessage> PrepareRequest(string routeMethod, string? dbName, CustomRouteInfo routeMatched, HttpContext context)
     {
         var request = new HttpRequestMessage();
         string url = "handle";
@@ -69,7 +69,7 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
         if (routeMethod == HttpMethods.Post || routeMethod == HttpMethods.Put)
         {
             using var streamReader = new StreamReader(context.Request.Body);
-            body = await streamReader.ReadToEndAsync();
+            body = await streamReader.ReadToEndAsync(context.RequestAborted);
         }
 
         request.RequestUri = new Uri(url, UriKind.Relative);
@@ -119,6 +119,12 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
         foreach (var contentHeader in headers)
         {
             response.Headers[contentHeader.Key] = string.Join(",", contentHeader.Value!);    
+        }
+        
+        var contentType = apiResponse.Content.Headers.ContentType?.MediaType ?? "application/json";
+        if (contentType == "text/event-stream")
+        {
+            response.Headers.Remove("Content-Length");
         }
     }
 }
