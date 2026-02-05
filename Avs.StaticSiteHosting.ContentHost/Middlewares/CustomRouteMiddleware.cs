@@ -122,7 +122,7 @@ public class CustomRouteMiddleware(IServiceProvider serviceProvider, ILogger<Cus
         }
         
         var contentType = apiResponse.Content.Headers.ContentType?.MediaType ?? "application/json";
-        if (contentType == "text/event-stream")
+        if (contentType == "text/event-stream" || response.StatusCode == StatusCodes.Status204NoContent)
         {
             response.Headers.Remove("Content-Length");
         }
