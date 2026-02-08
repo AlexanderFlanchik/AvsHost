@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avs.Messaging.Contracts;
+using Avs.StaticSiteHosting.Shared.Contracts;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
 using MongoDB.Driver;
@@ -15,7 +17,7 @@ public interface ICustomRouteHandlerService
     Task DeleteCustomRouteHandlersAsync(IEnumerable<string> handlerIds);
 }
 
-public class CustomRouteHandlerService(MongoEntityRepository repository) : ICustomRouteHandlerService
+public class CustomRouteHandlerService(MongoEntityRepository repository, IMessagePublisher publishEndpoint) : ICustomRouteHandlerService
 {
     private readonly IMongoCollection<CustomRouteHandler> _handlers =
         repository.GetEntityCollection<CustomRouteHandler>(GeneralConstants.CUSTOM_ROUTE_HANDLER_COLLECTION);
@@ -32,6 +34,12 @@ public class CustomRouteHandlerService(MongoEntityRepository repository) : ICust
         };
         
         await _handlers.InsertOneAsync(handlerEntity);
+        await publishEndpoint.PublishAsync(
+            new CustomRouteHandlerChanged()
+            {
+                HandlerId = handlerEntity.Id,
+                HandlerBody = handlerEntity.Body
+            });
 
         return handlerEntity.Id;
     }
@@ -47,6 +55,12 @@ public class CustomRouteHandlerService(MongoEntityRepository repository) : ICust
         var filter = Builders<CustomRouteHandler>.Filter.Eq(h => h.Id, handlerToUpdate.Id);
 
         await _handlers.UpdateOneAsync(filter, update);
+        await publishEndpoint.PublishAsync(
+            new CustomRouteHandlerChanged()
+            {
+                HandlerId = handlerToUpdate.Id,
+                HandlerBody = handlerToUpdate.Body
+            });
     }
     
     public async Task<IEnumerable<CustomRouteHandlerModel>> GetCustomRouteHandlers(string siteId)
@@ -65,7 +79,10 @@ public class CustomRouteHandlerService(MongoEntityRepository repository) : ICust
 
     public async Task DeleteCustomRouteHandlersAsync(IEnumerable<string> handlerIds)
     {
-        var filter = Builders<CustomRouteHandler>.Filter.In(h => h.Id, handlerIds);
+        var idsToDelete = handlerIds.ToArray();
+        var filter = Builders<CustomRouteHandler>.Filter.In(h => h.Id, idsToDelete);
+        
         await _handlers.DeleteManyAsync(filter);
+        await publishEndpoint.PublishAsync(new CustomRouteHandlersDeleted() { HandlerIds = idsToDelete });
     }
 }
