@@ -12,10 +12,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
-    <PackageReference Include="Aspire.Hosting.MongoDB" Version="9.3.1" />
-    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="9.3.1" />
-    <PackageReference Include="KubernetesClient" Version="17.0.14" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.MongoDB" Version="13.1.0" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.1.0" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Bun" Version="13.1.1" />
+    <PackageReference Include="KubernetesClient" Version="18.0.13" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,15 +7,17 @@
     cancelLabel?: string;
     ok?: () => any;
     onClose?: () => void;
-    width?: string;
-    height?: string;
+    dialogWidth?: string;
+    dialogHeight?: string;
+    hideCancelButton?: boolean;
  } 
  
  const props = defineProps<ModalDialogProps>();
- const model = reactive<{ isOpen: boolean, width: string, height: string }>({
+ const model = reactive<{ isOpen: boolean, dialogWidth: string, dialogHeight: string, hideCancelButton: boolean }>({
     isOpen: false,
-    width: "450px",
-    height: "auto"
+    dialogWidth: "450px",
+    dialogHeight: "auto",
+    hideCancelButton: false
  });
 
  const close = () => {
@@ -25,24 +27,19 @@
 
  const open = () => model.isOpen = true;
  const clickOk = () => {
-    if (props.ok) {
-        const result = props.ok();
-        if (result instanceof Boolean) {
-            model.isOpen = <boolean>result;
-        }
-    } else {
-        model.isOpen = false;
-    } 
+    model.isOpen = props.ok ? !props.ok() : false;
 };
 
 onMounted(() => {
-   if (props.width) {
-     model.width = props.width;
+   if (props.dialogWidth) {
+     model.dialogWidth = props.dialogWidth;
    }
 
-   if (props.height) {
-    model.height = props.height;
+   if (props.dialogHeight) {
+    model.dialogHeight = props.dialogHeight;
    }
+
+   model.hideCancelButton = props.hideCancelButton ?? false;
 });
 
  defineExpose({ close, open });
@@ -50,7 +47,7 @@ onMounted(() => {
 </script>
 <template>
     <div v-if="model.isOpen" class="modal-dialog-wrapper">
-        <div class="modal-dialog-container" ref="dialogContainerRef" :style="{ width: model.width, height: model.height }">
+        <div class="modal-dialog-container" ref="dialogContainerRef" :style="{ width: model.dialogWidth, height: model.dialogHeight }">
             <div class="modal-dialog-header">
                 {{ props.title }}
             </div>
@@ -59,7 +56,7 @@ onMounted(() => {
             </div>
             <div class="model-dialog-footer">
                 <button v-if="props.ok" class="btn btn-primary" @click="clickOk">{{ props.okLabel ? props.okLabel : "OK" }}</button> &nbsp;
-                <button class="btn btn-default" @click="close">{{ props.cancelLabel ? props.cancelLabel : "Cancel" }}</button>
+                <button class="btn btn-default" v-if="!model.hideCancelButton" @click="close">{{ props.cancelLabel ? props.cancelLabel : "Cancel" }}</button>
             </div>
         </div>
     </div>

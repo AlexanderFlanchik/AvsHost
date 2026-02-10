@@ -17,7 +17,17 @@ var mongo = builder.AddMongoDB("mongo", 27017, dbUsername, dbPassword)
 
 var mongoDb = mongo.AddDatabase(databaseName);
 var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword,55720)
+    .WithManagementPlugin()
+    .WithEndpoint("management", endpoint => endpoint.Port = 15672)
     .WithLifetime(ContainerLifetime.Persistent);
+
+var customRouteApi = builder
+    .AddBunApp("custom-route-api", "../../avs.staticsitehosting.customrouteapi")
+    .WithEnvironment("MONGODB_CONNECTION_STRING", mongoDb)
+    .WithEnvironment("RABBITMQ_CONNECTION_STRING", rabbitMq)
+    .WithHttpEndpoint(port: 3032, env: "SERVICE_PORT")
+    .WaitFor(mongoDb)
+    .WaitFor(rabbitMq);
 
 builder.AddProject<Projects.Avs_StaticSiteHosting_DataMigrator>("avs-staticsitehosting-datamigrator")
     .WithReference(mongoDb)
@@ -33,6 +43,8 @@ builder.AddProject<Projects.Avs_StaticSiteHosting_ContentHost>("avs-staticsiteho
     .WithReference(rabbitMq)
     .WaitFor(rabbitMq)
     .WithReference(dashboard)
-    .WaitFor(dashboard);
+    .WithEnvironment("CUSTOM_ROUTE_API_URL", customRouteApi.GetEndpoint("http"))
+    .WaitFor(dashboard)
+    .WaitFor(customRouteApi);
 
 builder.Build().Run();

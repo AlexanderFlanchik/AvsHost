@@ -1,4 +1,5 @@
-﻿using Avs.StaticSiteHosting.Shared.Contracts;
+﻿using System;
+using Avs.StaticSiteHosting.Shared.Contracts;
 using Avs.StaticSiteHosting.Web.Common;
 using Avs.StaticSiteHosting.Web.DTOs;
 using Avs.StaticSiteHosting.Web.Models;
@@ -6,6 +7,7 @@ using Avs.StaticSiteHosting.Web.Models.Identity;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Avs.Messaging.Contracts;
 using Tag = Avs.StaticSiteHosting.Web.Models.Tags.Tag;
@@ -89,6 +91,7 @@ namespace Avs.StaticSiteHosting.Web.Services
                     Description = s.Description,
                     LandingPage = s.LandingPage,
                     LaunchedOn = s.LaunchedOn,
+                    DatabaseName = s.DatabaseName,
                     Owner = new UserModel { Id = s.CreatedBy.Id, UserName = s.CreatedBy.Name },
                     IsActive = s.IsActive,
                     Tags = s.Tags?.Select(t => new TagModel(t.Id, t.Name, t.BackgroundColor, t.TextColor)).ToArray()
@@ -125,18 +128,14 @@ namespace Avs.StaticSiteHosting.Web.Services
             return newSite;
         }
 
-        public async Task<Site> GetSiteByIdAsync(string siteId)
+        public Task<Site> GetSiteByIdAsync(string siteId)
         {
-            var siteCursor = await _sites.FindAsync(s => s.Id == siteId).ConfigureAwait(false);
-            
-            return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+            return GetSiteByFilterAsync(s => s.Id == siteId);
         }
 
-        public async Task<Site> GetSiteByNameAsync(string siteName)
+        public Task<Site> GetSiteByNameAsync(string siteName)
         {
-            var siteCursor = await _sites.FindAsync(s => s.Name == siteName).ConfigureAwait(false);
-            
-            return await siteCursor.FirstOrDefaultAsync().ConfigureAwait(false);
+            return GetSiteByFilterAsync(s => s.Name == siteName);
         }
 
         public async Task<SitesSearchResponse> SearchSitesByName(string name, string ownerId = null)
@@ -170,7 +169,9 @@ namespace Avs.StaticSiteHosting.Web.Services
                                       .Set(s => s.IsActive, siteToUpdate.IsActive)
                                       .Set(s => s.Mappings, siteToUpdate.Mappings)
                                       .Set(s => s.LandingPage, siteToUpdate.LandingPage)
-                                      .Set(s => s.TagIds, siteToUpdate.TagIds);
+                                      .Set(s => s.DatabaseName, siteToUpdate.DatabaseName)
+                                      .Set(s => s.TagIds, siteToUpdate.TagIds)
+                                      .Set(s => s.CustomHandlerIds, siteToUpdate.CustomHandlerIds);
             
             await _sites.UpdateOneAsync(filter, update).ConfigureAwait(false);
         }
@@ -200,6 +201,29 @@ namespace Avs.StaticSiteHosting.Web.Services
             await _sites.UpdateManyAsync(new FilterDefinitionBuilder<Site>().Where(s => s.CreatedBy.Id == ownerId),
                 new UpdateDefinitionBuilder<Site>().Set(s => s.CreatedBy.Status, status)
              ).ConfigureAwait(false);
+        }
+
+        public async Task UpdateHandlerReferencesAsync(string siteId, IEnumerable<string> handlerIds)
+        {
+            var filter = Builders<Site>.Filter.Eq(s => s.Id, siteId);
+            var update = Builders<Site>.Update.Set(s => s.CustomHandlerIds, handlerIds.Select(id => new EntityRef { Id = id }).ToList());
+
+            await _sites.UpdateOneAsync(filter, update);
+        }
+        
+        private async Task<Site> GetSiteByFilterAsync(Expression<Func<Site, bool>> filter)
+        {
+            var aggr = _sites.Aggregate()
+                .Match(filter)
+                .Lookup<CustomRouteHandler, Site>(
+                    GeneralConstants.CUSTOM_ROUTE_HANDLER_COLLECTION, 
+                    "CustomHandlerIds.Id",
+                    "_id",
+                    "CustomRouteHandlers"
+                );
+            
+            var site = await aggr.FirstOrDefaultAsync();
+            return site;
         }
 
         private async Task<int> GetSitesAmount(bool? isActive, string ownerId, string nameFilter = null, string[] tagIds = null)

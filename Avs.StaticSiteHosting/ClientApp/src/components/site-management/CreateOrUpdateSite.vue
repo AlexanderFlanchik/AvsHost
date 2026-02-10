@@ -11,10 +11,12 @@ import { AxiosRequestHeaders } from 'axios';
 import Loader from '../Loader.vue';
 import TagsSelectList from './../tags/TagsSelectList.vue';
 import ResourceMappingsSection from './ResourceMappingsSection.vue';
-import UploadSiteContent from './UploadSiteContent.vue';
 import UploadedContentList from './UploadedContentList.vue';
 import { PageContext, PageContextProvider } from '../page-editor/PageContext';
 import { NewCreatedContentHolder } from '../../services/NewCreatedContentHolder';
+import DatabaseNameInput from './DatabaseNameInput.vue';
+import { CustomRouteHandler } from './CustomRouteHandler';
+import CustomerHandlerList from './CustomerHandlerList.vue';
 
 interface CreateOrUpdateSiteModel {
     title: string;
@@ -23,11 +25,13 @@ interface CreateOrUpdateSiteModel {
     description: string;
     isActive: boolean;
     landingPage: string;
+    databaseName: string | null;
     processError: string;
     tagIds: Array<string>;
     resourceMappings: Array<ResourceMapping>
     uploadSessionId: string;
     uploaded: Array<ContentFile>;
+    customRouteHandlers: Array<CustomRouteHandler>;
     processing: boolean;
     validation: {
         siteName: {
@@ -45,11 +49,13 @@ const model = reactive<CreateOrUpdateSiteModel>({
     description: '',
     isActive: true,
     landingPage: '',
+    databaseName: null,
     processError: '',
     tagIds: [],
     resourceMappings: [],
     uploadSessionId: '',
     uploaded: [],
+    customRouteHandlers: [],
     processing: false,
     validation: {
         siteName: {
@@ -120,9 +126,11 @@ onMounted(async () => {
         model.description = cachedSite.description;
         model.isActive = cachedSite.isActive;
         model.landingPage = cachedSite.landingPage;
+        model.databaseName = cachedSite.databaseName;
         model.tagIds = cachedSite.tagIds;
         model.resourceMappings = cachedSite.resourceMappings;
         model.uploadSessionId = cachedSite.uploadSessionId;
+        model.customRouteHandlers = cachedSite.customRouteHandlers;
         model.uploaded = cachedSite.uploadedFiles.map(
             f => new ContentFile(
                 f.id,
@@ -154,8 +162,10 @@ onMounted(async () => {
                 model.description = data.description;
                 model.isActive = data.isActive;
                 model.landingPage = data.landingPage;
+                model.databaseName = data.databaseName;
                 model.tagIds = data.tagIds;
                 model.uploaded = mapUploaded(data.uploaded);
+                model.customRouteHandlers = data.customRouteHandlers;
                 model.resourceMappings = [];
 
                 const mappings = data.resourceMappings;
@@ -235,8 +245,10 @@ const createOrUpdateSite = async () => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         tagIds: model.tagIds,
-        resourceMappings: getResourceMappings()
+        resourceMappings: getResourceMappings(),
+        customRouteHandlers: model.customRouteHandlers
     };
 
     let isNew = !model.siteId;
@@ -321,7 +333,9 @@ const newHtmlPage = async () => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         resourceMappings: model.resourceMappings,
+        customRouteHandlers: model.customRouteHandlers,
         tagIds: model.tagIds,
         uploadedFiles: model.uploaded
     });
@@ -344,8 +358,10 @@ const openPageEditor = async (file: ContentFile) => {
         description: model.description,
         isActive: model.isActive,
         landingPage: model.landingPage,
+        databaseName: model.databaseName,
         tagIds: model.tagIds,
         resourceMappings: model.resourceMappings,
+        customRouteHandlers: model.customRouteHandlers,
         uploadedFiles: model.uploaded
     });
 
@@ -361,6 +377,10 @@ const openPageEditor = async (file: ContentFile) => {
     router.push({ 
         name: 'page-editor'
     });
+};
+
+const onCustomHandlersChanged = (handlers: Array<CustomRouteHandler>) => {
+    model.customRouteHandlers = handlers;
 };
 
 const isSiteNameInvalid = computed(() => {
@@ -449,6 +469,15 @@ const applyValidationErrorClass = computed(() => {
                     </td>
                 </tr>
                 <tr>
+                    <td class="vertical-tex-align">Database:</td>
+                    <td>
+                        <DatabaseNameInput 
+                            :databaseName="model.databaseName" 
+                            :siteId="model.siteId"
+                            @update:databaseName="(newDbName: string | null) => model.databaseName = newDbName"/>
+                    </td>
+                </tr>
+                <tr>
                     <td>Is active:</td>
                     <td>
                         <input type="checkbox" v-model="model.isActive" />
@@ -465,15 +494,25 @@ const applyValidationErrorClass = computed(() => {
                 <ResourceMappingsSection :resourceMappings="model.resourceMappings"/>
             </div>
         </div>
-        <div class="site-form-holder-right">
-            <UploadSiteContent :uploadSessionId="model.uploadSessionId" :uploaded="model.uploaded" :onNewSessionHanlder="(newSessionId: string)=> model.uploadSessionId = newSessionId"/>
-
+        <div class="site-form-holder-right">           
             <div class="editor-buttons-container">
                 <button class="btn btn-primary" @click="newHtmlPage">New HTML Page</button>
             </div>
             <div class="uploaded-content-holder">
-                <span class="form-title">Site content</span>
-                <UploadedContentList :uploadSessionId="model.uploadSessionId" :uploaded="model.uploaded" :openPageEditor="openPageEditor" />  
+                <div>
+                    <span class="form-title">Site content</span>
+                    <UploadedContentList 
+                        :uploadSessionId="model.uploadSessionId" 
+                        :uploaded="model.uploaded" 
+                        :openPageEditor="openPageEditor"
+                        :onNewSessionHanlder="(newSessionId: string)=> model.uploadSessionId = newSessionId"
+                        :onUploaded="(contentFiles: ContentFile[]) => model.uploaded = contentFiles" 
+                    />
+                </div>
+                <div class="custom-handlers-container">
+                    <span class="form-title">Custom Route Handlers</span>
+                    <CustomerHandlerList :handlers="model.customRouteHandlers" :onHandlersChanged="onCustomHandlersChanged" />
+                </div>
             </div>
         </div>
     </div> 
@@ -554,5 +593,10 @@ const applyValidationErrorClass = computed(() => {
     
     textarea {
       resize: none;
+    }
+
+    .custom-handlers-container {
+        margin-top: 25px;
+        padding: 5px;
     }
 </style>

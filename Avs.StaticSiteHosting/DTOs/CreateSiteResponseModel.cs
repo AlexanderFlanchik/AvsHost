@@ -44,6 +44,11 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         /// Site landing page
         /// </summary>
         public string LandingPage { get; set; }
+        
+        /// <summary>
+        /// Site database (MongoDb)
+        /// </summary>
+        public string DatabaseName { get; set; }
 
         /// <summary>
         /// Gets or sets a collection with site tag Ids
@@ -54,6 +59,11 @@ namespace Avs.StaticSiteHosting.Web.DTOs
         /// Gets or sets a collection with site uploaded files
         /// </summary>
         public ContentItemModel[] Uploaded { get; set; }
+
+        /// <summary>
+        /// Gets or sets a collection with custom route handlers
+        /// </summary>
+        public List<CustomRouteHandlerModel> CustomRouteHandlers { get; set; } = new();
     }
 
     public record ContentFileModel(

@@ -28,6 +28,11 @@
         public DateTime? LaunchedOn { get; set; }
         
         /// <summary>
+        /// Site database
+        /// </summary>
+        public string? DatabaseName { get; set; }
+        
+        /// <summary>
         /// Date of the latest site stopping
         /// </summary>
         public DateTime? LastStopped { get; set; }
@@ -50,6 +55,19 @@
         /// <summary>
         /// Site content
         /// </summary>
-        public ContentItemInfo[] ContentItems { get; set; } = Array.Empty<ContentItemInfo>();
+        public ContentItemInfo[] ContentItems { get; set; } = [];
+
+        /// <summary>
+        /// Custom route handlers configured for the site
+        /// </summary>
+        public CustomRouteInfo[] CustomRoutes { get; set; } = [];
     }
+
+    /// <summary>
+    /// Custom route handler settings
+    /// </summary>
+    /// <param name="HandlerId">Handler ID</param>
+    /// <param name="Path">URL path</param>
+    /// <param name="Method">HTTP method</param>
+    public record CustomRouteInfo(string HandlerId, string Path, string Method);
 }

@@ -15,13 +15,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         {
             base.OnActionExecuting(context);
 
-            var userId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                context.Result = new BadRequestResult();
-            }
-
-            _currentUserId = userId;
+            _currentUserId = User.FindFirst(AuthSettings.UserIdClaim)?.Value;;
         }
     }
 

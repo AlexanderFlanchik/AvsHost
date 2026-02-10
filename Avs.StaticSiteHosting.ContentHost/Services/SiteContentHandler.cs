@@ -32,7 +32,12 @@ public class SiteContentHandler(
     {
        if (siteInfo is null || !siteInfo.IsActive)
        {
-           return new HandleContentResult((int)HttpStatusCode.NotFound, "The resource cannot be found or its inactive. Please check URL.");
+           return new HandleContentResult(404, "The resource cannot be found or is inactive. Please check URL.");
+       }
+
+       if (string.IsNullOrEmpty(siteName))
+       {
+           return new HandleContentResult(404, "The site name cannot be empty. Please check URL.");
        }
        
        string siteOwnerId = siteInfo.User.Id;
@@ -46,7 +51,7 @@ public class SiteContentHandler(
        {
            return HandleContentResult.NotFound($"No content with path '{sitePath}' found.", siteInfo.Id, siteOwnerId);
        }
-
+       
        var siteContentPath = Path.Combine(staticSiteOptions.Value.ContentPath, siteName);
        var fileProvider = new PhysicalFileProvider(new DirectoryInfo(siteContentPath).FullName);
        IFileInfo fileInfo = fileProvider.GetFileInfo(fileName);

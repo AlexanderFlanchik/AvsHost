@@ -1,14 +1,17 @@
 import { ContentFile } from "../common/ContentFile";
+import { CustomRouteHandler } from "../components/site-management/CustomRouteHandler";
 
 export interface SiteContext {
     siteId: string;
     siteName: string;
     description: string;
     landingPage: string;
+    databaseName: string | null;
     isActive: boolean;
     resourceMappings: Array<ResourceMapping>;
     uploadSessionId: string;
     uploadedFiles: Array<ContentFile>;
+    customRouteHandlers: Array<CustomRouteHandler>;
     tagIds: Array<string>
 }
 

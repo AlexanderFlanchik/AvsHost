@@ -21,6 +21,14 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// <param name="ownerId">Owner ID</param>
         /// <returns></returns>
         Task<int> GetSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null);
+
+        /// <summary>
+        /// Calculates amount of active sites created by user.
+        /// </summary>
+        /// <param name="ownerId">Owner ID</param>
+        /// <param name="nameFilter">Name filter</param>
+        /// <param name="tagIds">Tag IDs</param>
+        /// <returns>A task which returns amount of active sites when completed</returns>
         Task<int> GetActiveSitesAmountAsync(string ownerId = null, string nameFilter = null, string[] tagIds = null);
         Task<IEnumerable<string>> GetSiteIdsByOwner(string ownerId);
         /// <summary>
@@ -81,6 +89,20 @@ namespace Avs.StaticSiteHosting.Web.Services
         /// <returns></returns>
         Task DeleteSiteAsync(string siteId);
 
+        /// <summary>
+        /// Updates status of all sites owned by the user. Refactor this to use Users collection 
+        /// instead of storing user status in each site site.
+        /// </summary>
+        /// <param name="ownerId">Owner ID</param>
+        /// <param name="status">Current status</param>
+        /// <returns></returns>
         Task UpdateSitesStatusAsync(string ownerId, UserStatus status);
+
+        /// <summary>
+        /// Updates custom route handler references for the site.
+        /// </summary>
+        /// <param name="siteId">Site ID</param>
+        /// <param name="handlerIds">Custom route handler IDs</param>        
+        Task UpdateHandlerReferencesAsync(string siteId, IEnumerable<string> handlerIds);
     }
 }

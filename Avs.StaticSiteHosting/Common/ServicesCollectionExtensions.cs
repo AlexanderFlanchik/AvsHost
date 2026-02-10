@@ -4,6 +4,7 @@ using Avs.StaticSiteHosting.Shared.Common;
 using Avs.StaticSiteHosting.Web.Services;
 using Avs.StaticSiteHosting.Web.Services.AdminConversation;
 using Avs.StaticSiteHosting.Web.Services.ContentManagement;
+using Avs.StaticSiteHosting.Web.Services.Databases;
 using Avs.StaticSiteHosting.Web.Services.EventLog;
 using Avs.StaticSiteHosting.Web.Services.Identity;
 using Avs.StaticSiteHosting.Web.Services.Reporting;
@@ -72,10 +73,13 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddScoped<ISiteService, SiteService>();
             services.AddScoped<IContentManager, ContentManager>();
             services.AddScoped<ISiteManagementService, SiteManagementService>();
+            services.AddScoped<ISiteDetailsService, SiteDetailsService>();
             services.AddScoped<IContentUploadService, ContentUploadService>();
             services.AddScoped<IPagePreviewService, PagePreviewService>();
             services.AddSingleton<ICloudStorageProvider, CloudStorageProvider>();
             services.AddTransient<ImageResizeService>();
+            services.AddScoped<IDatabaseService, DatabaseService>();
+            services.AddScoped<ICustomRouteHandlerService, CustomRouteHandlerService>();
 
             return services;
         }

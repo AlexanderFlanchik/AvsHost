@@ -30,6 +30,7 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
                 LaunchedOn = siteInfo.LaunchedOn,
                 LastStopped = siteInfo.LastStopped,
                 LandingPage = siteInfo.LandingPage,
+                DatabaseName = siteInfo.DatabaseName,
                 Mappings = siteInfo.Mappings,
                 User = new UserDetails
                 {
@@ -46,6 +47,8 @@ namespace Avs.StaticSiteHosting.Web.Messaging.SiteContent
                         ContentType = i.ContentType,
                         CacheDuration = i.CacheDuration
                     }).ToArray(),
+                CustomRoutes = siteInfo.CustomRouteHandlers?
+                    .Select(h => new CustomRouteInfo(h.Id, h.Path, h.Method)).ToArray() ?? []
             };
 
             await RespondAsync(new SiteContentInfoResponse { SiteContent = siteContent }, context);
