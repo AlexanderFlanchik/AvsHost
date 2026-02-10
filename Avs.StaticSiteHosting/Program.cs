@@ -60,6 +60,8 @@ builder.Services.AddMessaging(x =>
         cfg.ConfigureRequestReply<GetSiteContentRequestMessage, SiteContentInfoResponse>();
         cfg.ConfigureRequestReply<CloudSettingsRequest, CloudSettingsResponse>();
         cfg.ConfigureExchangeOptions<SiteVisited>(o => o.ExchangeName = "SiteVisited");
+        cfg.ConfigureExchangeOptions<CustomRouteHandlerChanged>(o => o.IsExchangeDurable = false);
+        cfg.ConfigureExchangeOptions<CustomRouteHandlersDeleted>(o => o.IsExchangeDurable = false);
     });
 });
 

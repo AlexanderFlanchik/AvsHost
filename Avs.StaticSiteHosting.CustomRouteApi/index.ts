@@ -2,6 +2,7 @@ import { Container } from "./common/DependcyInjection";
 import configureServices from "./common/ServiceConfig";
 import type { RouteHandlerContext } from "./dtos/RouteHandlerContext";
 import type { RouteHandlerRequest } from "./dtos/RouteHandlerDtos";
+import { startMessaging } from "./messaging";
 import CustomRouteHandlerProvider from "./services/CustomRouteHandlerProvider";
 import CustomRouteProcessor from "./services/CustomRouteProcessor";
 import { MongoClient } from "mongodb";
@@ -12,8 +13,7 @@ configureServices(container);
 
 const handlerProvider = container.get<CustomRouteHandlerProvider>(CustomRouteHandlerProvider);
 await handlerProvider.loadHandlers();
-
-// TODO: add RabbitMq connection using RABBITMQ_CONNECTION_STRING env variable
+await startMessaging(container);
 
 const server = Bun.serve({
     port: servicePort,
