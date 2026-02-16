@@ -601,7 +601,7 @@ const editHtml = async () => {
 
     htmlContent = htmlContent.split("\n").filter(l => l && l.trim().length).join("\n");
 
-    const dlgSubject = editContentDialogRef.value?.showDialog(model.contentName, htmlContent, 
+    const dlgSubject = editContentDialogRef.value?.showDialog(model.contentName, htmlContent,
                     (content: string) => {
                         const parser = new DOMParser();
                         const result = parser.parseFromString(content, 'application/xml');
@@ -609,7 +609,7 @@ const editHtml = async () => {
                         if (errorNode) {
                             return errorNode.textContent;
                         }
-                    }, model.cacheDuration);
+                    }, model.cacheDuration, 'html');
                                     
     dlgSubject.subscribe(async({ newContent, cacheDuration } : { newContent: string, cacheDuration: string | undefined}) => {
         model.processing = true;

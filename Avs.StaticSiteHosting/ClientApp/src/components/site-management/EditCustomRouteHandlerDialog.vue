@@ -1,5 +1,5 @@
 <template>
-    <ModalDialog ref="dialogRef" :title="dialogTitle" ok-label="OK" :ok="onOk">
+    <ModalDialog ref="dialogRef" :title="dialogTitle" ok-label="OK" :ok="onOk" :dialogWidth="'650px'" :dialogHeight="'auto'">
         <div class="form-holder">
             <div class="form-row">
                 <label for="route-name">Route Name:</label>
@@ -30,7 +30,11 @@
                 </div>
                 <div class="handler-body-container">
                     <label for="handler-body">Handler Body:</label>
-                    <textarea id="handler-body" v-model="handlerRef!.body" rows="10"></textarea>
+                    <CodeEditor id="handler-body" 
+                        v-model:value="handlerRef!.body" 
+                        language="javascript" 
+                        theme="vs-light"                         
+                        :options="editorOptions" />
                 </div>
             </div>
         </div>
@@ -40,12 +44,19 @@
 import { computed, ref, watch } from 'vue';
 import ModalDialog from '../ModalDialog.vue';
 import { CustomRouteHandler } from './CustomRouteHandler';
+import CodeEditor from 'monaco-editor-vue3';
 
 interface EditCustomRouteHandlerDialogProps {
     handler: CustomRouteHandler | null;
     handlerValidator: (handler: CustomRouteHandler | null, field: string, value: any) => string | null;
     onHandlerChanged: (newHandlerState: CustomRouteHandler) => void;
 }
+
+const editorOptions = {
+    fontSize: 14,
+    minimap: { enabled: false },
+    automaticLayout: true
+};
 
 const defaultHandlerInstance: CustomRouteHandler = {
     id: '',
@@ -139,5 +150,6 @@ label {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    height: 450px;
 }
 </style>

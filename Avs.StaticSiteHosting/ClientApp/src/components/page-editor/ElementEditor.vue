@@ -6,6 +6,7 @@ import ModalDialog from '../ModalDialog.vue';
 import getAvailableTags from './TagsProvider';
 import AddNewAttributeModalDialog from './AddNewAttributeModalDialog.vue';
 import AddNewCssClassModalDialog from './AddNewCssClassModalDialog.vue';
+import { CodeEditor } from 'monaco-editor-vue3';
 
 interface ElementEditorProps {
     htmlTree: Html;
@@ -28,6 +29,12 @@ interface ElementEditorModel {
     ok: () => void;
     getEditorTitle: string;
 }
+
+const editorOptions = {
+    fontSize: 14,
+    minimap: { enabled: false },
+    automaticLayout: true
+};
 
 const props = defineProps<ElementEditorProps>();
 const model = reactive<ElementEditorModel>({
@@ -304,7 +311,7 @@ const addCssClass = () => addCssClassModalRef!.value?.open();
 defineExpose({ addNewElement, editElement });
 </script>
 <template>
-  <ModalDialog ref="editElementModalRef" :title="model.getEditorTitle" :ok="model.ok">
+  <ModalDialog ref="editElementModalRef" :title="model.getEditorTitle" :ok="model.ok" :dialog-width="'650px'" :dialog-height="'550px'">
     <div v-if="model.error">
         <span class="validation-error">{{ model.error }}</span>
     </div>
@@ -350,7 +357,7 @@ defineExpose({ addNewElement, editElement });
     <div>
         <span>Inner content:</span>
         <br/>
-        <textarea class="resource-content-area" v-model="model.innerHtml" rows="10" cols="10" @change="() => model.error = null"></textarea>
+        <CodeEditor class="resource-content-area" v-model:value="model.innerHtml" language="html" @change="() => model.error = null" :options="editorOptions"></CodeEditor>
     </div>
     <AddNewAttributeModalDialog :attributes="model.attributes" ref="addAttributeModalRef"></AddNewAttributeModalDialog>
     <AddNewCssClassModalDialog ref="addCssClassModalRef" :css-classes="model.cssClasses"></AddNewCssClassModalDialog>
@@ -364,5 +371,6 @@ defineExpose({ addNewElement, editElement });
     }
     .resource-content-area {
         width: -webkit-fill-available;
+        height: 385px !important;
     }
 </style>
