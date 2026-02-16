@@ -3,6 +3,7 @@ import { inject, reactive, ref, watch } from 'vue';
 import { GenericElement, Html, Link, Script } from './html-elements';
 import { API_CLIENT, AUTH_SERVICE } from '../../common/diKeys';
 import ModalDialog from '../ModalDialog.vue';
+import { CodeEditor } from 'monaco-editor-vue3';
 
 const contentFilePlaceHolder = '--Please select a file--';
 const newResourcePlaceHolder = '%NEW_RESOURCE%';
@@ -44,6 +45,14 @@ const onOpen = () => {
     model.content = '';
     model.fromFile = 'true';
     model.contentResourceType = 'js';
+};
+
+const editorOptions = {
+    lineNumbers: 'on',
+    wordWrap: 'on',
+    minimap: { enabled: false },
+    scrollBeyondLastLine: false,
+    automaticLayout: true
 };
 
 const apiClient = inject(API_CLIENT)!;
@@ -221,10 +230,24 @@ defineExpose({ addScriptOrStylesheet });
                 </option>
             </select>
         </div>
-        <div class="mrgn-top-5">
+        <div class="mrgn-top-5 resource-content-area">
             <input type="radio" v-model="model.fromFile" value="false" name="fromContent" />
             <label for="fromContent">From content:</label> <br/>
-            <textarea class="resource-content-area" v-model="model.content" :disabled="model.fromFile === 'true'"></textarea>
+            <CodeEditor  
+                v-model:value="model.content"
+                class="editor"
+                language="javascript"
+                :options="editorOptions" 
+                v-if="model.fromFile === 'false' && model.contentResourceType === 'js'">
+            </CodeEditor>
+
+            <CodeEditor  
+                v-model:value="model.content"
+                class="editor"
+                language="css"
+                :options="editorOptions" 
+                v-if="model.fromFile === 'false' && model.contentResourceType === 'css'">
+            </CodeEditor>            
         </div>
     </fieldset>
  </ModalDialog>
@@ -233,9 +256,13 @@ defineExpose({ addScriptOrStylesheet });
     .resource-files-select {
         width: -webkit-fill-available;
     }
+
+    .editor {
+        height: 320px !important;
+    }
     
     .resource-content-area {
-    height: 400px;
+        height: 350px;
     }
 
     .mrgn-top-5 {
