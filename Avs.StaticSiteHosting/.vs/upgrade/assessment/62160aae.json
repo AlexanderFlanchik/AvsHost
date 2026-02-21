@@ -1,0 +1,440 @@
+{
+  "reportConfigHash": "62160aae",
+  "createdAtUtc": "2026-02-21T06:55:57.4394085Z",
+  "entries": [
+    {
+      "packageName": "Aspire.Hosting.AppHost",
+      "packageVersion": "13.1.0",
+      "insightsName": "Aspire.Hosting.AppHost",
+      "insightsCurrentVersion": "13.1.0",
+      "insightsNewVersion": "13.1.1",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost.csproj"
+      ]
+    },
+    {
+      "packageName": "Aspire.Hosting.MongoDB",
+      "packageVersion": "13.1.0",
+      "insightsName": "Aspire.Hosting.MongoDB",
+      "insightsCurrentVersion": "13.1.0",
+      "insightsNewVersion": "13.1.1",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost.csproj"
+      ]
+    },
+    {
+      "packageName": "Aspire.Hosting.RabbitMQ",
+      "packageVersion": "13.1.0",
+      "insightsName": "Aspire.Hosting.RabbitMQ",
+      "insightsCurrentVersion": "13.1.0",
+      "insightsNewVersion": "13.1.1",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.AppHost.csproj"
+      ]
+    },
+    {
+      "packageName": "CommunityToolkit.Aspire.Hosting.Bun",
+      "packageVersion": "13.1.1",
+      "insightsName": "CommunityToolkit.Aspire.Hosting.Bun",
+      "insightsCurrentVersion": "13.1.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "KubernetesClient",
+      "packageVersion": "18.0.13",
+      "insightsName": "KubernetesClient",
+      "insightsCurrentVersion": "18.0.13",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Aspire.RabbitMQ.Client.v7",
+      "packageVersion": "9.1.0",
+      "insightsName": "Aspire.RabbitMQ.Client.v7",
+      "insightsCurrentVersion": "9.1.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "NuGet package is deprecated",
+      "insightsIsCompatible": false,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.ContentHost\\Avs.StaticSiteHosting.ContentHost.csproj"
+      ]
+    },
+    {
+      "packageName": "Avs.Messaging.RabbitMq",
+      "packageVersion": "1.0.5",
+      "insightsName": "Avs.Messaging.RabbitMq",
+      "insightsCurrentVersion": "1.0.5",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "AWSSDK.S3",
+      "packageVersion": "3.7.407.1",
+      "insightsName": "AWSSDK.S3",
+      "insightsCurrentVersion": "3.7.407.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.Extensions.ServiceDiscovery",
+      "packageVersion": "9.5.1",
+      "insightsName": "Microsoft.Extensions.ServiceDiscovery",
+      "insightsCurrentVersion": "9.5.1",
+      "insightsNewVersion": "10.3.0",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.ContentHost\\Avs.StaticSiteHosting.ContentHost.csproj",
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.ServiceDefaults\\Avs.StaticSiteHosting.ServiceDefaults.csproj",
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "SixLabors.ImageSharp",
+      "packageVersion": "3.1.11",
+      "insightsName": "SixLabors.ImageSharp",
+      "insightsCurrentVersion": "3.1.11",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "System.Text.Json",
+      "packageVersion": "9.0.6",
+      "insightsName": "System.Text.Json",
+      "insightsCurrentVersion": "9.0.6",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.DataMigrator\\Avs.StaticSiteHosting.DataMigrator.csproj",
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "EPPlus",
+      "packageVersion": "7.5.1",
+      "insightsName": "EPPlus",
+      "insightsCurrentVersion": "7.5.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "itext",
+      "packageVersion": "9.0.0",
+      "insightsName": "itext",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "itext.bouncy-castle-adapter",
+      "packageVersion": "9.0.0",
+      "insightsName": "itext.bouncy-castle-adapter",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.NET.Test.Sdk",
+      "packageVersion": "17.12.0",
+      "insightsName": "Microsoft.NET.Test.Sdk",
+      "insightsCurrentVersion": "17.12.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "xunit",
+      "packageVersion": "2.9.2",
+      "insightsName": "xunit",
+      "insightsCurrentVersion": "2.9.2",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "xunit.runner.visualstudio",
+      "packageVersion": "2.8.2",
+      "insightsName": "xunit.runner.visualstudio",
+      "insightsCurrentVersion": "2.8.2",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "coverlet.collector",
+      "packageVersion": "6.0.2",
+      "insightsName": "coverlet.collector",
+      "insightsCurrentVersion": "6.0.2",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.Extensions.Http.Resilience",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.Extensions.Http.Resilience",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.3.0",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.ServiceDefaults\\Avs.StaticSiteHosting.ServiceDefaults.csproj"
+      ]
+    },
+    {
+      "packageName": "OpenTelemetry.Exporter.OpenTelemetryProtocol",
+      "packageVersion": "1.9.0",
+      "insightsName": "OpenTelemetry.Exporter.OpenTelemetryProtocol",
+      "insightsCurrentVersion": "1.9.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "OpenTelemetry.Extensions.Hosting",
+      "packageVersion": "1.9.0",
+      "insightsName": "OpenTelemetry.Extensions.Hosting",
+      "insightsCurrentVersion": "1.9.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "OpenTelemetry.Instrumentation.AspNetCore",
+      "packageVersion": "1.9.0",
+      "insightsName": "OpenTelemetry.Instrumentation.AspNetCore",
+      "insightsCurrentVersion": "1.9.0",
+      "insightsNewVersion": "1.15.0",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.ServiceDefaults\\Avs.StaticSiteHosting.ServiceDefaults.csproj"
+      ]
+    },
+    {
+      "packageName": "OpenTelemetry.Instrumentation.Http",
+      "packageVersion": "1.9.0",
+      "insightsName": "OpenTelemetry.Instrumentation.Http",
+      "insightsCurrentVersion": "1.9.0",
+      "insightsNewVersion": "1.15.0",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.AppHost\\Avs.StaticSiteHosting.ServiceDefaults\\Avs.StaticSiteHosting.ServiceDefaults.csproj"
+      ]
+    },
+    {
+      "packageName": "OpenTelemetry.Instrumentation.Runtime",
+      "packageVersion": "1.9.0",
+      "insightsName": "OpenTelemetry.Instrumentation.Runtime",
+      "insightsCurrentVersion": "1.9.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.Extensions.Configuration",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.Extensions.Configuration",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.Extensions.Configuration.Binder",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.Extensions.Configuration.Binder",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.Extensions.Options",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.Extensions.Options",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "C:\\Projects\\AvsHost\\Avs.StaticSiteHosting.Shared\\Avs.StaticSiteHosting.Shared.csproj"
+      ]
+    },
+    {
+      "packageName": "Aspire.MongoDB.Driver.v3",
+      "packageVersion": "9.1.0",
+      "insightsName": "Aspire.MongoDB.Driver.v3",
+      "insightsCurrentVersion": "9.1.0",
+      "insightsNewVersion": "",
+      "insightsDescription": "NuGet package is deprecated",
+      "insightsIsCompatible": false,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "BCrypt.Net-Next",
+      "packageVersion": "4.0.3",
+      "insightsName": "BCrypt.Net-Next",
+      "insightsCurrentVersion": "4.0.3",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.AspNetCore.SpaServices",
+      "packageVersion": "3.1.32",
+      "insightsName": "Microsoft.AspNetCore.SpaServices",
+      "insightsCurrentVersion": "3.1.32",
+      "insightsNewVersion": "",
+      "insightsDescription": "Needs to be replaced with Replace with new package Microsoft.AspNetCore.SpaServices.Extensions=10.0.3",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.AspNetCore.SpaServices.Extensions",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.AspNetCore.SpaServices.Extensions",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.3",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "Microsoft.TypeScript.MSBuild",
+      "packageVersion": "5.7.1",
+      "insightsName": "Microsoft.TypeScript.MSBuild",
+      "insightsCurrentVersion": "5.7.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Microsoft.VisualStudio.Web.CodeGeneration.Design",
+      "packageVersion": "9.0.0",
+      "insightsName": "Microsoft.VisualStudio.Web.CodeGeneration.Design",
+      "insightsCurrentVersion": "9.0.0",
+      "insightsNewVersion": "10.0.2",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    },
+    {
+      "packageName": "MongoDB.Bson",
+      "packageVersion": "3.2.1",
+      "insightsName": "MongoDB.Bson",
+      "insightsCurrentVersion": "3.2.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "MongoDB.Driver",
+      "packageVersion": "3.2.1",
+      "insightsName": "MongoDB.Driver",
+      "insightsCurrentVersion": "3.2.1",
+      "insightsNewVersion": "",
+      "insightsDescription": "",
+      "insightsIsCompatible": true,
+      "insightsProjects": []
+    },
+    {
+      "packageName": "Newtonsoft.Json",
+      "packageVersion": "13.0.3",
+      "insightsName": "Newtonsoft.Json",
+      "insightsCurrentVersion": "13.0.3",
+      "insightsNewVersion": "13.0.4",
+      "insightsDescription": "NuGet package upgrade is recommended",
+      "insightsIsCompatible": true,
+      "insightsProjects": [
+        "Avs.StaticSiteHosting.Web.csproj"
+      ]
+    }
+  ]
+}
