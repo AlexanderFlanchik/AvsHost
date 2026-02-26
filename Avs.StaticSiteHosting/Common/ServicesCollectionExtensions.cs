@@ -76,6 +76,7 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddScoped<ISiteDetailsService, SiteDetailsService>();
             services.AddScoped<IContentUploadService, ContentUploadService>();
             services.AddScoped<IPagePreviewService, PagePreviewService>();
+            services.AddScoped<IPagePreviewSessionService, PagePreviewSessionService>();
             services.AddSingleton<ICloudStorageProvider, CloudStorageProvider>();
             services.AddTransient<ImageResizeService>();
             services.AddScoped<IDatabaseService, DatabaseService>();

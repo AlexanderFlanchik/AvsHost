@@ -20,6 +20,7 @@
         public const string TAGS_COLLECTION = "Tags";
         public const string CONTENT_UPLOADS_COLLECTION = "ContentUploads";
         public const string CUSTOM_ROUTE_HANDLER_COLLECTION = "CustomRouteHandlers";
+        public const string PAGE_PREVIEW_COLLECTION = "PagePreviews";
 
         #endregion
 

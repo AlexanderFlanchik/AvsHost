@@ -23,6 +23,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         private readonly IContentUploadService _contentUploadService;
         private readonly IContentManager _contentManager;
         private readonly ISiteService _siteService;
+        private readonly IPagePreviewSessionService _pagePreviewSessionService;
         private readonly ILogger<ContentEditorController> _logger;
 
         private readonly string[] render_formats = 
@@ -35,12 +36,13 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             IContentManager contentManager,
             ISiteService siteService,
             ILogger<ContentEditorController> logger,
-            IContentUploadService contentUploadService)
+            IContentUploadService contentUploadService, IPagePreviewSessionService pagePreviewSessionService)
         {
             _contentManager = contentManager;
             _siteService = siteService;
             _logger = logger;
             _contentUploadService = contentUploadService;
+            _pagePreviewSessionService = pagePreviewSessionService;
         }
 
         [HttpGet]
@@ -89,11 +91,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpPost]
         [Route("store-preview-session/{previewSessionId}")]
-        public IActionResult StorePreviewSession(string previewSessionId, HtmlTreeRoot htmlTree)
+        public async Task<IActionResult> StorePreviewSession(string previewSessionId, HtmlTreeRoot htmlTree)
         {
             _logger.LogInformation("New preview session has started, ID='{0}'.", previewSessionId);
 
-            HttpContext.Session.SetString($"{PREVIEW_PREFIX}{previewSessionId}", JsonConvert.SerializeObject(htmlTree));    
+            await _pagePreviewSessionService.StartPreviewSessionAsync(previewSessionId, JsonConvert.SerializeObject(htmlTree));
+
             return Ok();
         }
 
@@ -118,7 +121,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return string.IsNullOrEmpty(previewContent) ? PartialView("NoPreview") : Content(previewContent, "text/html");
             }
 
-            var htmlTreeJsonFromSession = HttpContext.Session.GetString($"{PREVIEW_PREFIX}{previewSessionId}");
+            var htmlTreeJsonFromSession = await  _pagePreviewSessionService.GetHtmlTreeAsync(previewSessionId);
             if (string.IsNullOrEmpty(htmlTreeJsonFromSession))
             {
                 return PartialView("NoPreview");
@@ -147,7 +150,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         public async Task<IActionResult> SavePage(SavePageModel savePageModel, [FromServices] IPageRenderingService pageRenderingService)
         {
             string contentId = savePageModel.ContentId, uploadSessionId = savePageModel.UploadSessionId;
-            var htmlDocumentJson = HttpContext.Session.GetString($"{PREVIEW_PREFIX}{savePageModel.PreviewSessionId}");
+            var htmlDocumentJson = await _pagePreviewSessionService.GetHtmlTreeAsync(savePageModel.PreviewSessionId);
 
             if (string.IsNullOrEmpty(contentId) && string.IsNullOrEmpty(uploadSessionId))
             {
