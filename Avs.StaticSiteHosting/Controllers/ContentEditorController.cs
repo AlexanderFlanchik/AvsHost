@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -28,10 +27,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         private readonly string[] render_formats = 
             { "text/plain", "text/html", "text/css", "text/javascript", "application/json", "application/javascript" };
-
-        private const string CONTENT_CONTEXT_KEY = "edit-content-input-context";
-        private const string PREVIEW_PREFIX = "page_preview_";
-
+        
         public ContentEditorController(
             IContentManager contentManager,
             ISiteService siteService,
@@ -79,16 +75,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             return render_formats.Contains(contentType) && contentStream is not null ?
                 File(contentStream, contentType) : Content("This content cannot be prerendered.");
         }
-
-        [HttpPost]
-        [Route("store-content-context")]
-        public IActionResult StoreContentInputData(ContentInputContext ctx)
-        {
-            HttpContext.Session.SetString(CONTENT_CONTEXT_KEY, JsonConvert.SerializeObject(ctx));
-            
-            return Ok();
-        }
-
+        
         [HttpPost]
         [Route("store-preview-session/{previewSessionId}")]
         public async Task<IActionResult> StorePreviewSession(string previewSessionId, HtmlTreeRoot htmlTree)

@@ -1,3 +1,4 @@
+using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -12,4 +13,6 @@ public class PagePreviewEntity
     public string PreviewSessionId { get; set; }
     
     public string HtmlTreeJson { get; set; }
+    
+    public DateTime Timestamp { get; set; }
 }

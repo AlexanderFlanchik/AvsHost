@@ -81,6 +81,7 @@ namespace Avs.StaticSiteHosting.Web.Common
             services.AddTransient<ImageResizeService>();
             services.AddScoped<IDatabaseService, DatabaseService>();
             services.AddScoped<ICustomRouteHandlerService, CustomRouteHandlerService>();
+            services.AddHostedService<PagePreviewCleaningWorker>();
 
             return services;
         }

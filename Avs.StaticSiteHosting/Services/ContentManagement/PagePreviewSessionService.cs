@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Avs.StaticSiteHosting.Web.Models;
 using MongoDB.Driver;
@@ -22,7 +23,7 @@ public class PagePreviewSessionService(MongoEntityRepository repository) : IPage
         {
             var entity = existingPreview[0];
             entity.HtmlTreeJson = htmlTreeJson;
-            
+            entity.Timestamp = DateTime.UtcNow;
             await _pagePreviews.ReplaceOneAsync(x => x.PreviewSessionId == previewSessionId, entity);
         }
         else
@@ -30,7 +31,8 @@ public class PagePreviewSessionService(MongoEntityRepository repository) : IPage
             var newPreview = new PagePreviewEntity()
             {
                 PreviewSessionId = previewSessionId,
-                HtmlTreeJson = htmlTreeJson
+                HtmlTreeJson = htmlTreeJson,
+                Timestamp = DateTime.UtcNow
             };
             
             await _pagePreviews.InsertOneAsync(newPreview);            
