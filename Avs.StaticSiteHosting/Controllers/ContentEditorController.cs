@@ -43,8 +43,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpGet]
         [Route("check-new-file-name")]
-        public async Task<IActionResult> CheckFileName([Required] string contentName, string destinationPath,
-            [Required] string uploadSessionId, string siteId)
+        public async Task<IActionResult> CheckFileName([Required] string contentName, string destinationPath, [Required] string uploadSessionId, string siteId)
         {
             var contentExtension = new FileInfo(contentName).Extension;
             if (string.IsNullOrEmpty(contentExtension))
@@ -92,8 +91,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpGet]
         [Route("page-preview")]
-        public async Task<IActionResult> PagePreview([FromQuery] PagePreviewModel previewModel,
-            [FromServices] IPagePreviewService previewService)
+        public async Task<IActionResult> PagePreview([FromQuery] PagePreviewModel previewModel, [FromServices] IPagePreviewService previewService)
         {
             var previewSessionId = previewModel.PreviewSessionId;
             var contentId = previewModel.ContentId;
@@ -143,8 +141,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpPost]
         [Route("save")]
-        public async Task<IActionResult> SavePage(SavePageModel savePageModel,
-            [FromServices] IPageRenderingService pageRenderingService)
+        public async Task<IActionResult> SavePage(SavePageModel savePageModel, [FromServices] IPageRenderingService pageRenderingService)
         {
             var htmlDocumentJson = await _pagePreviewSessionService.GetHtmlTreeAsync(savePageModel.PreviewSessionId);
             var validationResult = ValidatePreviewData(htmlDocumentJson, savePageModel);
