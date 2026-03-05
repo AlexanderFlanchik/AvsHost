@@ -25,9 +25,9 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         private readonly IPagePreviewSessionService _pagePreviewSessionService;
         private readonly ILogger<ContentEditorController> _logger;
 
-        private readonly string[] render_formats = 
+        private readonly string[] render_formats =
             { "text/plain", "text/html", "text/css", "text/javascript", "application/json", "application/javascript" };
-        
+
         public ContentEditorController(
             IContentManager contentManager,
             ISiteService siteService,
@@ -43,7 +43,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpGet]
         [Route("check-new-file-name")]
-        public async Task<IActionResult> CheckFileName([Required] string contentName, string destinationPath, [Required] string uploadSessionId, string siteId)
+        public async Task<IActionResult> CheckFileName([Required] string contentName, string destinationPath,
+            [Required] string uploadSessionId, string siteId)
         {
             var contentExtension = new FileInfo(contentName).Extension;
             if (string.IsNullOrEmpty(contentExtension))
@@ -72,43 +73,49 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         {
             var (_, contentType, contentStream) = await _contentManager.GetContentFileAsync(contentItemId);
 
-            return render_formats.Contains(contentType) && contentStream is not null ?
-                File(contentStream, contentType) : Content("This content cannot be prerendered.");
+            return render_formats.Contains(contentType) && contentStream is not null
+                ? File(contentStream, contentType)
+                : Content("This content cannot be prerendered.");
         }
-        
+
         [HttpPost]
         [Route("store-preview-session/{previewSessionId}")]
         public async Task<IActionResult> StorePreviewSession(string previewSessionId, HtmlTreeRoot htmlTree)
         {
             _logger.LogInformation("New preview session has started, ID='{0}'.", previewSessionId);
 
-            await _pagePreviewSessionService.StartPreviewSessionAsync(previewSessionId, JsonConvert.SerializeObject(htmlTree));
+            await _pagePreviewSessionService.StartPreviewSessionAsync(previewSessionId,
+                JsonConvert.SerializeObject(htmlTree));
 
             return Ok();
         }
 
         [HttpGet]
         [Route("page-preview")]
-        public async Task<IActionResult> PagePreview([FromQuery] PagePreviewModel previewModel, [FromServices] IPagePreviewService previewService)
+        public async Task<IActionResult> PagePreview([FromQuery] PagePreviewModel previewModel,
+            [FromServices] IPagePreviewService previewService)
         {
             var previewSessionId = previewModel.PreviewSessionId;
             var contentId = previewModel.ContentId;
-               
+
             if (string.IsNullOrEmpty(previewSessionId) && string.IsNullOrEmpty(contentId))
             {
                 return PartialView("NoPreview");
             }
 
-            _logger.LogInformation("Generating a page preview for request: {0}", JsonConvert.SerializeObject(previewModel));
+            _logger.LogInformation("Generating a page preview for request: {0}",
+                JsonConvert.SerializeObject(previewModel));
 
             if (string.IsNullOrEmpty(previewSessionId))
             {
                 var previewContent = await previewService.GetPagePreviewAsync(contentId);
 
-                return string.IsNullOrEmpty(previewContent) ? PartialView("NoPreview") : Content(previewContent, "text/html");
+                return string.IsNullOrEmpty(previewContent)
+                    ? PartialView("NoPreview")
+                    : Content(previewContent, "text/html");
             }
 
-            var htmlTreeJsonFromSession = await  _pagePreviewSessionService.GetHtmlTreeAsync(previewSessionId);
+            var htmlTreeJsonFromSession = await _pagePreviewSessionService.GetHtmlTreeAsync(previewSessionId);
             if (string.IsNullOrEmpty(htmlTreeJsonFromSession))
             {
                 return PartialView("NoPreview");
@@ -119,16 +126,18 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             {
                 previewViewModel.SiteName = (await _siteService.GetSiteByIdAsync(previewModel.SiteId))?.Name;
                 previewViewModel.HtmlTree = JsonConvert.DeserializeObject<HtmlTreeRoot>(htmlTreeJsonFromSession);
-                
-                _logger.LogInformation("HTML page preview with ID ='{0}' has been generated successfully.", previewSessionId);
+
+                _logger.LogInformation("HTML page preview with ID ='{0}' has been generated successfully.",
+                    previewSessionId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error: unable to generate preview for ID = '{0}'. Invalid preview content data.", previewSessionId);
-                
+                _logger.LogError(ex, "Error: unable to generate preview for ID = '{0}'. Invalid preview content data.",
+                    previewSessionId);
+
                 return PartialView("PreviewError");
             }
-                   
+
             return PartialView(previewViewModel);
         }
 
@@ -136,14 +145,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
         [Route("save")]
         public async Task<IActionResult> SavePage(SavePageModel savePageModel, [FromServices] IPageRenderingService pageRenderingService)
         {
-            string contentId = savePageModel.ContentId, uploadSessionId = savePageModel.UploadSessionId;
             var htmlDocumentJson = await _pagePreviewSessionService.GetHtmlTreeAsync(savePageModel.PreviewSessionId);
-
-            if (string.IsNullOrEmpty(contentId) && string.IsNullOrEmpty(uploadSessionId))
+            var validationResult = ValidatePreviewData(htmlDocumentJson, savePageModel);
+            
+            if (validationResult is not null)
             {
-                _logger.LogWarning("At least one of the content ID or upload session ID must be non empty.");
-
-                return BadRequest();
+                return validationResult;
             }
             
             HtmlTreeRoot htmlTree;
@@ -154,37 +161,55 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             catch
             {
                 _logger.LogError("Invalid HTML tree data, unable to parse from JSON.");
-                
+
                 return UnprocessableEntity();
             }
 
             SavePageResponse result;
             var content = await pageRenderingService.RenderAsync(htmlTree);
-            if (!string.IsNullOrEmpty(contentId))
+            if (!string.IsNullOrEmpty(savePageModel.ContentId))
             {
-                var contentSize = Math.Round((decimal) await _contentManager.UpdateContentItem(contentId, content, savePageModel.CacheDuration) / 1024, 2);
-                result = new SavePageResponse(contentId, contentSize, null, DateTime.UtcNow);
+                var contentSize = Math.Round((decimal)await _contentManager.UpdateContentItem(savePageModel.ContentId, content, 
+                    savePageModel.CacheDuration) / 1024, 2);
+                result = new SavePageResponse(savePageModel.ContentId, contentSize, null, DateTime.UtcNow);
 
-                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.", contentId);
+                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.", savePageModel.ContentId);
             }
             else
             {
-                var destinationPath = savePageModel.DestinationPath;
-                var fileName = savePageModel.FileName;
-                if (!_contentUploadService.ValidateDestinationPath(destinationPath))
+                if (!_contentUploadService.ValidateDestinationPath(savePageModel.DestinationPath))
                 {
                     return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
                 }
 
-                await _contentUploadService.UploadContent(uploadSessionId, fileName, destinationPath, content, savePageModel.CacheDuration);
-                var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(fileName, uploadSessionId) / 1024, 2);
-                
+                await _contentUploadService.UploadContent(savePageModel.UploadSessionId, savePageModel.FileName, savePageModel.DestinationPath, content,
+                    savePageModel.CacheDuration);
+                var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(savePageModel.FileName, savePageModel.UploadSessionId) / 1024,
+                    2);
+
                 result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);
-                
+
                 _logger.LogInformation("New content file '{0}' has been saved successfully.", savePageModel.FileName);
             }
 
             return Ok(result);
         }
-    }
+
+        private IActionResult ValidatePreviewData(string htmlDocumentJson, SavePageModel savePageModel)
+        {
+            if (string.IsNullOrEmpty(htmlDocumentJson))
+            {
+                return BadRequest($"Preview session with ID = '{savePageModel.UploadSessionId}' does not exist.");
+            }
+
+            if (string.IsNullOrEmpty(savePageModel.ContentId) && string.IsNullOrEmpty(savePageModel.UploadSessionId))
+            {
+                _logger.LogWarning("At least one of the content ID or upload session ID must be non empty.");
+
+                return BadRequest();
+            }
+            
+            return null;
+        }
+}
 }
