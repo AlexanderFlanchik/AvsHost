@@ -143,16 +143,17 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
         [HttpPost]
         [Route("save")]
-        public async Task<IActionResult> SavePage(SavePageModel savePageModel, [FromServices] IPageRenderingService pageRenderingService)
+        public async Task<IActionResult> SavePage(SavePageModel savePageModel,
+            [FromServices] IPageRenderingService pageRenderingService)
         {
             var htmlDocumentJson = await _pagePreviewSessionService.GetHtmlTreeAsync(savePageModel.PreviewSessionId);
             var validationResult = ValidatePreviewData(htmlDocumentJson, savePageModel);
-            
+
             if (validationResult is not null)
             {
                 return validationResult;
             }
-            
+
             HtmlTreeRoot htmlTree;
             try
             {
@@ -169,11 +170,13 @@ namespace Avs.StaticSiteHosting.Web.Controllers
             var content = await pageRenderingService.RenderAsync(htmlTree);
             if (!string.IsNullOrEmpty(savePageModel.ContentId))
             {
-                var contentSize = Math.Round((decimal)await _contentManager.UpdateContentItem(savePageModel.ContentId, content, 
+                var contentSize = Math.Round((decimal)await _contentManager.UpdateContentItem(savePageModel.ContentId,
+                    content,
                     savePageModel.CacheDuration) / 1024, 2);
                 result = new SavePageResponse(savePageModel.ContentId, contentSize, null, DateTime.UtcNow);
 
-                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.", savePageModel.ContentId);
+                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.",
+                    savePageModel.ContentId);
             }
             else
             {
@@ -182,9 +185,12 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     return BadRequest("Invalid destination path. Network or relative paths are not allowed.");
                 }
 
-                await _contentUploadService.UploadContent(savePageModel.UploadSessionId, savePageModel.FileName, savePageModel.DestinationPath, content,
+                await _contentUploadService.UploadContent(savePageModel.UploadSessionId, savePageModel.FileName,
+                    savePageModel.DestinationPath, content,
                     savePageModel.CacheDuration);
-                var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(savePageModel.FileName, savePageModel.UploadSessionId) / 1024,
+                var contentSize = Math.Round(
+                    (decimal)_contentManager.GetNewFileSize(savePageModel.FileName, savePageModel.UploadSessionId) /
+                    1024,
                     2);
 
                 result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);
@@ -208,8 +214,8 @@ namespace Avs.StaticSiteHosting.Web.Controllers
 
                 return BadRequest();
             }
-            
+
             return null;
         }
-}
+    }
 }
