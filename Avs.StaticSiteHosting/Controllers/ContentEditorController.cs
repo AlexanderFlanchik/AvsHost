@@ -184,10 +184,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 await _contentUploadService.UploadContent(savePageModel.UploadSessionId, savePageModel.FileName,
                     savePageModel.DestinationPath, content,
                     savePageModel.CacheDuration);
-                var contentSize = Math.Round(
-                    (decimal)_contentManager.GetNewFileSize(savePageModel.FileName, savePageModel.UploadSessionId) /
-                    1024,
-                    2);
+                var contentSize = Math.Round((decimal)_contentManager.GetNewFileSize(savePageModel.FileName, savePageModel.UploadSessionId) / 1024, 2);
 
                 result = new SavePageResponse(null, contentSize, DateTime.UtcNow, null);
 
