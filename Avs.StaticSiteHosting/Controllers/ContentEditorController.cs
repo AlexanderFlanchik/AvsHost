@@ -171,8 +171,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                     savePageModel.CacheDuration) / 1024, 2);
                 result = new SavePageResponse(savePageModel.ContentId, contentSize, null, DateTime.UtcNow);
 
-                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.",
-                    savePageModel.ContentId);
+                _logger.LogInformation("The content with ID = '{0}' has been successfully updated.", savePageModel.ContentId);
             }
             else
             {
