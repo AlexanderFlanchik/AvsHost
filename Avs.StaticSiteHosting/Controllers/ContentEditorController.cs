@@ -101,8 +101,7 @@ namespace Avs.StaticSiteHosting.Web.Controllers
                 return PartialView("NoPreview");
             }
 
-            _logger.LogInformation("Generating a page preview for request: {0}",
-                JsonConvert.SerializeObject(previewModel));
+            _logger.LogInformation("Generating a page preview for request: {0}", JsonConvert.SerializeObject(previewModel));
 
             if (string.IsNullOrEmpty(previewSessionId))
             {
