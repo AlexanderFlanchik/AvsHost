@@ -104,32 +104,36 @@ const sitemapLink = computed(() => {
 });
 
 const sitemapClick = async () => {
-    const sitemapResultResponse = await apiClient.postAsync(`api/sitemap/generate/${props.siteId}`) as any;
-    const sitemapResult = sitemapResultResponse.data;
-    if (sitemapResult.error) {
-        alert('Unable to generate sitemap. Please try again later.');
-        return;
-    }
+    try {
+        const sitemapResultResponse = await apiClient.postAsync(`api/sitemap/generate/${props.siteId}`) as any;
+        const sitemapResult = sitemapResultResponse.data;
+        if (sitemapResult.error) {
+            alert(sitemapResult.error);
+            return;
+        }
 
-    const existingSitemap = props.uploaded.find(f => f.name.toLowerCase() === "sitemap.xml");
-    if (existingSitemap) {
-        existingSitemap.updateDate = new Date();
-        existingSitemap.size = sitemapResult.data.sizeKb;
-    } else {
-        const newSitemap = new ContentFile(
-            sitemapResult!.id,
-            "sitemap.xml",
-            '',
-            true,
-            sitemapResult!.sizeKb,
-            true,
-            false,
-            new Date(), 
-            null,
-            undefined        
-        );
+        const existingSitemap = props.uploaded.find(f => f.name.toLowerCase() === "sitemap.xml");
+        if (existingSitemap) {
+            existingSitemap.updateDate = new Date();
+            existingSitemap.size = sitemapResult.sizeKb;
+        } else {
+            const newSitemap = new ContentFile(
+                sitemapResult!.id,
+                "sitemap.xml",
+                '',
+                true,
+                sitemapResult!.sizeKb,
+                true,
+                false,
+                new Date(), 
+                null,
+                undefined        
+            );
         
-        props.uploaded.push(newSitemap);
+            props.uploaded.push(newSitemap);
+        }
+    } catch (err) {
+        alert("Unable to update sitemap. Please try again later.");
     }
 };
 

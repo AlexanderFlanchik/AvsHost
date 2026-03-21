@@ -16,10 +16,6 @@ public class SitemapController : BaseController
     {
         var sitemapResult = await sitemapManager.CreateOrUpdateSitemapAsync(siteId);
         
-        return string.IsNullOrEmpty(sitemapResult.Error) switch
-        {
-            false => BadRequest(new { sitemapResult.Error }),
-            _ => Ok(new { sitemapResult.SitemapId, sitemapResult.SizeKb })
-        };
+        return Ok(sitemapResult);
     }
 }
