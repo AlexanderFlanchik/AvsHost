@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import { ContentFile } from '../../common/ContentFile';
 import { API_CLIENT, AUTH_SERVICE } from '../../common/diKeys';
 import EditContentDialog from './EditContentDialog.vue';
@@ -9,6 +9,7 @@ import { NewCreatedContentHolder } from '../../services/NewCreatedContentHolder'
 import UploadContentDialog from './UploadContentDialog.vue';
 
 interface UploadedContentListProps {
+    siteId: string | null | undefined;
     uploaded: Array<ContentFile>;
     uploadSessionId: string;
     openPageEditor?: (file: ContentFile) => Promise<void>;
@@ -91,6 +92,47 @@ const edit = async (file: ContentFile) => {
 const view = (file: ContentFile) => 
     viewContentDialogRef.value?.open(file.name,
     `api/sitecontent?contentItemId=${file.id}&maxWidth=600&__accessToken=${authService.getToken()}`);
+
+const sitemapShouldBeShown = computed(() => {
+    const pages = props.uploaded.filter(f => f.name.endsWith(".html"));
+    return !props.siteId != null && props.uploaded != null && pages.length > 0;
+});
+
+const sitemapLink = computed(() => {
+    const sitemap = props.uploaded.find(f => f.name.toLowerCase() === "sitemap.xml");
+    return sitemap ? "Update Sitemap.." : "Add Sitemap..";
+});
+
+const sitemapClick = async () => {
+    const sitemapResultResponse = await apiClient.postAsync(`api/sitemap/generate/${props.siteId}`) as any;
+    const sitemapResult = sitemapResultResponse.data;
+    if (sitemapResult.error) {
+        alert('Unable to generate sitemap. Please try again later.');
+        return;
+    }
+
+    const existingSitemap = props.uploaded.find(f => f.name.toLowerCase() === "sitemap.xml");
+    if (existingSitemap) {
+        existingSitemap.updateDate = new Date();
+        existingSitemap.size = sitemapResult.data.sizeKb;
+    } else {
+        const newSitemap = new ContentFile(
+            sitemapResult!.id,
+            "sitemap.xml",
+            '',
+            true,
+            sitemapResult!.sizeKb,
+            true,
+            false,
+            new Date(), 
+            null,
+            undefined        
+        );
+        
+        props.uploaded.push(newSitemap);
+    }
+};
+
 </script>
 <template>
     <div>
@@ -102,9 +144,14 @@ const view = (file: ContentFile) =>
         </UploadContentDialog>
         <ViewContentDialog ref="viewContentDialogRef" />    
         <EditContentDialog ref="editContentDialogRef" />
-        <div class="upload-file-link-container">
-            <a href="javascript:void(0)" @click="() => uploadContentDialogRef?.open()">Upload New Content..</a>
-        </div> 
+        <div class="links-container">
+            <div class="sitemap-link-container" v-if="sitemapShouldBeShown">
+                <a href="javascript:void(0)" @click="sitemapClick">{{ sitemapLink }}</a>
+            </div>
+            <div class="upload-file-link-container">
+                <a href="javascript:void(0)" @click="() => uploadContentDialogRef?.open()">Upload New Content..</a>
+            </div> 
+        </div>
         <div v-if="props.uploaded?.length > 0">
             <table class="table table-hover uploaded-files-table">
                 <thead>
@@ -161,8 +208,12 @@ const view = (file: ContentFile) =>
         font-weight: bold;
         text-align: center;
     }
-    .upload-file-link-container {
-        width: 100%;
+    .links-container {
+        display: flex;
+        gap: 5px;
+        justify-content: flex-end;
+    }
+    .upload-file-link-container {        
         text-align: right;
     }
 </style>
