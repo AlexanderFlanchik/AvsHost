@@ -501,7 +501,8 @@ const applyValidationErrorClass = computed(() => {
             <div class="uploaded-content-holder">
                 <div>
                     <span class="form-title">Site content</span>
-                    <UploadedContentList 
+                    <UploadedContentList
+                        :siteId="model.siteId"
                         :uploadSessionId="model.uploadSessionId" 
                         :uploaded="model.uploaded" 
                         :openPageEditor="openPageEditor"

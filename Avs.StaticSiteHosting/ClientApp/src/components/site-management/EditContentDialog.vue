@@ -79,7 +79,7 @@ defineExpose({ showDialog });
             <TimeSpanInput v-model="model.cacheDuration"/>
         </span>
         <div class="content-centered content-editor" >
-            <textarea v-if="!model.contentType" v-model="model.content"  @change="() => model.error = null"></textarea>
+            <textarea v-if="!model.contentType" v-model="model.content" @change="() => model.error = null"></textarea>
             <CodeEditor v-else v-model:value="model.content"                 
                 :options="editorOptions"
                 :language="model.contentType"
@@ -97,5 +97,10 @@ defineExpose({ showDialog });
         width: -webkit-fill-available;
         border: 0;
         resize: none;
+    }
+    .content-editor > textarea {
+        margin-top: 5px;
+        width: 99%;
+        height: calc(99% - 5px);
     }
 </style>
