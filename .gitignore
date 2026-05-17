@@ -72,3 +72,7 @@ Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.ServiceDefaults/obj
 /Avs.StaticSiteHosting/.vs/*
 /Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.AppHost/bin/Debug/net9.0
 /Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.ServiceDefaults/bin/Debug/net9.0
+/Avs.StaticSiteHosting.GenAiApi/obj
+/Avs.StaticSiteHosting.GenAiApi/debug
+/Avs.StaticSiteHosting.GenAiApi/bin/debug
+/Avs.StaticSiteHosting.GenAiApi/bin/obj

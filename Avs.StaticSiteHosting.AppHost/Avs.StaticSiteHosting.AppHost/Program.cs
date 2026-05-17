@@ -16,10 +16,13 @@ var mongo = builder.AddMongoDB("mongo", 27017, dbUsername, dbPassword)
     .WithDataVolume();
 
 var mongoDb = mongo.AddDatabase(databaseName);
+var genaiDb = mongo.AddDatabase("GenAiApi");
 var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword,55720)
     .WithManagementPlugin()
     .WithEndpoint("management", endpoint => endpoint.Port = 15672)
     .WithLifetime(ContainerLifetime.Persistent);
+
+var redis = builder.AddRedis("avs-redis");
 
 var customRouteApi = builder
     .AddBunApp("custom-route-api", "../../avs.staticsitehosting.customrouteapi")
@@ -29,15 +32,22 @@ var customRouteApi = builder
     .WaitFor(mongoDb)
     .WaitFor(rabbitMq);
 
+var genaiApi = builder.AddProject<Projects.Avs_StaticSiteHosting_GenAiApi>("avs-staticsitehosting-genaiapi")
+    .WithReference(genaiDb)
+    .WithReference(redis)
+    .WaitFor(genaiDb)
+    .WaitFor(redis);
+
 builder.AddProject<Projects.Avs_StaticSiteHosting_DataMigrator>("avs-staticsitehosting-datamigrator")
     .WithReference(mongoDb)
     .WaitFor(mongoDb);
 
 var dashboard = builder.AddProject<Projects.Avs_StaticSiteHosting_Web>("avs-staticsitehosting-web")
-     .WithReference(mongoDb)
-     .WaitFor(mongoDb)
-     .WithReference(rabbitMq)
-     .WaitFor(rabbitMq);
+    .WithReference(mongoDb)
+    .WaitFor(mongoDb)
+    .WithReference(rabbitMq)
+    .WaitFor(rabbitMq)
+    .WithReference(genaiApi);
 
 builder.AddProject<Projects.Avs_StaticSiteHosting_ContentHost>("avs-staticsitehosting-contenthost")
     .WithReference(rabbitMq)
@@ -45,6 +55,7 @@ builder.AddProject<Projects.Avs_StaticSiteHosting_ContentHost>("avs-staticsiteho
     .WithReference(dashboard)
     .WithEnvironment("CUSTOM_ROUTE_API_URL", customRouteApi.GetEndpoint("http"))
     .WaitFor(dashboard)
-    .WaitFor(customRouteApi);
+    .WaitFor(customRouteApi)
+    .WithReference(genaiApi);
 
 builder.Build().Run();

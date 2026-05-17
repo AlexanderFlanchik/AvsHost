@@ -12,9 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.1.1" />
-    <PackageReference Include="Aspire.Hosting.MongoDB" Version="13.1.1" />
-    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.1.1" />
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.MongoDB" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" Version="13.2.2" />
+    <PackageReference Include="Aspire.Hosting.Redis" Version="13.2.2" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Bun" Version="13.1.1" />
     <PackageReference Include="KubernetesClient" Version="18.0.13" />
   </ItemGroup>
@@ -22,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Avs.StaticSiteHosting.ContentHost\Avs.StaticSiteHosting.ContentHost.csproj" />
     <ProjectReference Include="..\..\Avs.StaticSiteHosting.DataMigrator\Avs.StaticSiteHosting.DataMigrator.csproj" />
+    <ProjectReference Include="..\..\Avs.StaticSiteHosting.GenAiApi\Avs.StaticSiteHosting.GenAiApi.csproj" />
     <ProjectReference Include="..\..\Avs.StaticSiteHosting\Avs.StaticSiteHosting.Web.csproj" />
   </ItemGroup>
 
