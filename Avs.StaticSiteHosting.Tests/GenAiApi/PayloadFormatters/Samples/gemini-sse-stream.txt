@@ -1,0 +1,5 @@
+event: message
+data: {"responseId":"gemini-789","modelVersion":"gemini-1.0","candidates":[{"index":0,"content":{"role":"model","parts":[{"text":"Streamed chunk"}]},"finishReason":"STOP"}]}
+
+event: message
+data: {"responseId":"gemini-789","modelVersion":"gemini-1.0","candidates":[{"index":0,"content":{"role":"model","parts":[{"text":"Second chunk"}]},"finishReason":"STOP"}]}

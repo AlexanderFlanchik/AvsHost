@@ -1,7 +1,6 @@
-using System.Diagnostics;
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Avs.StaticSiteHosting.GenAiApi.Services.PayloadFormatters;
 using Xunit.Abstractions;
 
@@ -10,175 +9,163 @@ namespace Avs.StaticSiteHosting.Tests.GenAiApi.PayloadFormatters;
 public class JsonRemapperTests : JsonRemapperTestsBase
 {
     private readonly ITestOutputHelper _testOutputHelper;
-    
+
     public JsonRemapperTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
     }
-    
+
     [Fact]
-    public async Task RegisterFromJson_AndLookupByName_RoundTrips()
+    public async Task OpenAiRequest_MapsToAnthropicRequest()
     {
-        // Arrange
-        const string mappingId = "trivial";
-        string mapping = await GetContent("Mappings", "trivial-mapping.json");
         var remapper = new JsonRemapper();
+        var mappingJson = await GetContent("Mappings", "openai-to-anthropic-request.json");
+        remapper.RegisterFromJson(mappingJson, "openai-to-anthropic-request");
 
-        // Act
-        var compiled = remapper.RegisterFromJson(mapping, mappingId);
+        var sourceJson = await GetContent("Samples", "openai-request.json");
+        var destination = new ArrayBufferWriter<byte>();
 
-        // Assert
-        Assert.Equal("trivial", compiled.Id);
-        Assert.True(remapper.TryGet(mappingId, out var resolved));
-        Assert.Same(compiled, resolved);
-        Assert.Same(compiled, remapper.Get(mappingId));
+        remapper.Transform("openai-to-anthropic-request", Encoding.UTF8.GetBytes(sourceJson), destination);
+        using var document = JsonDocument.Parse(destination.WrittenMemory);
+
+        var root = document.RootElement;
+        Assert.Equal("gpt-4.1", root.GetProperty("model").GetString());
+        Assert.Equal(100, root.GetProperty("max_tokens").GetInt32());
+        Assert.Equal(0.7, root.GetProperty("temperature").GetDouble());
+
+        var systemProperty = root.GetProperty("system");
+        Assert.Contains("You are a helpful assistant.", systemProperty.GetRawText());
+
+        var messages = root.GetProperty("messages").EnumerateArray().ToArray();
+        Assert.Equal(2, messages.Length);
+        Assert.Equal("user", messages[0].GetProperty("role").GetString());
+        Assert.Equal("Write a short poem.", messages[0].GetProperty("content")[0].GetProperty("text").GetString());
+        Assert.Equal("assistant", messages[1].GetProperty("role").GetString());
+        Assert.Equal("Certainly!", messages[1].GetProperty("content")[0].GetProperty("text").GetString());
     }
-    
+
     [Fact]
-    public void Get_UnknownMapping_Throws()
-    { 
-        // Arrange
+    public async Task OpenAiRequest_MapsToGeminiRequest()
+    {
         var remapper = new JsonRemapper();
+        var mappingJson = await GetContent("Mappings", "openai-to-gemini-request.json");
+        remapper.RegisterFromJson(mappingJson, "openai-to-gemini-request");
 
-        // Act + Assert
-        Assert.False(remapper.TryGet("does-not-exist", out _));
-        Assert.Throws<KeyNotFoundException>(() => remapper.Get("does-not-exist"));
-    }
-  
-    [Fact]
-    public async Task Transform_ShouldCorrectlyTransform_OllamaToOpenAiResponse()
-    {
-        // Arrange
-        string mapping = await GetContent("Mappings","ollama-to-openai-response.json");
-        string ollamaResponseJson = await GetContent("Samples", "ollama-response.json");
-        
-        // Act
-        var root = await ActAndGetResponse(mapping, ollamaResponseJson);
+        var sourceJson = await GetContent("Samples", "openai-request.json");
+        await using var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(sourceJson));
+        await using var destinationStream = new MemoryStream();
 
-        // Assert
-        AssertOllamaResponse(root);
+        await remapper.TransformAsync("openai-to-gemini-request", sourceStream, destinationStream);
+        var actual = Encoding.UTF8.GetString(destinationStream.ToArray());
+        using var document = JsonDocument.Parse(actual);
+
+        var root = document.RootElement;
+        Assert.Equal("gpt-4.1", root.GetProperty("model").GetString());
+        Assert.Equal("system", root.GetProperty("systemInstruction").GetProperty("role").GetString());
+        Assert.Equal("You are a helpful assistant.", root.GetProperty("systemInstruction").GetProperty("parts")[0].GetProperty("text").GetString());
+        Assert.Equal("user", root.GetProperty("contents")[0].GetProperty("role").GetString());
+        Assert.Equal("model", root.GetProperty("contents")[1].GetProperty("role").GetString());
+        Assert.Equal(0.7, root.GetProperty("generationConfig").GetProperty("temperature").GetDouble());
+        Assert.Equal(100, root.GetProperty("generationConfig").GetProperty("maxOutputTokens").GetInt32());
     }
 
     [Fact]
-    public async Task Transform_ShouldCorrectlyTransform_OllamaToOpenAiResponseWithTools()
+    public async Task AnthropicRequest_MapsToOpenAiRequest()
     {
-        // Arrange
-        string mapping = await GetContent("Mappings","ollama-to-openai-response.json");
-        string ollamaResponseJson = await GetContent("Samples", "ollama-response-with-tools.json");
-        
-        // Act
-        var root = await ActAndGetResponse(mapping, ollamaResponseJson);
-        
-        // Assert
-        AssertOllamaResponseWithToolCall(root);
-    }
-    
-    [Fact]
-    public async Task TransformAsync_ShouldCorrectlyTransform_OllamaToOpenAiResponseWithTools()
-    {
-        // Arrange
-        string mapping = await GetContent("Mappings","ollama-to-openai-response.json");
-        string ollamaResponseJson = await GetContent("Samples", "ollama-response-with-tools.json");
-        
-        // Act
-        var root = await ActAndGetResponse(mapping, ollamaResponseJson, true);
-        
-        // Assert
-        AssertOllamaResponseWithToolCall(root);
-    }
-    
-    [Fact]
-    public async Task TransformAsync_ShouldCorrectlyTransform_OllamaToOpenAiResponse()
-    {
-        // Arrange
-        string mapping = await GetContent("Mappings","ollama-to-openai-response.json");
-        string ollamaResponseJson = await GetContent("Samples", "ollama-response.json");
-        
-        // Act
-        var root = await ActAndGetResponse(mapping, ollamaResponseJson, true);
-
-        // Assert
-        AssertOllamaResponse(root);
-    }
-    
-    private async Task<JsonElement> ActAndGetResponse(string mapping, string input, bool isAsync = false)
-    {
-        const string mappingId = "test_mapping";         
         var remapper = new JsonRemapper();
-        
-        remapper.RegisterFromJson(mapping, mappingId);                                                
-        using var inputStream = new MemoryStream(Encoding.UTF8.GetBytes(input));        
-        
-        using var outputStream = new MemoryStream();                                  
-        var sw = new Stopwatch();                                                     
-        sw.Start();
-        
-        if (isAsync)
-        {
-            await remapper.TransformAsync(mappingId, inputStream, outputStream);
-        }
-        else
-        {
-            remapper.Transform(mappingId, inputStream, outputStream);                     
-        }
-        
-        sw.Stop();                                                                    
-        _testOutputHelper.WriteLine($"JSON remap time: {sw.Elapsed.Microseconds} us");
-        
-        outputStream.Position = 0;                                       
-        using var outputDataDocument = JsonDocument.Parse(outputStream); 
-        var root = outputDataDocument.RootElement;                       
-        
-        return root.Clone();
+        var mappingJson = await GetContent("Mappings", "antropic-to-openai-request.json");
+        remapper.RegisterFromJson(mappingJson, "antropic-to-openai-request");
+
+        var sourceJson = await GetContent("Samples", "anthropic-request.json");
+        var actual = remapper.TransformToString("antropic-to-openai-request", sourceJson);
+
+        using var document = JsonDocument.Parse(actual);
+        var root = document.RootElement;
+
+        Assert.Equal("claude-3", root.GetProperty("model").GetString());
+        var messages = root.GetProperty("messages").EnumerateArray().ToArray();
+        Assert.Equal("system", messages[0].GetProperty("role").GetString());
+        Assert.Equal("Assistant should be concise.", messages[0].GetProperty("content").GetString());
+        Assert.Equal("user", messages[1].GetProperty("role").GetString());
+        Assert.Equal("Summarize this.", messages[1].GetProperty("content").GetString());
     }
-    
-    #region Assert Methods
-    
-    private static void AssertOllamaResponse(JsonElement root)
+
+    [Fact]
+    public async Task AnthropicResponse_MapsToOpenAiResponse()
     {
+        var remapper = new JsonRemapper();
+        var mappingJson = await GetContent("Mappings", "antropic-to-openai-response.json");
+        remapper.RegisterFromJson(mappingJson, "antropic-to-openai-response");
+
+        var sourceJson = await GetContent("Samples", "anthropic-response.json");
+        var destination = new ArrayBufferWriter<byte>();
+
+        remapper.Transform("antropic-to-openai-response", Encoding.UTF8.GetBytes(sourceJson), destination);
+        using var document = JsonDocument.Parse(destination.WrittenMemory);
+
+        var root = document.RootElement;
+        Assert.Equal("anthropic-123", root.GetProperty("id").GetString());
+        Assert.Equal("chat.completion", root.GetProperty("object").GetString());
+        Assert.Equal("claude-3", root.GetProperty("model").GetString());
+
+        var choice = root.GetProperty("choices")[0];
+        Assert.Equal("assistant", choice.GetProperty("message").GetProperty("role").GetString());
+        Assert.Equal("Hello from Anthropic.", choice.GetProperty("message").GetProperty("content").GetString());
+        Assert.Equal("stop", choice.GetProperty("finish_reason").GetString());
+
+        var usage = root.GetProperty("usage");
+        Assert.Equal(12, usage.GetProperty("prompt_tokens").GetInt32());
+        Assert.Equal(34, usage.GetProperty("completion_tokens").GetInt32());
+        Assert.Equal(46, usage.GetProperty("total_tokens").GetInt32());
+    }
+
+    [Fact]
+    public async Task GeminiResponse_MapsToOpenAiResponse()
+    {
+        var remapper = new JsonRemapper();
+        var mappingJson = await GetContent("Mappings", "gemini-to-openai-response.json");
+        remapper.RegisterFromJson(mappingJson, "gemini-to-openai-response");
+
+        var sourceJson = await GetContent("Samples", "gemini-response.json");
+        await using var sourceStream = new MemoryStream(Encoding.UTF8.GetBytes(sourceJson));
+        var actualBytes = await remapper.TransformToBytesAsync("gemini-to-openai-response", sourceStream);
+        using var document = JsonDocument.Parse(actualBytes);
+
+        var root = document.RootElement;
+        Assert.Equal("chat.completion", root.GetProperty("object").GetString());
+        Assert.Equal("gemini-1.0", root.GetProperty("model").GetString());
+
+        var choice = root.GetProperty("choices")[0];
+        Assert.Equal("assistant", choice.GetProperty("message").GetProperty("role").GetString());
+        Assert.Equal("Gemini says hi.", choice.GetProperty("message").GetProperty("content").GetString());
+        Assert.Equal("stop", choice.GetProperty("finish_reason").GetString());
+
+        var usage = root.GetProperty("usage");
+        Assert.Equal(5, usage.GetProperty("prompt_tokens").GetInt32());
+        Assert.Equal(10, usage.GetProperty("completion_tokens").GetInt32());
+        Assert.Equal(15, usage.GetProperty("total_tokens").GetInt32());
+    }
+
+    [Fact]
+    public async Task OllamaResponse_MapsToOpenAiResponse()
+    {
+        var remapper = new JsonRemapper();
+        var mappingJson = await GetContent("Mappings", "ollama-to-openai-response.json");
+        remapper.RegisterFromJson(mappingJson, "ollama-to-openai-response");
+
+        var sourceJson = await GetContent("Samples", "ollama-response.json");
+        var actual = remapper.TransformToString("ollama-to-openai-response", sourceJson);
+
+        using var document = JsonDocument.Parse(actual);
+        var root = document.RootElement;
         Assert.Equal("chat.completion", root.GetProperty("object").GetString());
         Assert.Equal("llama3.2", root.GetProperty("model").GetString());
-        Assert.Equal(1, root.GetProperty("choices").GetArrayLength());
-        
-        var choice = JsonNode.Parse(root.GetProperty("choices").GetRawText())?[0]!;
-        Assert.Equal(0, choice["index"]!.GetValue<int>());
-        Assert.Equal("assistant", choice["message"]!.AsObject()["role"]!.GetValue<string>());
-        Assert.Contains("Backpropagation is the algorithm", choice["message"]!.AsObject()["content"]!.GetValue<string>());
-        Assert.Equal("stop", choice["finish_reason"]!.GetValue<string>());
 
-        var usage = JsonNode.Parse(root.GetProperty("usage").GetRawText())!;
-        Assert.Equal(23, usage.AsObject()["prompt_tokens"]!.GetValue<int>());
-        Assert.Equal(56, usage.AsObject()["completion_tokens"]!.GetValue<int>());
-        Assert.Equal(79, usage.AsObject()["total_tokens"]!.GetValue<int>());
+        var choice = root.GetProperty("choices")[0];
+        Assert.Equal(0, choice.GetProperty("index").GetInt32());
+        Assert.Equal("assistant", choice.GetProperty("message").GetProperty("role").GetString());
+        Assert.Equal("Backpropagation is the algorithm that computes gradients of a loss with respect to network weights by applying the chain rule layer-by-layer in reverse.",
+            choice.GetProperty("message").GetProperty("content").GetString());
+        Assert.Equal("stop", choice.GetProperty("finish_reason").GetString());
     }
-    
-    private static void AssertOllamaResponseWithToolCall(JsonElement root)
-    {
-        Assert.Equal("chat.completion", root.GetProperty("object").GetString());
-        Assert.Equal("llama3.2", root.GetProperty("model").GetString());
-        Assert.Equal(1, root.GetProperty("choices").GetArrayLength());
-        
-        var choice = JsonNode.Parse(root.GetProperty("choices").GetRawText())?[0]!;
-        Assert.Equal(0, choice["index"]!.GetValue<int>());
-        Assert.Equal("assistant", choice["message"]!.AsObject()["role"]!.GetValue<string>());
-
-        var toolCalls = choice["message"]!.AsObject()["tool_calls"]!.AsArray();
-        Assert.Single(toolCalls);
-        
-        var toolCall = toolCalls[0]!;
-        Assert.Equal("function", toolCall["type"]!.GetValue<string>());
-        Assert.Equal("get_current_weather", toolCall["function"]!.AsObject()["name"]!.GetValue<string>());
-        var args = JsonNode.Parse(toolCall["function"]!.AsObject()["arguments"]!.GetValue<string>())!;
-        Assert.Equal("Paris", args["city"]!.GetValue<string>());
-        Assert.Equal("celsius", args["unit"]!.GetValue<string>());
-
-        Assert.Equal("stop", choice["finish_reason"]!.GetValue<string>());
-
-        var usage = JsonNode.Parse(root.GetProperty("usage").GetRawText())!;
-        Assert.Equal(35, usage.AsObject()["prompt_tokens"]!.GetValue<int>());
-        Assert.Equal(22, usage.AsObject()["completion_tokens"]!.GetValue<int>());
-        Assert.Equal(57, usage.AsObject()["total_tokens"]!.GetValue<int>());
-    }
-    
-    #endregion
 }

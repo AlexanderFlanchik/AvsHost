@@ -1,0 +1,15 @@
+{
+  "id": "anthropic-123",
+  "model": "claude-3",
+  "content": [
+    {
+      "type": "text",
+      "text": "Hello from Anthropic."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 12,
+    "output_tokens": 34
+  }
+}

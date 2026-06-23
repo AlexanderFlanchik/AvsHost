@@ -1,0 +1,2 @@
+{"model":"llama3.2","created_at":"2026-05-26T13:00:00Z","message":{"role":"assistant","content":"First partial"},"done_reason":null}
+{"model":"llama3.2","created_at":"2026-05-26T13:00:00Z","message":{"role":"assistant","content":"Second partial"},"done_reason":"stop"}
