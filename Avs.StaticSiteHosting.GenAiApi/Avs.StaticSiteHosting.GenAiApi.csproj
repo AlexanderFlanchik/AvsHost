@@ -19,8 +19,4 @@
     <ProjectReference Include="..\Avs.StaticSiteHosting.AppHost\Avs.StaticSiteHosting.ServiceDefaults\Avs.StaticSiteHosting.ServiceDefaults.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\PayloadProcessing\Ollama\" />
-  </ItemGroup>
-
 </Project>

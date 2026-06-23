@@ -11,4 +11,9 @@ public static class AppConstants
     /// /api/ route segment
     /// </summary>
     public const string ApiSegment = "/api/";
+    
+    /// <summary>
+    /// Default JSON response content type
+    /// </summary>
+    public const string DefaultJsonType = "application/json";
 }

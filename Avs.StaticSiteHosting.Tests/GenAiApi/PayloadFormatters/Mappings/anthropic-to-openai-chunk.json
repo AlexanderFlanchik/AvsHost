@@ -1,0 +1,31 @@
+{
+  "name": "anthropic-to-openai-chunk",
+  "description": "Unified mapping for all Anthropic SSE event types (message_start, content_block_delta, message_delta) to OpenAI streaming chunk. Handles all event types in a single mapping to support model-based routing (one mapping per route + payload type), rather than per-event-type routing.",
+  "template": {
+    "id": { "$from": "$.message.id", "$skipIfMissing": true },
+    "object": { "$const": "chat.completion.chunk" },
+    "model": { "$from": "$.message.model", "$skipIfMissing": true },
+    "choices": [
+      {
+        "index": { "$from": "$.index", "$default": 0 },
+        "delta": {
+          "role": { "$from": "$.message.role", "$skipIfMissing": true },
+          "content": { "$from": "$.delta.text", "$skipIfMissing": true }
+        },
+        "finish_reason": {
+          "$from": "$.delta.stop_reason",
+          "$valueMap": {
+            "end_turn": "stop",
+            "stop_sequence": "stop",
+            "max_tokens": "length",
+            "tool_use": "tool_calls"
+          },
+          "$default": null
+        }
+      }
+    ],
+    "usage": {
+      "completion_tokens": { "$from": "$.usage.output_tokens", "$skipIfMissing": true }
+    }
+  }
+}

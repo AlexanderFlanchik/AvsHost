@@ -1,0 +1,23 @@
+{
+  "name": "anthropic-to-openai-request",
+  "description": "Map an Anthropic Messages request body to OpenAI chat-completions shape. The top-level Anthropic 'system' field (when present) is spliced in as the first message with role='system'. Assumes each Anthropic content array contains a single text block (the common non-tool-use case).",
+  "template": {
+    "model": "$.model",
+    "max_tokens": { "$from": "$.max_tokens", "$skipIfMissing": true },
+    "temperature": { "$from": "$.temperature", "$skipIfMissing": true },
+    "messages": {
+      "$array": "$.messages[*]",
+      "$prepend": [
+        {
+          "$if": "$.system",
+          "role": { "$const": "system" },
+          "content": "$.system"
+        }
+      ],
+      "$item": {
+        "role": "@.role",
+        "content": "@.content[0].text"
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "ollama-chunk-to-openai-chunk",
+  "description": "Per-chunk mapping for Ollama NDJSON streams: each line becomes one OpenAI 'chat.completion.chunk' SSE event. The streaming layer feeds JSON lines individually through this mapping.",
+  "template": {
+    "object": { "$const": "chat.completion.chunk" },
+    "model": "$.model",
+    "created": { "$from": "$.created_at", "$skipIfMissing": true },
+    "choices": [
+      {
+        "index": { "$const": 0 },
+        "delta": {
+          "role": { "$from": "$.message.role", "$skipIfMissing": true },
+          "content": { "$from": "$.message.content", "$skipIfMissing": true }
+        },
+        "finish_reason": {
+          "$from": "$.done_reason",
+          "$valueMap": {
+            "stop": "stop",
+            "length": "length",
+            "load": "stop"
+          },
+          "$skipIfMissing": true
+        }
+      }
+    ]
+  }
+}

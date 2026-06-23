@@ -2,25 +2,24 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Nodes;
 using Avs.StaticSiteHosting.GenAiApi.Common;
+using Avs.StaticSiteHosting.GenAiApi.Services.PayloadProcessing;
 
 namespace Avs.StaticSiteHosting.GenAiApi.Services;
 
-public class DefaultProxyClient(HttpClient client, ILogger<DefaultProxyClient> logger) : IProxyClient
+public class DefaultProxyClient(HttpClient client, IResponseTransform responseTransform, ILogger<DefaultProxyClient> logger)
+    : IProxyClient
 {
     private static readonly string[] _contentHeaders = ["Content-Type", "Content-Length"];
-    private static readonly string[] _streamingTypes = ["application/x-ndjson", "text/event-stream"];
+    private static readonly string[] _streamingTypes = ["text/event-stream", "application/x-ndjson"];
     
-    public async Task ProxyLlmRequestAsync(VendorSettings vendor, ModelSettings model, string requestBodyContent, HttpContext context)
+    public async Task ProxyLlmRequestAsync(HttpContext context, VendorSettings vendor, ModelSettings model)
     {
         var proxyUrl = GetProxyUrl(vendor, model, context.Request.Path);
         var cancellationToken = context.RequestAborted;
+        var content = new StreamContent(context.Request.Body);
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         
-        var content = new StringContent(requestBodyContent, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Post, proxyUrl)
-        {
-            Content = content
-        };
-        
+        var request = new HttpRequestMessage(HttpMethod.Post, proxyUrl) { Content = content };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", vendor.ApiKey);
         
         using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead,
@@ -40,34 +39,18 @@ public class DefaultProxyClient(HttpClient client, ILogger<DefaultProxyClient> l
         }
         
         CopyHeaders(response, context.Response.Headers);
-        // await responseTransform.TransformAsync(context.Response, model, response);
-        await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        await responseStream.CopyToAsync(context.Response.Body, cancellationToken);
+        await responseTransform.TransformAsync(context.Response, model, response);
     }
 
     private string GetProxyUrl(VendorSettings vendor, ModelSettings model, string requestPath)
     {
-        var modelPath = requestPath.Replace(AppConstants.ApiSegment, string.Empty);
-        if (string.IsNullOrEmpty(model.CustomSettings))
+        if (!string.IsNullOrEmpty(model.DefaultModelUrl))
         {
-            return $"{vendor.BaseUrl}/{modelPath}";
+            return model.DefaultModelUrl.Replace("{apiKey}", vendor.ApiKey);
         }
         
-        JsonObject? settingsObj = null; 
-        try
-        {
-            settingsObj = JsonNode.Parse(model.CustomSettings)!.AsObject();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Error parsing model custom settings for {vendorCode}/{modelName}", vendor.Code, model.Name);
-        }
-            
-        if (settingsObj!.TryGetPropertyValue("modelUrl", out var modelUrlObj) && modelUrlObj is not null)
-        {
-            return modelUrlObj.GetValue<string>();
-        }
-
+        var modelPath = requestPath[1..].Replace(AppConstants.ApiSegment, string.Empty);
+        
         return $"{vendor.BaseUrl}/{modelPath}";
     }
 
@@ -75,7 +58,7 @@ public class DefaultProxyClient(HttpClient client, ILogger<DefaultProxyClient> l
     {
         foreach (var header in response.Headers)
         {
-            if (headers.ContainsKey(header.Key))
+            if (headers.ContainsKey(header.Key) || response.Headers.Contains("Transfer-Encoding"))
             {
                 continue;
             }
@@ -83,21 +66,21 @@ public class DefaultProxyClient(HttpClient client, ILogger<DefaultProxyClient> l
             headers[header.Key] = header.Value.ToArray();
         }
         
-        var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/json";
+        var contentType =  response.Content.Headers.ContentType?.ToString() ?? AppConstants.DefaultJsonType;
         headers.ContentType = contentType;
-        
-        if (!_streamingTypes.Contains(contentType))
+
+        if (!_streamingTypes.Contains(contentType) && !response.Headers.Contains("Transfer-Encoding"))
         {
             headers.ContentLength = response.Content.Headers.ContentLength;
         }
-        
+
         foreach (var header in response.Content.Headers)
         {
             if (_contentHeaders.Contains(header.Key))
             {
                 continue;
             }
-            
+
             headers[header.Key] = header.Value.ToArray();
         }
     }

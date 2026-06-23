@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Avs.StaticSiteHosting.GenAiApi.Common;
+using Avs.StaticSiteHosting.GenAiApi.Services;
 
 namespace Avs.StaticSiteHosting.GenAiApi.DTOs;
 
@@ -21,6 +22,13 @@ public record CreateVendorRequest(
     [Required] string ApiKey,
     string CustomSettings);
 
+public record UpdateVendorRequest(
+    string? Description,
+    string? BaseUrl,
+    string? ApiKey,
+    string? CustomSettings
+);
+
 #endregion
 
 #region Model
@@ -30,7 +38,9 @@ public record ModelData(
     [Required] string VendorCode, 
     [Required] string[] Paths, 
     string[] Features,
-    IDictionary<PayloadMappingType, string> PayloadMappings,
+    bool IsActive = true,
+    string? DefaultModelUrl = null,
+    PayloadMappingRef[]? PayloadMappings = null,
     string? CustomSettings = null);
 
 public record UpdateModelRequest(string Id, ModelData Model);

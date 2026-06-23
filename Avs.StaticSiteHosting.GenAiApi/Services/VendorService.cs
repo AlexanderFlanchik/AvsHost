@@ -19,6 +19,13 @@ public interface IVendorService
     /// <param name="request">New vendor data</param>
     /// <returns>Vendor ID</returns>
     Task<Result<string>> CreateVendorAsync(CreateVendorRequest request);
+
+    /// <summary>
+    /// Updates an existing vendor
+    /// </summary>
+    /// <param name="vendorCode">Vendor code (e.g. ollama).</param>
+    /// <param name="request">Vendor data</param>
+    Task<Result> UpdateVendorAsync(string vendorCode, UpdateVendorRequest request);
 }
 
 public class VendorService(
@@ -32,7 +39,7 @@ public class VendorService(
     public async Task<IEnumerable<VendorResponse>> GetAllVendorsAsync()
     {
         return (await repository.GetVendorsAsync())
-            .Select(v => new VendorResponse(v.Id, v.Code, v.Name,  v.BaseUrl, v.Description, v.CustomSettings));
+            .Select(v => new VendorResponse(v.Id, v.Name, v.Code,  v.BaseUrl, v.Description, v.CustomSettings));
     }
 
     public async Task<Result<string>> CreateVendorAsync(CreateVendorRequest request)
@@ -57,5 +64,26 @@ public class VendorService(
         await pubSub.PublishAsync(new VendorCreated(vendor.Id, vendor.Code, vendor.BaseUrl, request.ApiKey, vendor.CustomSettings));
         
         return Result<string>.Success(vendor.Id);
+    }
+
+    public async Task<Result> UpdateVendorAsync(string vendorCode, UpdateVendorRequest request)
+    {
+        var vendor = await repository.GetVendorAsync(vendorCode);
+        if (vendor is null)
+        {
+            return Result.Fail("Vendor does not exist.");
+        }
+        
+        vendor.Description = request.Description ?? vendor.Description;
+        vendor.BaseUrl = request.BaseUrl ?? vendor.BaseUrl;
+        vendor.CustomSettings = request.CustomSettings ?? vendor.CustomSettings;
+        vendor.ApiKey = request.ApiKey is not null ? _protector.Protect(request.ApiKey) : vendor.ApiKey;
+        
+        await repository.UpdateVendorAsync(vendor);
+        await pubSub.PublishAsync(new VendorUpdated(vendor.Id, vendor.BaseUrl, 
+            request.ApiKey ?? _protector.Unprotect(vendor.ApiKey), 
+            vendor.CustomSettings));
+
+        return Result.Success();
     }
 }

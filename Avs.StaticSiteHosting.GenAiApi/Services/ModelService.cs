@@ -81,9 +81,10 @@ public class ModelService(IModelRepository modelRepository, IVendorRepository ve
             Name = request.Name,
             VendorId = vendor.Id,
             Paths = request.Paths,
+            DefaultModelUrl = request.DefaultModelUrl,
             Features = LlmFeatureMapper.MapToModelLlmFeatures(request.Features).ToArray(),
             CustomSettings = request.CustomSettings,
-            PayloadMappings = request.PayloadMappings,
+            PayloadMappings = request.PayloadMappings ?? [],
             IsActive = true
         };
         
@@ -93,6 +94,7 @@ public class ModelService(IModelRepository modelRepository, IVendorRepository ve
                 vendor.Id,
                 newModel.Name,
                 newModel.Paths,
+                newModel.DefaultModelUrl,
                 newModel.CustomSettings,
                 newModel.PayloadMappings));
         
@@ -118,8 +120,10 @@ public class ModelService(IModelRepository modelRepository, IVendorRepository ve
             Name = existingModel.Name,
             VendorId = existingModel.VendorId,
             Paths = request.Model.Paths,
+            DefaultModelUrl = existingModel.DefaultModelUrl,
             CustomSettings = request.Model.CustomSettings,
-            PayloadMappings = request.Model.PayloadMappings,
+            IsActive = request.Model.IsActive,
+            PayloadMappings = request.Model.PayloadMappings ?? [],
             Features = LlmFeatureMapper.MapToModelLlmFeatures(request.Model.Features).ToArray()
         };
         
@@ -128,6 +132,7 @@ public class ModelService(IModelRepository modelRepository, IVendorRepository ve
             new ModelUpdated(
                 updatedModel.Id,
                 updatedModel.Paths,
+                updatedModel.DefaultModelUrl,
                 updatedModel.CustomSettings,
                 updatedModel.PayloadMappings));
         

@@ -23,7 +23,7 @@ public class ModelController(IModelService modelService) : ControllerBase
     public async Task<IActionResult> UpdateModel(string modelId, ModelData model)
     {
         var updateResult = await modelService.UpdateModelAsync(new UpdateModelRequest(modelId, model));
-        return updateResult.IsSuccess ? Ok() : BadRequest(updateResult.Error);
+        return updateResult.IsSuccess ? NoContent() : BadRequest(updateResult.Error);
     }
 
     [HttpDelete("{modelId}")]

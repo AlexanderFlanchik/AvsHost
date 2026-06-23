@@ -19,6 +19,11 @@ public class PayloadMapping
     public string VendorCode { get; init; } = null!;
 
     /// <summary>
+    /// Model Id
+    /// </summary>
+    public string ModelId { get; init; } = null!;
+
+    /// <summary>
     /// Mapping content
     /// </summary>
     public string JsonContent { get; set; } = null!;
@@ -27,4 +32,9 @@ public class PayloadMapping
     /// Mapping type (for request, response, or response stream)
     /// </summary>
     public PayloadMappingType Type { get; set; }
+
+    /// <summary>
+    /// Request path
+    /// </summary>
+    public string RequestPath { get; set; } = null!;
 }

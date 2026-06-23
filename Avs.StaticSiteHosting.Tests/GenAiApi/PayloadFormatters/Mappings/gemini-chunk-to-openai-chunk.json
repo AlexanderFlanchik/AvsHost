@@ -1,0 +1,33 @@
+{
+  "name": "gemini-chunk-to-openai-chunk",
+  "description": "Per-chunk mapping for Gemini streaming responses. Each Gemini chunk contains candidates[*] with partial content; we project the first candidate into a single OpenAI choice.",
+  "template": {
+    "object": { "$const": "chat.completion.chunk" },
+    "model": { "$from": "$.modelVersion", "$skipIfMissing": true },
+    "id": { "$from": "$.responseId", "$skipIfMissing": true },
+    "choices": [
+      {
+        "index": { "$from": "$.candidates[0].index", "$default": 0 },
+        "delta": {
+          "role": {
+            "$from": "$.candidates[0].content.role",
+            "$valueMap": { "model": "assistant", "user": "user" },
+            "$skipIfMissing": true
+          },
+          "content": { "$from": "$.candidates[0].content.parts[0].text", "$skipIfMissing": true }
+        },
+        "finish_reason": {
+          "$from": "$.candidates[0].finishReason",
+          "$valueMap": {
+            "STOP": "stop",
+            "MAX_TOKENS": "length",
+            "SAFETY": "content_filter",
+            "RECITATION": "stop",
+            "OTHER": "stop"
+          },
+          "$skipIfMissing": true
+        }
+      }
+    ]
+  }
+}

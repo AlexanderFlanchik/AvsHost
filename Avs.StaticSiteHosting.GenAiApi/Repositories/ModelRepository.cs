@@ -59,7 +59,7 @@ public class ModelRepository(IMongoClient client) : BaseRepository(client), IMod
 
     public async Task UpdateModelAsync(Model model)
     {
-        await GetCollection<Model>().FindOneAndReplaceAsync(m => m.VendorId == model.VendorId, model);
+        await GetCollection<Model>().FindOneAndReplaceAsync(m => m.Id == model.Id, model);
     }
 
     public async Task DeleteModelAsync(string modelId)

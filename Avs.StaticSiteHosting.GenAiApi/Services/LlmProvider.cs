@@ -19,6 +19,14 @@ public interface ILlmProvider : IEventSubscriber
     /// <param name="vendorId">Vendor ID</param>
     /// <returns>Vendor settings if found or null otherwise</returns>
     VendorSettings? GetVendorById(string vendorId);
+    
+    /// <summary>
+    /// Gets a model by name and vendor
+    /// </summary>
+    /// <param name="vendorCode">Vendor code (e.g. openai)</param>
+    /// <param name="modelName">Model name</param>
+    /// <returns>An instance of <see cref="ModelSettings"/> if found, null otherwise</returns>
+    ModelSettings? GetModelByVendorAndName(string vendorCode, string modelName);
 
     /// <summary>
     /// Gets models of all available vendors
@@ -59,15 +67,21 @@ public class LlmProvider(
         foreach (var vendor in vendors)
         {
             var vendorModels = models.Where(m => m.VendorId == vendor.Id)
-                .Select(m => new ModelSettings
+                .Select(m =>
+                {
+                    var settings = new ModelSettings
                     {
-                        VendorId =  vendor.Id,
+                        VendorId = vendor.Id,
                         ModelId = m.Id,
                         VendorCode = vendor.Code,
                         Name = m.Name,
                         Paths = m.Paths,
-                        PayloadMappings =  m.PayloadMappings
-                    })
+                    };
+                    
+                    settings.SetPayloadMappings(m.PayloadMappings);
+                    
+                    return settings;
+                })
                 .ToList();
 
             var vendorSettings = new VendorSettings(vendorModels)
@@ -89,6 +103,22 @@ public class LlmProvider(
     public VendorSettings? GetVendorById(string vendorId)
     {
         return _vendorSettings.GetValueOrDefault(vendorId);
+    }
+
+    public ModelSettings? GetModelByVendorAndName(string vendorCode, string modelName)
+    {
+        var vendor = _vendorSettings.Values.FirstOrDefault(v => v.Code == vendorCode);
+        if (vendor is null)
+        {
+            return null;
+        }
+
+        var model = _vendorSettings.Values
+            .Where(v => v.VendorId == vendor.VendorId)
+            .SelectMany(v => v.Models)
+            .FirstOrDefault(m => m.Name == modelName);
+        
+        return model;
     }
 
     public IEnumerable<ModelSettings> GetAllModels() => _vendorSettings.Values.SelectMany(m => m.Models);
@@ -150,9 +180,11 @@ public class LlmProvider(
             VendorCode = vendor.Code,
             Name = @event.Name,
             Paths = @event.Paths,
+            DefaultModelUrl = @event.DefaultModelUrl,
             CustomSettings = @event.CustomSettings,
-            PayloadMappings = @event.PayloadMappings
         };
+        
+        model.SetPayloadMappings(@event.PayloadMappings);
 
         lock (vendor)
         {
@@ -171,7 +203,8 @@ public class LlmProvider(
         lock (modelToUpdate)
         {
             modelToUpdate.Paths = @event.Paths;
-            modelToUpdate.PayloadMappings = @event.PayloadMappings;
+            modelToUpdate.SetPayloadMappings(@event.PayloadMappings);
+            modelToUpdate.DefaultModelUrl = @event.DefaultModelUrl;
             modelToUpdate.CustomSettings = @event.CustomSettings;
         }
     }
@@ -197,26 +230,4 @@ public class LlmProvider(
     }
     
     #endregion
-}
-
-public record VendorSettings(List<ModelSettings> Models)
-{
-    public string VendorId { get; init; } = null!;
-    public string Code { get; init; } = null!;
-    public string ApiKey { get; set; } = null!;
-    public string BaseUrl { get; set; } = null!;
-    public string? CustomSettings { get; set; }
-}
-
-public class ModelSettings
-{
-    public string ModelId { get; init; } = null!;
-    public string VendorId { get; init; } = null!;
-    public string VendorCode { get; init; } = null!;
-    public string Name { get; init; } = null!; 
-    public string? CustomSettings { get; set; }
-    public string[] Paths { get; set; } = [];
-    public IDictionary<PayloadMappingType, string> PayloadMappings { get; set; } = new Dictionary<PayloadMappingType, string>();
-    
-    public string PublicName => $"{VendorCode}/{Name}";
 }

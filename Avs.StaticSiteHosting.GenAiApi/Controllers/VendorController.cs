@@ -18,4 +18,12 @@ public class VendorController(IVendorService vendorService) : ControllerBase
         
         return vendorResult.IsSuccess ? Ok(vendorResult.Data) : BadRequest(vendorResult.Error);
     }
+
+    [HttpPut("{vendorCode}")]
+    public async Task<IActionResult> UpdateVendor(string vendorCode, UpdateVendorRequest request)
+    {
+        var updateResult = await vendorService.UpdateVendorAsync(vendorCode, request);
+        
+        return updateResult.IsSuccess ? NoContent() : BadRequest(updateResult.Error);
+    }
 }

@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Conte
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Reports", "..\Avs.StaticSiteHosting.Reports\Avs.StaticSiteHosting.Reports.csproj", "{BE83E166-09C1-41DA-94B3-04F8E935EB98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Reports.Tests", "..\Avs.StaticSiteHosting.Reports.Tests\Avs.StaticSiteHosting.Reports.Tests.csproj", "{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Avs.StaticSiteHosting.Tests", "..\Avs.StaticSiteHosting.Tests\Avs.StaticSiteHosting.Tests.csproj", "{04F74DE5-009C-4A74-A5C8-9F7832BA28C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Avs.StaticSiteHosting.Shared", "..\Avs.StaticSiteHosting.Shared\Avs.StaticSiteHosting.Shared.csproj", "{A153DB5E-5DA3-4F45-B59B-5C3E92DF1337}"
 EndProject

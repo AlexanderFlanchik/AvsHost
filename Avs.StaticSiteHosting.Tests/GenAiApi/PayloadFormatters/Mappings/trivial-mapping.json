@@ -1,0 +1,5 @@
+{
+  "name": "trivial",
+  "description": "Echo a single field for facade tests.",
+  "template": { "echoed": "$.value" }
+}

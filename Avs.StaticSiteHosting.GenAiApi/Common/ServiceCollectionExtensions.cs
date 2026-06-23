@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Avs.StaticSiteHosting.GenAiApi.Middlewares;
 using Avs.StaticSiteHosting.GenAiApi.Repositories;
 using Avs.StaticSiteHosting.GenAiApi.Services;
@@ -30,16 +31,17 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddPayloadMappings(this IServiceCollection services)
+    public static IServiceCollection AddPayloadMappings(this IServiceCollection services,  JsonWriterOptions? writerOptions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
         
         services.AddScoped<IPayloadMappingRepository, PayloadMappingRepository>();
         services.AddSingleton<IPayloadMappingProvider, PayloadMappingProvider>();
         services.AddScoped<IPayloadMappingService, PayloadMappingService>();
-        services.AddSingleton<IPayloadMapperFactory, PayloadMapperFactory>();
         services.AddSingleton<IRequestTransform, RequestTransform>();
         services.AddSingleton<IResponseTransform, ResponseTransform>();
+
+        services.AddSingleton<IJsonRemapper>(_ => new JsonRemapper() { WriterOptions = writerOptions ?? new JsonWriterOptions() });
         
         return services;
     }

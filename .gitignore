@@ -76,3 +76,5 @@ Avs.StaticSiteHosting.AppHost/Avs.StaticSiteHosting.ServiceDefaults/obj
 /Avs.StaticSiteHosting.GenAiApi/debug
 /Avs.StaticSiteHosting.GenAiApi/bin/debug
 /Avs.StaticSiteHosting.GenAiApi/bin/obj
+/Avs.StaticSiteHosting.Tests/bin
+/Avs.StaticSiteHosting.Tests/obj

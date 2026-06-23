@@ -1,61 +1,55 @@
+using System.Buffers;
 using System.Text;
 using Avs.StaticSiteHosting.GenAiApi.Common;
+using Avs.StaticSiteHosting.GenAiApi.Services.PayloadFormatters;
 
 namespace Avs.StaticSiteHosting.GenAiApi.Services.PayloadProcessing;
 
 public interface IResponseTransform
 {
+    /// <summary>
+    /// Transforms a response payload if needed
+    /// </summary>
+    /// <param name="response">HTTP response instance</param>
+    /// <param name="modelSettings">Current LLM settings</param>
+    /// <param name="llmResponse">LLM response</param>
+    /// <returns>A task which completes when an HTTP response is handled</returns>
     Task TransformAsync(HttpResponse response, ModelSettings modelSettings, HttpResponseMessage llmResponse);
 }
 
-public class ResponseTransform(IPayloadMapperFactory mapperFactory, ILogger<ResponseTransform> logger) : IResponseTransform
+public class ResponseTransform(
+    IJsonRemapper remapper,
+    ILogger<ResponseTransform> logger) : IResponseTransform
 {
-    private const string _dataPrefix = "data:";
-    private static readonly string[] _streamingTypes = ["text/event-stream"];
+    private static readonly string[] _streamingTypes = ["text/event-stream", "application/x-ndjson"];
+
+    private delegate Task ResponseProcessor(
+        Stream llmResponseStream, 
+        HttpResponse response, 
+        ModelSettings modelSettings, 
+        CancellationToken cancellationToken);
     
     public async Task TransformAsync(HttpResponse response, ModelSettings modelSettings, HttpResponseMessage llmResponse)
     {
-        /*
-         * 1. Check if there are mapping for response type, if not just copy llmResponse to response.Body
-         * 2. If llmResponse is just raw one, map it using mapper and write to response.Body
-         * 3. If it is a stream. map each chunk and write to response.Body
-         */
-        string requestPath = response.HttpContext.Request.Path;
         CancellationToken cancellationToken = response.HttpContext.RequestAborted;
         bool isStreaming = IsStreaming(llmResponse);
-        PayloadMappingType mappingType = isStreaming
-            ? PayloadMappingType.ResponseStream
-            : PayloadMappingType.Response;
         
-        var mapper = mapperFactory.GetPayloadMapper(requestPath, mappingType);
         await using var responseStream = await llmResponse.Content.ReadAsStreamAsync(cancellationToken);
+        ResponseProcessor processor = isStreaming ?
+            ProcessStreamResponseAsync :
+            ProcessRawResponseAsync;
         
-        if (mapper is null)
-        {
-            await responseStream.CopyToAsync(response.Body, cancellationToken);
-
-            return;
-        }
-
-        if (!isStreaming)
-        {
-            await ProcessRawResponseAsync(responseStream, response, mapper, modelSettings, cancellationToken);
-        }
-        else
-        {
-           await ProcessStreamResponseAsync(responseStream, response, mapper, modelSettings, cancellationToken);
-        }
+        await processor(responseStream, response, modelSettings, cancellationToken);
     }
 
     private async Task ProcessRawResponseAsync(
         Stream llmResponseStream, 
         HttpResponse response, 
-        IPayloadMapper mapper, 
         ModelSettings modelSettings,
         CancellationToken cancellationToken)
     {
-        if (!modelSettings.PayloadMappings.TryGetValue(PayloadMappingType.Response, out var mappingId)
-            || string.IsNullOrEmpty(mappingId))
+        var mappingId = modelSettings.GetMappingId(PayloadMappingType.Response, response.HttpContext.Request.Path);
+        if (string.IsNullOrEmpty(mappingId))
         {
             await llmResponseStream.CopyToAsync(response.Body, cancellationToken);
 
@@ -64,7 +58,10 @@ public class ResponseTransform(IPayloadMapperFactory mapperFactory, ILogger<Resp
 
         try
         {
-            var mappedResponseStream = mapper.MapPayload(llmResponseStream, mappingId);
+            using var mappedResponseStream = new MemoryStream();
+            remapper.Transform(mappingId, llmResponseStream, mappedResponseStream);
+            mappedResponseStream.Position = 0;
+            
             await mappedResponseStream.CopyToAsync(response.Body, cancellationToken);
         }
         catch (Exception ex)
@@ -77,12 +74,11 @@ public class ResponseTransform(IPayloadMapperFactory mapperFactory, ILogger<Resp
     private async Task ProcessStreamResponseAsync(
         Stream llmResponseStream,
         HttpResponse response,
-        IPayloadMapper mapper,
         ModelSettings modelSettings,
         CancellationToken cancellationToken)
     {
-        if (!modelSettings.PayloadMappings.TryGetValue(PayloadMappingType.ResponseStream, out var mappingId)
-            || string.IsNullOrEmpty(mappingId))
+        var mappingId = modelSettings.GetMappingId(PayloadMappingType.ResponseStream, response.HttpContext.Request.Path);
+        if (string.IsNullOrEmpty(mappingId))
         {
             await llmResponseStream.CopyToAsync(response.Body, cancellationToken);
 
@@ -90,32 +86,46 @@ public class ResponseTransform(IPayloadMapperFactory mapperFactory, ILogger<Resp
         }
         
         using var streamReader = new StreamReader(llmResponseStream, leaveOpen: true);
-
+        var writer = new ArrayBufferWriter<byte>();
+        
         while (await streamReader.ReadLineAsync(cancellationToken) is { } line)
         {
-            if (!line.StartsWith(_dataPrefix))
-            {
-                continue;
-            }
+            ReadOnlyMemory<byte> chunkBuffer = Encoding.UTF8.GetBytes(line);
             
-            string chunk = line.Substring(_dataPrefix.Length);
             try
             {
-                await using var mappedChunkStream = mapper.MapPayload(chunk, mappingId);
-                await mappedChunkStream.CopyToAsync(response.Body, cancellationToken);
+                if (response.ContentType == "text/event-stream")
+                {
+                    remapper.TransformSse(mappingId, chunkBuffer, writer);
+                }
+                else
+                {
+                    remapper.TransformNdjson(mappingId, chunkBuffer, writer);
+                }
+
+                await response.Body.WriteAsync(writer.WrittenMemory, cancellationToken);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Unable to map LLM response fragment to OpenAI format");
                 
-                ReadOnlyMemory<byte> chunkBuffer = Encoding.UTF8.GetBytes($"{_dataPrefix}{chunk}");
                 await response.Body.WriteAsync(chunkBuffer, cancellationToken);
+            }
+            finally
+            {
+                writer.Clear();
             }
         }
     }
 
-    private bool IsStreaming(HttpResponseMessage llmResponse)
+    private static bool IsStreaming(HttpResponseMessage llmResponse)
     {
-        return _streamingTypes.Contains(llmResponse.Content.Headers.ContentType?.MediaType ?? "application/json");
+        var contentType = llmResponse.Content.Headers.ContentType?.MediaType ?? AppConstants.DefaultJsonType;
+        if (llmResponse.Content.Headers.ContentLength is null && contentType == AppConstants.DefaultJsonType)
+        {
+            return true;
+        }
+        
+        return _streamingTypes.Contains(contentType);
     }
 }

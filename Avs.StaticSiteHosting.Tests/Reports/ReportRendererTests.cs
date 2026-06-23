@@ -1,7 +1,7 @@
 ﻿using Avs.StaticSiteHosting.Reports.Models;
 using Avs.StaticSiteHosting.Reports.Services;
 
-namespace Avs.StaticSiteHosting.Reports.Tests
+namespace Avs.StaticSiteHosting.Tests.Reports
 {
     public class ReportRendererTests
     {

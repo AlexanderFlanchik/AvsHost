@@ -1,0 +1,34 @@
+{
+  "name": "openai-to-anthropic-request",
+  "description": "Map an OpenAI chat-completions request body to Anthropic Messages API shape.",
+  "template": {
+    "model": "$.model",
+    "max_tokens": { "$from": "$.max_tokens", "$default": 1024 },
+    "temperature": { "$from": "$.temperature", "$skipIfMissing": true },
+    "system": {
+      "$find": "$.messages[*]",
+      "$where": { "role": "system" },
+      "$select": "@.content",
+      "$skipIfMissing": true
+    },
+    "messages": {
+      "$array": "$.messages[*]",
+      "$where": { "role": { "$ne": "system" } },
+      "$item": {
+        "role": {
+          "$from": "@.role",
+          "$valueMap": {
+            "user": "user",
+            "assistant": "assistant"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "@.content"
+          }
+        ]
+      }
+    }
+  }
+}

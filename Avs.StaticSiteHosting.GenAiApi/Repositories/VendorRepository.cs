@@ -9,6 +9,7 @@ public interface IVendorRepository
     Task<Vendor?> GetVendorAsync(string vendorCode);
     Task<IEnumerable<Vendor>> GetVendorsAsync();
     Task CreateVendorAsync(Vendor vendor);
+    Task UpdateVendorAsync(Vendor vendor);
 }
 
 public class VendorRepository(IMongoClient client) : BaseRepository(client), IVendorRepository
@@ -28,5 +29,10 @@ public class VendorRepository(IMongoClient client) : BaseRepository(client), IVe
     public async Task CreateVendorAsync(Vendor vendor)
     {
         await GetCollection<Vendor>().InsertOneAsync(vendor);
+    }
+
+    public async Task UpdateVendorAsync(Vendor vendor)
+    {
+        await GetCollection<Vendor>().ReplaceOneAsync(v => v.Id == vendor.Id, vendor);
     }
 }

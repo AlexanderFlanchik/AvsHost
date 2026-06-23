@@ -1,0 +1,41 @@
+{
+  "name": "ollama-to-openai-response",
+  "description": "Map an Ollama chat (non-streaming) response to OpenAI chat-completion response shape. Ollama returns a single message; we wrap it into a single-choice array.",
+  "template": {
+    "object": { "$const": "chat.completion" },
+    "model": "$.model",
+    "choices": [
+      {
+        "index": { "$const": 0 },
+        "message": {
+          "role": "$.message.role",
+          "content": "$.message.content",
+          "tool_calls": {
+            "$array": "$.message.tool_calls[*]",
+            "$item": {
+              "type": { "$const": "function" },
+              "function": {
+                "name": "@.function.name",
+                "arguments": { "$stringify": "@.function.arguments" }
+              }
+            },
+            "$skipIfMissing": true
+          }
+        },
+        "finish_reason": {
+          "$from": "$.done_reason",
+          "$valueMap": {
+            "stop": "stop",
+            "length": "length",
+            "load": "stop"
+          }
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": "$.prompt_eval_count",
+      "completion_tokens": "$.eval_count",
+      "total_tokens": { "$sum": ["$.prompt_eval_count", "$.eval_count"] }
+    }
+  }
+}

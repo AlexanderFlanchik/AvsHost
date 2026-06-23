@@ -1,4 +1,5 @@
 using Avs.StaticSiteHosting.GenAiApi.Common;
+using Avs.StaticSiteHosting.GenAiApi.Services;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
@@ -36,6 +37,11 @@ public class Model
     public bool IsActive { get; set; }
     
     /// <summary>
+    /// Default model URL. Overrides API base URL + request path logic
+    /// </summary>
+    public string? DefaultModelUrl { get; set; }
+    
+    /// <summary>
     /// Custom model settings in JSON format (optional)
     /// </summary>
     public string? CustomSettings { get; set; }
@@ -46,8 +52,7 @@ public class Model
     public LlmFeature[] Features { get; set; } = [];
     
     /// <summary>
-    /// Payload mappings for model (key - mapping type, value - mapping ID)
+    /// Model payload mappings (for various types/routes, etc.)
     /// </summary>
-    [BsonDictionaryOptions(DictionaryRepresentation.ArrayOfDocuments)]
-    public IDictionary<PayloadMappingType, string> PayloadMappings { get; set; } = new Dictionary<PayloadMappingType, string>();
+    public PayloadMappingRef[] PayloadMappings { get; set; } = [];
 }

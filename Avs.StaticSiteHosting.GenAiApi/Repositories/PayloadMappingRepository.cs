@@ -1,3 +1,4 @@
+using Avs.StaticSiteHosting.GenAiApi.Common;
 using Avs.StaticSiteHosting.GenAiApi.Models;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -6,6 +7,7 @@ namespace Avs.StaticSiteHosting.GenAiApi.Repositories;
 
 public interface IPayloadMappingRepository
 {
+    Task<bool> MappingExistsAsync(string modelId, PayloadMappingType mappingType);
     Task<PayloadMapping?> GetMappingAsync(string mappingId);
     Task<IEnumerable<PayloadMapping>> GetAllMappingsAsync();
     Task CreateMappingAsync(PayloadMapping payloadMapping);
@@ -15,6 +17,9 @@ public interface IPayloadMappingRepository
 
 public class PayloadMappingRepository(IMongoClient client) : BaseRepository(client), IPayloadMappingRepository
 {
+    public async Task<bool> MappingExistsAsync(string modelId, PayloadMappingType mappingType)
+        => await GetCollection<PayloadMapping>().Find(x => x.ModelId == modelId && x.Type == mappingType).AnyAsync();
+
     public async Task<PayloadMapping?> GetMappingAsync(string mappingId)
        => await GetCollection<PayloadMapping>().Find(x => x.Id == mappingId).FirstOrDefaultAsync();
 

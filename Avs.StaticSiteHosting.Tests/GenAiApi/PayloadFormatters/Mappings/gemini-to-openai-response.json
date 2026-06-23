@@ -1,0 +1,37 @@
+{
+  "name": "gemini-to-openai-response",
+  "description": "Map a Google Gemini generateContent response to OpenAI chat-completion response shape. Iterates Gemini candidates into OpenAI choices.",
+  "template": {
+    "id": { "$from": "$.responseId", "$skipIfMissing": true },
+    "object": { "$const": "chat.completion" },
+    "model": { "$from": "$.modelVersion", "$skipIfMissing": true },
+    "choices": {
+      "$array": "$.candidates[*]",
+      "$item": {
+        "index": "@.index",
+        "message": {
+          "role": {
+            "$from": "@.content.role",
+            "$valueMap": { "model": "assistant", "user": "user" }
+          },
+          "content": "@.content.parts[0].text"
+        },
+        "finish_reason": {
+          "$from": "@.finishReason",
+          "$valueMap": {
+            "STOP": "stop",
+            "MAX_TOKENS": "length",
+            "SAFETY": "content_filter",
+            "RECITATION": "stop",
+            "OTHER": "stop"
+          }
+        }
+      }
+    },
+    "usage": {
+      "prompt_tokens": "$.usageMetadata.promptTokenCount",
+      "completion_tokens": "$.usageMetadata.candidatesTokenCount",
+      "total_tokens": "$.usageMetadata.totalTokenCount"
+    }
+  }
+}

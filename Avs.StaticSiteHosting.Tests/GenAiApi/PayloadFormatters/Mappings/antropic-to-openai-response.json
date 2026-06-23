@@ -1,0 +1,32 @@
+{
+  "name": "anthropic-to-openai-response",
+  "description": "Map an Anthropic Messages response to OpenAI chat-completion response shape. Assumes the Anthropic content array contains a single text block (the common non-tool-use case).",
+  "template": {
+    "id": "$.id",
+    "object": { "$const": "chat.completion" },
+    "model": "$.model",
+    "choices": [
+      {
+        "index": { "$const": 0 },
+        "message": {
+          "role": { "$const": "assistant" },
+          "content": "$.content[0].text"
+        },
+        "finish_reason": {
+          "$from": "$.stop_reason",
+          "$valueMap": {
+            "end_turn": "stop",
+            "stop_sequence": "stop",
+            "max_tokens": "length",
+            "tool_use": "tool_calls"
+          }
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": "$.usage.input_tokens",
+      "completion_tokens": "$.usage.output_tokens",
+      "total_tokens": { "$sum": ["$.usage.input_tokens", "$.usage.output_tokens"] }
+    }
+  }
+}

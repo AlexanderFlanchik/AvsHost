@@ -1,0 +1,38 @@
+{
+  "name": "openai-to-gemini-request",
+  "description": "Map an OpenAI chat-completions request body to Google Gemini generateContent shape.",
+  "template": {
+    "model": "$.model",
+    "systemInstruction": {
+      "$find": "$.messages[*]",
+      "$where": { "role": "system" },
+      "$select": {
+        "role": { "$const": "system" },
+        "parts": [
+          { "text": "@.content" }
+        ]
+      },
+      "$skipIfMissing": true
+    },
+    "contents": {
+      "$array": "$.messages[*]",
+      "$where": { "role": { "$ne": "system" } },
+      "$item": {
+        "role": {
+          "$from": "@.role",
+          "$valueMap": {
+            "user": "user",
+            "assistant": "model"
+          }
+        },
+        "parts": [
+          { "text": "@.content" }
+        ]
+      }
+    },
+    "generationConfig": {
+      "temperature": { "$from": "$.temperature", "$skipIfMissing": true },
+      "maxOutputTokens": { "$from": "$.max_tokens", "$skipIfMissing": true }
+    }
+  }
+}

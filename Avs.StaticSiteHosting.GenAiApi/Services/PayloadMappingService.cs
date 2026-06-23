@@ -14,17 +14,32 @@ public interface IPayloadMappingService
 }
 
 public class PayloadMappingService(
-    IPayloadMappingProvider mappingProvider,
     EventBusPubSub pubSub,
+    ILlmProvider llmProvider,
     IPayloadMappingRepository mappingRepository) : IPayloadMappingService
 {
     public async Task<Result<string>> CreateMappingAsync(PayloadMappingData payloadMapping)
     {
+        var model = llmProvider.GetModelByVendorAndName(payloadMapping.VendorCode, payloadMapping.Model);
+        var mappingType = payloadMapping.PayloadMappingType;
+        
+        if (model is null)
+        {
+            return Result<string>.Fail(
+                $"No model '{payloadMapping.Model}' found for vendor '{payloadMapping.VendorCode}'");
+        }
+
+        if (await mappingRepository.MappingExistsAsync(model.ModelId, mappingType))
+        {
+            return Result<string>.Fail(
+                $"{mappingType.ToString()} mapping for model {model.VendorCode}/{model.Name} already exists.");
+        }
+        
         var mapping = new PayloadMapping()
         {
             VendorCode = payloadMapping.VendorCode,
             JsonContent = payloadMapping.JsonContent,
-            Type = payloadMapping.PayloadMappingType
+            Type = mappingType
         };
         
         await mappingRepository.CreateMappingAsync(mapping);
@@ -41,12 +56,6 @@ public class PayloadMappingService(
 
     public async Task<Result> UpdateMappingAsync(string mappingId, PayloadMappingData payloadMapping)
     {
-        var mappingsExist = mappingProvider.GetMappings(mappingId).Any();
-        if (!mappingsExist)
-        {
-            return Result<string>.Fail("Mapping does not exist");
-        }
-
         var mapping = new PayloadMapping()
         {
             Id = mappingId,

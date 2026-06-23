@@ -22,7 +22,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Avs.StaticSiteHosting.GenAiApi\Avs.StaticSiteHosting.GenAiApi.csproj" />
     <ProjectReference Include="..\Avs.StaticSiteHosting.Reports\Avs.StaticSiteHosting.Reports.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="GenAiApi\PayloadFormatters\Mappings\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="GenAiApi\PayloadFormatters\Samples\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
