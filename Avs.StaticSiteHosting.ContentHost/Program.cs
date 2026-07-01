@@ -26,9 +26,17 @@ builder.Services.AddMessaging(x =>
         cfg.Port = rabbitMqSettings.Port;
         
         cfg.AddRpcClient();
+        
         cfg.ConfigureRequestReply<GetSiteContentRequestMessage, SiteContentInfoResponse>();
+        cfg.ConfigureExchangeOptions<SiteError>(o => o.IsQueueExclusive = true);
+        cfg.ConfigureExchangeOptions<ContentUpdatedEvent>(o => o.IsQueueExclusive = true);
+        cfg.ConfigureExchangeOptions<ClearSiteCacheRequest>(o => o.IsQueueExclusive = true);
         cfg.ConfigureRequestReply<CloudSettingsRequest, CloudSettingsResponse>();
-        cfg.ConfigureExchangeOptions<SiteVisited>(o => o.ExchangeName = "SiteVisited");
+        cfg.ConfigureExchangeOptions<SiteVisited>(o =>
+        {
+            o.ExchangeName = "SiteVisited";
+            o.IsQueueExclusive = true;
+        });
     });
 });
 

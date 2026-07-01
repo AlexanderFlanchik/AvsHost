@@ -17,10 +17,11 @@ var mongo = builder.AddMongoDB("mongo", 27017, dbUsername, dbPassword)
 
 var mongoDb = mongo.AddDatabase(databaseName);
 var genaiDb = mongo.AddDatabase("GenAiApi");
-var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword,55720)
+var rabbitMq = builder.AddRabbitMQ("AvsBroker", rbUsername, rbPassword, 55720)
     .WithManagementPlugin()
-    .WithEndpoint("management", endpoint => endpoint.Port = 15672)
-    .WithLifetime(ContainerLifetime.Persistent);
+    .WithEndpoint("management", endpoint => endpoint.Port = 15672);
+    //.WithLifetime(ContainerLifetime.Persistent);
+
 
 var redis = builder.AddRedis("avs-redis");
 

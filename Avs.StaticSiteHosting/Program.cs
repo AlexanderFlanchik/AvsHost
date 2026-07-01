@@ -59,7 +59,12 @@ builder.Services.AddMessaging(x =>
         
         cfg.ConfigureRequestReply<GetSiteContentRequestMessage, SiteContentInfoResponse>();
         cfg.ConfigureRequestReply<CloudSettingsRequest, CloudSettingsResponse>();
-        cfg.ConfigureExchangeOptions<SiteVisited>(o => o.ExchangeName = "SiteVisited");
+        cfg.ConfigureExchangeOptions<SiteVisited>(o =>
+        {
+            o.ExchangeName = "SiteVisited";
+            o.IsQueueExclusive = true;
+        });
+        cfg.ConfigureExchangeOptions<SiteError>(o => o.IsQueueExclusive = true);
         cfg.ConfigureExchangeOptions<CustomRouteHandlerChanged>(o => o.IsExchangeDurable = false);
         cfg.ConfigureExchangeOptions<CustomRouteHandlersDeleted>(o => o.IsExchangeDurable = false);
     });

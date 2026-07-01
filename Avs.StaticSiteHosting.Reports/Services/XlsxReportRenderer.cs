@@ -15,7 +15,7 @@ namespace Avs.StaticSiteHosting.Reports.Services
 
         static XlsxReportRenderer()
         {
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelPackage.License.SetNonCommercialPersonal("Avs.StaticSiteHosting");
         }
         
         public async Task<byte[]> RenderAsync(Report report)
